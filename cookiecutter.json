@@ -1,0 +1,6 @@
+{
+    "project_name": "react continuous delivery",
+    "project_slug": "{{ cookiecutter.project_name.casefold().replace(' ', '').replace('-', '') }}",
+    "project_dirname": "{{ cookiecutter.project_slug }}", 
+    "gitlab_group_slug": "{{ cookiecutter.project_slug }}"
+}

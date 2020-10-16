@@ -1,0 +1,4 @@
+BASIC_AUTH_PASSWORD=user
+BASIC_AUTH_USER=password
+REACT_ENVIRONMENT=Development
+NODE_ENV=development
