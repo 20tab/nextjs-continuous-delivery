@@ -19,16 +19,16 @@ function MyApp ({ Component, pageProps }) {
     <ThemeProvider theme={themes[theme]}>
       <Head>
         <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta key='og:title' property="og:title" content={title} />
-        <meta key='og:description' property="og:description" content={description} />
-        <meta key='og:site_name' property="og:site_name" content={title} />
-        <meta property="fb:app_id" content="FB_APP_ID" />
-        <meta property="og:image" content="https://www.mywebsite.it/share.png" />
-        <meta property="og:url" content="https://www.mywebsite.it/" />
-        <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="mywebsite_share_image" />
-        <meta name="twitter:image:alt" content="mywebsite" />
+        <meta name='description' content={description} />
+        <meta key='og:title' property='og:title' content={title} />
+        <meta key='og:description' property='og:description' content={description} />
+        <meta key='og:site_name' property='og:site_name' content={title} />
+        <meta property='fb:app_id' content='FB_APP_ID' />
+        <meta property='og:image' content='https://www.mywebsite.it/share.png' />
+        <meta property='og:url' content='https://www.mywebsite.it/' />
+        <meta property='og:type' content='article' />
+        <meta name='twitter:card' content='mywebsite_share_image' />
+        <meta name='twitter:image:alt' content='mywebsite' />
         <meta name='viewport' content='initial-scale=1.0, width=device-width' />
       </Head>
       <GlobalStyle />
