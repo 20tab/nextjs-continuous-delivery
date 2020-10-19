@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: {{cookiecutter.project_slug}}-integration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: frontend
+  template:
+    metadata:
+      labels:
+        component: frontend
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: frontend
+          image: registry.gitlab.com/{{cookiecutter.gitlab_group_slug}}/{{cookiecutter.project_dirname}}:__IMAGE_TAG__
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: NODE_ENV
+            - name: REACT_ENVIRONMENT
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: DJANGO_CONFIGURATION
+            - name: BASIC_AUTH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: BASIC_AUTH_USER
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: BASIC_AUTH_PASSWORD
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-cluster-ip-service
+  namespace: {{cookiecutter.project_slug}}-integration
+spec:
+  type: ClusterIP
+  selector:
+    component: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
