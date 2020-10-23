@@ -1,0 +1,98 @@
+image: node
+
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+cache:
+  paths:
+    - node_modules/
+    - .yarn
+
+build:
+  stage: build
+  image: docker:19-git
+  services:
+    - docker:19-dind
+  before_script:
+    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+  script:
+    - "docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA --pull -f docker/prod.Dockerfile ."
+    - "docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA"
+  after_script:
+    - "docker logout $CI_REGISTRY"
+  only:
+    - develop
+    - master
+
+.deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:1.17
+    entrypoint: [""]
+  before_script:
+    - kubectl config set-cluster my-cluster --server=${KUBE_URL} --certificate-authority="${KUBE_CA_PEM_FILE}"
+    - kubectl config set-credentials admin --token=${KUBE_TOKEN}
+    - kubectl config set-context my-context --cluster=my-cluster --user=admin --namespace=default
+    - kubectl config use-context my-context
+
+deploy_development:
+  extends: .deploy
+  only:
+    - develop
+  environment: development
+  script:
+    - sed -i "s/__IMAGE_TAG__/develop-$CI_COMMIT_SHA/" k8s/development/frontend.yaml
+    - kubectl apply -f k8s/development/frontend.yaml
+
+rollback_development:
+  extends: .deploy
+  only:
+    - develop
+  environment: development
+  when: manual
+  script:
+    - sed -i "s/__IMAGE_TAG__/develop-$CI_COMMIT_BEFORE_SHA/" k8s/development/frontend.yaml
+    - kubectl apply -f k8s/development/frontend.yaml
+
+deploy_integration:
+  extends: .deploy
+  only:
+    - master
+  environment: integration
+  script:
+    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_SHA/" k8s/integration/frontend.yaml
+    - kubectl apply -f k8s/integration/frontend.yaml
+
+rollback_integration:
+  extends: .deploy
+  only:
+    - master
+  environment: integration
+  when: manual
+  script:
+    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_BEFORE_SHA/" k8s/integration/frontend.yaml
+    - kubectl apply -f k8s/integration/frontend.yaml
+
+deploy_production:
+  extends: .deploy
+  only:
+    - tags
+  environment: production
+  script:
+    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_SHA/" k8s/production/frontend.yaml
+    - kubectl apply -f k8s/production/frontend.yaml
+
+rollback_production:
+  extends: .deploy
+  only:
+    - tags
+  environment: production
+  when: manual
+  script:
+    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_BEFORE_SHA/" k8s/production/frontend.yaml
+    - kubectl apply -f k8s/production/frontend.yaml
