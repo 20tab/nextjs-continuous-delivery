@@ -3,7 +3,7 @@ import { all, call, takeLatest } from 'redux-saga/effects'
 
 import serverSaga from './serverSaga'
 import themeSaga from './themeSaga'
-import { changeTheme } from '../store/actions/theme'
+import { CHANGE_THEME } from '../store/actions/theme/types'
 
 const rootSaga = function * (ctx: NextPageContext) {
   const isServer = !!(ctx?.req)
@@ -13,7 +13,7 @@ const rootSaga = function * (ctx: NextPageContext) {
   }
 
   yield all([
-    takeLatest(changeTheme.type, themeSaga)
+    takeLatest(CHANGE_THEME, themeSaga)
   ])
 }
 

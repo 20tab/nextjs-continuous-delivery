@@ -1,5 +1,5 @@
-import { Theme } from './Theme'
+import { iTheme } from './Theme'
 
-export interface State {
-  theme: Theme
+export interface iState {
+  theme: iTheme
 }

@@ -3,15 +3,16 @@ import Head from 'next/head'
 import { AppContext } from 'next/app'
 import { useSelector } from 'react-redux'
 import { ThemeProvider } from 'styled-components'
+import { END } from 'redux-saga'
 
 import { GlobalStyle } from '../styles/GlobalStyle'
+import { iState } from '../models/State'
+import { iTheme } from '../models/Theme'
+import { SagaStore, wrapper } from '../store/store'
 import themes from '../styles/themes'
-import { wrapper } from '../store/store'
-import { Theme } from '../models/Theme'
-import { State } from '../models/State'
 
 function MyApp ({ Component, pageProps }) {
-  const theme = useSelector<State, Theme>(state => state.theme)
+  const theme = useSelector<iState, iTheme>(state => state.theme)
   const title = '{{cookiecutter.project_slug}}'
   const description = 'Descrizione {{cookiecutter.project_slug}}'
 
@@ -41,6 +42,11 @@ MyApp.getInitialProps = async ({ Component, ctx }: AppContext) => {
   const pageLevelInitialProps = Component.getInitialProps
     ? await Component.getInitialProps(ctx)
     : {}
+
+  if (ctx.req) {
+    ctx.store.dispatch(END)
+    await (ctx.store as SagaStore).sagaTask.toPromise()
+  }
 
   return {
     pageProps: { ...pageLevelInitialProps }

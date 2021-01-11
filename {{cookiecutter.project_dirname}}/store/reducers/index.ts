@@ -1,7 +1,10 @@
-import themeReducer from './theme'
+import { combineReducers } from 'redux'
 
-const reducers = {
-  theme: themeReducer
-}
+import { iState } from '../../models/State'
+import theme from './theme'
+
+const reducers = combineReducers<iState>({
+  theme
+})
 
 export default reducers
