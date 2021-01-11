@@ -6,10 +6,9 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "fix": "eslint . --fix"
+    "eslint": "eslint . --fix-dry-run"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^1.4.0",
     "basic-auth": "^2.0.1",
     "express": "^4.17.1",
     "next": "^10.0.1",
