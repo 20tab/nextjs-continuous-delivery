@@ -1,16 +1,13 @@
 import nookies from 'nookies'
 
-import { changeTheme } from '../store/actions/theme'
-import { Action } from '@reduxjs/toolkit'
+import { ChangeTheme } from '../store/actions/theme/types'
 
-// TODO: trovare una soluzione migliore per tipizzare il payload delle azioni.
+// TODO: fix me
 // eslint-disable-next-line require-yield
-const themeSaga = function * (action: Action) {
-  if (changeTheme.match(action)) {
-    nookies.set(null, 'theme', action.payload, {
-      path: '/'
-    })
-  }
+const themeSaga = function * (action: ChangeTheme) {
+  nookies.set(null, 'theme', action.payload, {
+    path: '/'
+  })
 }
 
 export default themeSaga

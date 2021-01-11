@@ -1,32 +1,31 @@
-import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
-import { MakeStore, createWrapper } from 'next-redux-wrapper'
-import createSagaMiddleware from 'redux-saga'
+import { createStore, applyMiddleware, compose, Store } from 'redux'
+import { MakeStore, createWrapper, Context } from 'next-redux-wrapper'
+import createSagaMiddleware, { Task } from 'redux-saga'
 
-import { State } from '../models/State'
+import { iState } from '../models/State'
 import reducers from './reducers'
 import sagas from '../sagas'
 
-// TODO Fix any type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const makeStore: MakeStore<State> = (context: any) => {
+export interface SagaStore extends Store {
+  sagaTask?: Task;
+}
+
+const makeStore: MakeStore<iState> = (context: Context) => {
   const sagaMiddleware = createSagaMiddleware()
+  const composeEnhancers = process.env.NODE_ENV === 'development' && typeof window !== 'undefined'
+    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+    : compose
 
-  const store = configureStore<State>({
-    reducer: reducers,
-    middleware: ([
-      ...getDefaultMiddleware({ thunk: false }),
-      sagaMiddleware
-      // TODO Fix any type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ] as any),
-    devTools: process.env.NODE_ENV === 'development'
-  })
+  const enhancers = composeEnhancers(applyMiddleware(sagaMiddleware))
+  const store = createStore(reducers, enhancers)
+  if (typeof window !== 'undefined') window.store = store;
 
-  sagaMiddleware.run(sagas, context.ctx)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (store as SagaStore).sagaTask = sagaMiddleware.run(sagas, (context as any).ctx)
 
   return store
 }
 
-export const wrapper = createWrapper<State>(makeStore, {
+export const wrapper = createWrapper<iState>(makeStore, {
   debug: false
 })

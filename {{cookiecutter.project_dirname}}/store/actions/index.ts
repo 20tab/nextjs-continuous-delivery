@@ -1,6 +1,10 @@
-import { createAction } from '@reduxjs/toolkit'
 import { HYDRATE } from 'next-redux-wrapper'
 
-import { State } from '../../models/State'
+import { iState } from '../../models/State'
 
-export const hydrateAction = createAction<State>(HYDRATE)
+export * from './theme'
+
+export interface Hydrate {
+  type: typeof HYDRATE
+  payload: iState
+}

@@ -2,15 +2,15 @@ import React, { FC } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import { State } from '../models/State'
-import { Theme } from '../models/Theme'
+import { iState } from '../models/State'
+import { iTheme } from '../models/Theme'
 import { changeTheme } from '../store/actions/theme'
 
 const ThemeSwitch: FC = () => {
   const dispatch = useDispatch()
-  const theme = useSelector<State, Theme>(state => state.theme)
-  const isLight = theme === Theme.light
-  const handlePressTheme = () => dispatch(changeTheme(isLight ? Theme.dark : Theme.light))
+  const theme = useSelector<iState, iTheme>(state => state.theme)
+  const isLight = theme === iTheme.light
+  const handlePressTheme = () => dispatch(changeTheme(isLight ? iTheme.dark : iTheme.light))
 
   return (
     <Switch>
