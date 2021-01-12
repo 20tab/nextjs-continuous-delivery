@@ -31,11 +31,11 @@ spec:
                 secretKeyRef:
                   name: secrets
                   key: BASIC_AUTH_PASSWORD
-            - name: INNER_API_URL
+            - name: INTERNAL_API_URL
               valueFrom:
                 secretKeyRef:
                   name: secrets
-                  key: INNER_API_URL
+                  key: INTERNAL_API_URL
             - name: NEXT_PUBLIC_API_URL
               valueFrom:
                 secretKeyRef:
