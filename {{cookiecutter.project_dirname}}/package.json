@@ -6,7 +6,8 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "eslint": "eslint . --fix-dry-run"
+    "eslint": "eslint . --fix-dry-run",
+    "audit:fix": "npm i --package-lock-only && npm audit fix && rm yarn.lock && yarn import && rm package-lock.json"
   },
   "dependencies": {
     "basic-auth": "^2.0.1",
