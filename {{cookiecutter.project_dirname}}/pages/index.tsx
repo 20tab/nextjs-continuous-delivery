@@ -7,7 +7,7 @@ const Home: FC = () => {
   return (
     <WithNavbar>
       <Container>
-        <Title>Hello world!</Title>
+        <Title data-testid='welcome_message'>Hello world!</Title>
         <Text>Start editing <Code>pages/index.tsx</Code></Text>
       </Container>
     </WithNavbar>

@@ -1,6 +1,7 @@
 image: node
 
 stages:
+  - test
   - build
   - deploy
 
@@ -13,11 +14,19 @@ cache:
     - node_modules/
     - .yarn
 
+test:
+  stage: test
+  image: node:14.15.4-slim
+  before_script:
+    - "yarn install"
+  script:
+    - "yarn test --coverage --color"
+
 build:
   stage: build
-  image: docker:19-git
+  image: docker:20-git
   services:
-    - docker:19-dind
+    - docker:20-dind
   before_script:
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
   script:
@@ -32,7 +41,7 @@ build:
 .deploy:
   stage: deploy
   image:
-    name: bitnami/kubectl:1.17
+    name: bitnami/kubectl:1.19
     entrypoint: [""]
   before_script:
     - kubectl config set-cluster my-cluster --server=${KUBE_URL} --certificate-authority="${KUBE_CA_PEM_FILE}"
