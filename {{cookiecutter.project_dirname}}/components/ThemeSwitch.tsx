@@ -9,15 +9,16 @@ import { changeTheme } from '../store/actions/theme'
 const ThemeSwitch: FC = () => {
   const dispatch = useDispatch()
   const theme = useSelector<iState, iTheme>(state => state.theme)
-  const isLight = theme === iTheme.light
-  const handlePressTheme = () => dispatch(changeTheme(isLight ? iTheme.dark : iTheme.light))
+  const isDark = theme === iTheme.dark
+  const handlePressTheme = () => dispatch(changeTheme(isDark ? iTheme.light : iTheme.dark))
 
   return (
     <Switch>
       <Input
         type='checkbox'
         onChange={handlePressTheme}
-        checked={isLight}
+        checked={isDark}
+        data-testid='theme_switch_input'
       />
       <Slider />
     </Switch>
