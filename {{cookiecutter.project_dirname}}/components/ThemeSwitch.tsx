@@ -1,6 +1,7 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+import nookies from 'nookies'
 
 import { State } from '@/models/State'
 import { Theme } from '@/models/Theme'
@@ -10,8 +11,16 @@ const ThemeSwitch = () => {
   const dispatch = useDispatch()
   const theme = useSelector<State, Theme>(state => state.theme.theme)
   const isDark = theme === Theme.dark
-  const handlePressTheme = () =>
-    dispatch(changeTheme(isDark ? Theme.light : Theme.dark))
+
+  const handlePressTheme = () => {
+    const newTheme = isDark ? Theme.light : Theme.dark
+
+    nookies.set(null, 'theme', newTheme, {
+      path: '/'
+    })
+
+    dispatch(changeTheme(newTheme))
+  }
 
   return (
     <Switch>

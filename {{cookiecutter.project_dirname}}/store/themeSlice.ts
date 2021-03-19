@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { HYDRATE } from 'next-redux-wrapper'
-import nookies from 'nookies'
 
 import { Theme } from '@/models/Theme'
 import { State } from '@/models/State'
@@ -15,10 +14,6 @@ const themeSlice = createSlice({
   },
   reducers: {
     changeTheme: (state, action) => {
-      nookies.set(null, 'theme', action.payload, {
-        path: '/'
-      })
-
       state.theme = action.payload
     }
   }
