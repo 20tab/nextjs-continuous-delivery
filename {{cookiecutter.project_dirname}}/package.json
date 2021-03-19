@@ -6,12 +6,14 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
+    "mock": "./bin/pact_stub_server.sh",
     "test": "npx jest",
     "eslint": "npx eslint . --fix-dry-run",
     "audit:fix": "npm i --package-lock-only && npm audit fix && rm yarn.lock && yarn import && rm package-lock.json"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.0",
+    "axios": "^0.21.1",
     "basic-auth": "^2.0.1",
     "express": "^4.17.1",
     "next": "^10.0.9",
