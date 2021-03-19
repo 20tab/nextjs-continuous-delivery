@@ -1,10 +1,10 @@
-import React, { FC } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { Logo } from './Logo'
-import { ThemeSwitch } from './ThemeSwitch'
+import { Logo } from '@/components/Logo'
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 
-const Navbar: FC = () => {
+const Navbar = () => {
   return (
     <Nav>
       <StyledLogo />

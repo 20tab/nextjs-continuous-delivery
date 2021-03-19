@@ -1,8 +1,8 @@
-import { iTheme } from '../../models/Theme'
-import { theme as light } from './light'
-import { theme as dark } from './dark'
+import { Theme } from '@/models/Theme'
+import { theme as light } from '@/styles/themes/light'
+import { theme as dark } from '@/styles/themes/dark'
 
 export default {
-  [iTheme.light]: light,
-  [iTheme.dark]: dark
+  [Theme.light]: light,
+  [Theme.dark]: dark
 }

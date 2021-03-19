@@ -1,4 +1,4 @@
-export enum iTheme {
+export enum Theme {
   light = 'light',
   dark = 'dark'
 }

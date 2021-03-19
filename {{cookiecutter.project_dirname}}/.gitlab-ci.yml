@@ -1,13 +1,16 @@
-image: node
+image: node:14-slim
 
 stages:
-  - test
-  - build
-  - deploy
+  - Test
+  - Report
+  - Build
+  - Deploy
 
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  VERSION_BEFORE_REF: $CI_COMMIT_BEFORE_SHA
+  VERSION_REF: $CI_COMMIT_SHA
 
 cache:
   paths:
@@ -15,31 +18,48 @@ cache:
     - .yarn
 
 test:
-  stage: test
-  image: node:14.15.4-slim
+  stage: Test
+  image: node:14-slim
   before_script:
     - "yarn install"
   script:
     - "yarn test --coverage --color"
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  artifacts:
+    paths:
+      - coverage
+    expire_in: 1 day
+
+pages:
+  stage: Report
+  image: busybox
+  script:
+    - mv coverage/lcov-report/* public
+  artifacts:
+    paths:
+      - public
+  dependencies:
+    - test
 
 build:
-  stage: build
-  image: docker:20-git
+  stage: Build
+  image: docker:20
   services:
     - docker:20-dind
   before_script:
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
   script:
-    - "docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA --pull -f docker/prod.Dockerfile ."
-    - "docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA"
+    - "docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF --pull -f docker/remote.Dockerfile ."
+    - "docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF"
   after_script:
     - "docker logout $CI_REGISTRY"
   only:
     - develop
     - master
+    - tags
 
 .deploy:
-  stage: deploy
+  stage: Deploy
   image:
     name: bitnami/kubectl:1.19
     entrypoint: [""]
@@ -51,57 +71,63 @@ build:
 
 deploy_development:
   extends: .deploy
+  environment:
+    name: development
+  script:
+    - sed -i "s/__IMAGE_TAG__/$VERSION_REF/" k8s/development/frontend.yaml
+    - kubectl apply -f k8s/development/frontend.yaml
   only:
     - develop
-  environment: development
-  script:
-    - sed -i "s/__IMAGE_TAG__/develop-$CI_COMMIT_SHA/" k8s/development/frontend.yaml
-    - kubectl apply -f k8s/development/frontend.yaml
-
-rollback_development:
-  extends: .deploy
-  only:
-    - develop
-  environment: development
-  when: manual
-  script:
-    - sed -i "s/__IMAGE_TAG__/develop-$CI_COMMIT_BEFORE_SHA/" k8s/development/frontend.yaml
-    - kubectl apply -f k8s/development/frontend.yaml
 
 deploy_integration:
   extends: .deploy
+  environment:
+    name: integration
+  script:
+    - sed -i "s/__IMAGE_TAG__/$VERSION_REF/" k8s/integration/frontend.yaml
+    - kubectl apply -f k8s/integration/frontend.yaml
   only:
     - master
-  environment: integration
-  script:
-    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_SHA/" k8s/integration/frontend.yaml
-    - kubectl apply -f k8s/integration/frontend.yaml
-
-rollback_integration:
-  extends: .deploy
-  only:
-    - master
-  environment: integration
-  when: manual
-  script:
-    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_BEFORE_SHA/" k8s/integration/frontend.yaml
-    - kubectl apply -f k8s/integration/frontend.yaml
 
 deploy_production:
   extends: .deploy
+  environment:
+    name: production
+  script:
+    - sed -i "s/__IMAGE_TAG__/$VERSION_REF/" k8s/production/frontend.yaml
+    - kubectl apply -f k8s/production/frontend.yaml
   only:
     - tags
-  environment: production
+
+rollback_development:
+  extends: .deploy
+  environment:
+    name: development
   script:
-    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_SHA/" k8s/production/frontend.yaml
-    - kubectl apply -f k8s/production/frontend.yaml
+    - sed -i "s/__IMAGE_TAG__/$VERSION_BEFORE_REF/" k8s/development/frontend.yaml
+    - kubectl apply -f k8s/development/frontend.yaml
+  only:
+    - develop
+  when: manual
+
+rollback_integration:
+  extends: .deploy
+  environment:
+    name: integration
+  script:
+    - sed -i "s/__IMAGE_TAG__/$VERSION_BEFORE_REF/" k8s/integration/frontend.yaml
+    - kubectl apply -f k8s/integration/frontend.yaml
+  only:
+    - master
+  when: manual
 
 rollback_production:
   extends: .deploy
+  environment:
+    name: production
+  script:
+    - sed -i "s/__IMAGE_TAG__/$VERSION_BEFORE_REF/" k8s/production/frontend.yaml
+    - kubectl apply -f k8s/production/frontend.yaml
   only:
     - tags
-  environment: production
   when: manual
-  script:
-    - sed -i "s/__IMAGE_TAG__/master-$CI_COMMIT_BEFORE_SHA/" k8s/production/frontend.yaml
-    - kubectl apply -f k8s/production/frontend.yaml

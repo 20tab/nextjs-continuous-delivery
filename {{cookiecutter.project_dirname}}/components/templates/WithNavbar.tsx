@@ -1,8 +1,12 @@
-import React, { FC } from 'react'
+import React from 'react'
 
-import { Navbar } from '../Navbar'
+import { Navbar } from '@/components/Navbar'
 
-const WithNavbar: FC = ({ children }) => {
+type Props = {
+  children: React.ReactNode
+}
+
+const WithNavbar = ({ children }: Props) => {
   return (
     <>
       <Navbar />
