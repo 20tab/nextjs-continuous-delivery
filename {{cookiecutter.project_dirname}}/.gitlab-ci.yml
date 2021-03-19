@@ -3,12 +3,16 @@ image: node:14-slim
 stages:
   - Test
   - Report
+  - pact-publish
+  - pact-check
   - Build
   - Deploy
+  - pact-tag
 
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  PACT_CONSUMER_NAME: {{cookiecutter.project_slug}}-frontend
   VERSION_BEFORE_REF: $CI_COMMIT_BEFORE_SHA
   VERSION_REF: $CI_COMMIT_SHA
 
@@ -28,6 +32,8 @@ test:
   artifacts:
     paths:
       - coverage
+      - __test__/pacts
+      - __test__/logs
     expire_in: 1 day
 
 pages:
@@ -40,6 +46,43 @@ pages:
       - public
   dependencies:
     - test
+
+publish:
+  image: pactfoundation/pact-cli:latest-node14
+  stage: pact-publish
+  script:
+    - "pact-broker publish __test__/pacts --consumer-app-version=$VERSION_REF --tag=all"
+  dependencies:
+    - test
+
+.can-i-deploy:
+  allow_failure: false
+  dependencies:
+    - publish
+  image:
+    name: pactfoundation/pact-cli:latest-node14
+  stage: pact-check
+
+can-i-deploy_development:
+  extends: .can-i-deploy
+  script:
+    - pact-broker can-i-deploy --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --to development
+  only:
+    - develop
+
+can-i-deploy_integration:
+  extends: .can-i-deploy
+  script:
+    - pact-broker can-i-deploy --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --to integration
+  only:
+    - master
+
+can-i-deploy_production:
+  extends: .can-i-deploy
+  script:
+    - pact-broker can-i-deploy --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --to production
+  only:
+    - tags
 
 build:
   stage: Build
@@ -131,3 +174,41 @@ rollback_production:
   only:
     - tags
   when: manual
+
+.create-version-tag:
+  image:
+    name: pactfoundation/pact-cli:latest-node14
+  stage: pact-tag
+  except:
+    - triggers
+
+create-version-tag_features:
+  extends: .create-version-tag
+  script:
+    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag "branch:$CI_COMMIT_BRANCH"
+  except:
+    - develop
+    - master
+  only:
+    - branches
+
+create-version-tag_development:
+  extends: .create-version-tag
+  script:
+    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag development --tag "branch:develop"
+  only:
+    - develop
+
+create-version-tag_integration:
+  extends: .create-version-tag
+  script:
+    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag integration --tag "branch:master"
+  only:
+    - master
+
+create-version-tag_production:
+  extends: .create-version-tag
+  script:
+    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag production  --tag "tag:$CI_COMMIT_TAG"
+  only:
+    - tags
