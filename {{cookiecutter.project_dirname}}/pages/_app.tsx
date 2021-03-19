@@ -3,18 +3,21 @@ import Head from 'next/head'
 import { AppContext } from 'next/app'
 import { useSelector } from 'react-redux'
 import { ThemeProvider } from 'styled-components'
-import { END } from 'redux-saga'
+import nookies from 'nookies'
 
-import { GlobalStyle } from '../styles/GlobalStyle'
-import { iState } from '../models/State'
-import { iTheme } from '../models/Theme'
-import { SagaStore, wrapper } from '../store/store'
-import themes from '../styles/themes'
+import { changeTheme } from '@/store/themeSlice'
+import { GlobalStyle } from '@/styles/GlobalStyle'
+import { State } from '@/models/State'
+import { Theme } from '@/models/Theme'
+import { wrapper } from '@/store/store'
+import themes from '@/styles/themes'
 
-function MyApp ({ Component, pageProps }) {
-  const theme = useSelector<iState, iTheme>(state => state.theme)
+function MyApp({ Component, pageProps }) {
+  const theme = useSelector<State, Theme>(state => state.theme.theme)
   const title = '{{cookiecutter.project_slug}}'
   const description = 'Descrizione {{cookiecutter.project_slug}}'
+  const shareImage = 'https://www.mywebsite.it/share.png'
+  const descKey = 'og:description'
 
   return (
     <ThemeProvider theme={themes[theme]}>
@@ -22,10 +25,10 @@ function MyApp ({ Component, pageProps }) {
         <title>{title}</title>
         <meta name='description' content={description} />
         <meta key='og:title' property='og:title' content={title} />
-        <meta key='og:description' property='og:description' content={description} />
+        <meta key={descKey} property={descKey} content={description} />
         <meta key='og:site_name' property='og:site_name' content={title} />
         <meta property='fb:app_id' content='FB_APP_ID' />
-        <meta property='og:image' content='https://www.mywebsite.it/share.png' />
+        <meta property='og:image' content={shareImage} />
         <meta property='og:url' content='https://www.mywebsite.it/' />
         <meta property='og:type' content='article' />
         <meta name='twitter:card' content='mywebsite_share_image' />
@@ -43,9 +46,16 @@ MyApp.getInitialProps = async ({ Component, ctx }: AppContext) => {
     ? await Component.getInitialProps(ctx)
     : {}
 
-  if (ctx.req) {
-    ctx.store.dispatch(END)
-    await (ctx.store as SagaStore).sagaTask.toPromise()
+  const isServer = !!ctx
+
+  if (isServer) {
+    const cookies = nookies.get(ctx)
+
+    if (cookies.theme) {
+      ctx.store.dispatch(
+        changeTheme(cookies.theme === Theme.dark ? Theme.dark : Theme.light)
+      )
+    }
   }
 
   return {

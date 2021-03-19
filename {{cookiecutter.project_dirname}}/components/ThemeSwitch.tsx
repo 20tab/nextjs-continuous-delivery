@@ -1,16 +1,26 @@
-import React, { FC } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+import nookies from 'nookies'
 
-import { iState } from '../models/State'
-import { iTheme } from '../models/Theme'
-import { changeTheme } from '../store/actions/theme'
+import { State } from '@/models/State'
+import { Theme } from '@/models/Theme'
+import { changeTheme } from '@/store/themeSlice'
 
-const ThemeSwitch: FC = () => {
+const ThemeSwitch = () => {
   const dispatch = useDispatch()
-  const theme = useSelector<iState, iTheme>(state => state.theme)
-  const isDark = theme === iTheme.dark
-  const handlePressTheme = () => dispatch(changeTheme(isDark ? iTheme.light : iTheme.dark))
+  const theme = useSelector<State, Theme>(state => state.theme.theme)
+  const isDark = theme === Theme.dark
+
+  const handlePressTheme = () => {
+    const newTheme = isDark ? Theme.light : Theme.dark
+
+    nookies.set(null, 'theme', newTheme, {
+      path: '/'
+    })
+
+    dispatch(changeTheme(newTheme))
+  }
 
   return (
     <Switch>
@@ -59,20 +69,20 @@ const Slider = styled.span`
   right: 0;
   bottom: 0;
   background-color: ${props => props.theme.text};
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 34px;
 
   &::before {
     position: absolute;
-    content: "";
+    content: '';
     height: 20px;
     width: 20px;
     left: 2px;
     bottom: 2px;
     background-color: ${props => props.theme.background};
     border-radius: 50%;
-    -webkit-transition: .4s;
-    transition: .4s;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
   }
 `
 

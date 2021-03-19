@@ -1,14 +1,16 @@
-import React, { FC } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { WithNavbar } from '../components/templates/WithNavbar'
+import { WithNavbar } from '@/components/templates/WithNavbar'
 
-const Home: FC = () => {
+const Home = () => {
   return (
     <WithNavbar>
       <Container>
         <Title data-testid='welcome_message'>Hello world!</Title>
-        <Text>Start editing <Code>pages/index.tsx</Code></Text>
+        <Text>
+          Start editing <Code>pages/index.tsx</Code>
+        </Text>
       </Container>
     </WithNavbar>
   )

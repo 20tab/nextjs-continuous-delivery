@@ -2,12 +2,12 @@ import React from 'react'
 import { screen } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 
-import { Logo, lightModeLogoPath, darkModeLogoPath } from '../../components/Logo'
-import { renderWithRedux } from '../functions'
-import { changeTheme } from '../../store/actions'
-import { iTheme } from '../../models/Theme'
+import { Logo, lightModeLogoPath, darkModeLogoPath } from '@/components/Logo'
+import { renderWithRedux } from '@/__tests__/functions'
+import { changeTheme } from '@/store/themeSlice'
+import { Theme } from '@/models/Theme'
 
-const setup = () => renderWithRedux(<Logo />, { theme: 'light' })
+const setup = () => renderWithRedux(<Logo />)
 
 test('Logo renders correctly', () => {
   setup()
@@ -22,6 +22,6 @@ test('Logo is updated on dark mode toggle', () => {
 
   expect(image).toBeTruthy()
   expect(image.getAttribute('src')).toEqual(lightModeLogoPath)
-  store.dispatch(changeTheme(iTheme.dark))
+  store.dispatch(changeTheme(Theme.dark))
   expect(image.getAttribute('src')).toEqual(darkModeLogoPath)
 })

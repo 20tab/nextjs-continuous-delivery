@@ -5,7 +5,7 @@ import '@testing-library/jest-dom/extend-expect'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { renderWithRedux } from '../functions'
 
-const setup = () => renderWithRedux(<ThemeSwitch />, { theme: 'light' })
+const setup = () => renderWithRedux(<ThemeSwitch />)
 
 test('ThemeSwitch renders correctly', () => {
   setup()
