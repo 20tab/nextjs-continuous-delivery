@@ -3,11 +3,11 @@ image: node:14-slim
 stages:
   - Test
   - Report
-  - pact-publish
-  - pact-check
+  - Pact-publish
+  - Pact-check
   - Build
   - Deploy
-  - pact-tag
+  - Pact-tag
 
 variables:
   DOCKER_HOST: tcp://docker:2375
@@ -49,7 +49,7 @@ pages:
 
 publish:
   image: pactfoundation/pact-cli:latest-node14
-  stage: pact-publish
+  stage: Pact-publish
   script:
     - "pact-broker publish __test__/pacts --consumer-app-version=$VERSION_REF --tag=all"
   dependencies:
@@ -61,7 +61,7 @@ publish:
     - publish
   image:
     name: pactfoundation/pact-cli:latest-node14
-  stage: pact-check
+  stage: Pact-check
 
 can-i-deploy_development:
   extends: .can-i-deploy
@@ -178,7 +178,7 @@ rollback_production:
 .create-version-tag:
   image:
     name: pactfoundation/pact-cli:latest-node14
-  stage: pact-tag
+  stage: Pact-tag
   except:
     - triggers
 
