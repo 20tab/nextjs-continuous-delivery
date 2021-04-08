@@ -1,7 +1,7 @@
 import theme from '@/store/themeSlice'
 
 const reducers = {
-  theme
+  ui: theme
 }
 
 export default reducers

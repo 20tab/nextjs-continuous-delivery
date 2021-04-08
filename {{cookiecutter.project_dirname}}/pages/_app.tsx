@@ -13,7 +13,7 @@ import { wrapper } from '@/store/store'
 import themes from '@/styles/themes'
 
 function MyApp({ Component, pageProps }) {
-  const theme = useSelector<State, Theme>(state => state.theme.theme)
+  const theme = useSelector<State, Theme>(state => state.ui.theme)
   const title = '{{cookiecutter.project_slug}}'
   const description = 'Descrizione {{cookiecutter.project_slug}}'
   const shareImage = 'https://www.mywebsite.it/share.png'

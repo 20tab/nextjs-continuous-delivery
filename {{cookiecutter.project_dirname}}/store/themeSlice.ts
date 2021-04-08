@@ -9,7 +9,7 @@ const themeSlice = createSlice({
   initialState: { theme: Theme.light },
   extraReducers: {
     [HYDRATE]: (state, action: PayloadAction<State>) => {
-      state.theme = action.payload.theme.theme
+      state.theme = action.payload.ui.theme
     }
   },
   reducers: {

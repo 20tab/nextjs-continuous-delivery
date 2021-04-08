@@ -9,7 +9,7 @@ import { changeTheme } from '@/store/themeSlice'
 
 const ThemeSwitch = () => {
   const dispatch = useDispatch()
-  const theme = useSelector<State, Theme>(state => state.theme.theme)
+  const theme = useSelector<State, Theme>(state => state.ui.theme)
   const isDark = theme === Theme.dark
 
   const handlePressTheme = () => {

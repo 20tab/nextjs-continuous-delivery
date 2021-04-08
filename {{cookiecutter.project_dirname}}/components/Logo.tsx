@@ -9,7 +9,7 @@ export const lightModeLogoPath = '/images/logo.png'
 export const darkModeLogoPath = '/images/logo_negative.png'
 
 const Logo = props => {
-  const theme = useSelector<State, Theme>(state => state.theme.theme)
+  const theme = useSelector<State, Theme>(state => state.ui.theme)
   const isLight = theme === Theme.light
   const imageSrc = isLight ? lightModeLogoPath : darkModeLogoPath
 
