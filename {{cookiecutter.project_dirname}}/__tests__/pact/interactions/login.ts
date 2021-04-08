@@ -1,11 +1,12 @@
 import { HTTPMethod } from '@pact-foundation/pact/src/common/request'
 import { like } from '@pact-foundation/pact/src/dsl/matchers'
+import { composePactState } from '../pact.config'
 
 export const token = 'b3c049444ef345e1fe02e6d2283c3086bcadbf6f'
 
 export const login = {
   succeeded: {
-    state: 'A logistics user exists',
+    state: composePactState('A user exists'),
     uponReceiving: 'A login request with correct credentials',
     withRequest: {
       path: '/api/auth/login/',

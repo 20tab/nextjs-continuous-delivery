@@ -7,3 +7,9 @@ export default {
   consumer: '{{cookiecutter.project_slug}}-frontend',
   provider: '{{cookiecutter.project_slug}}-backend'
 }
+
+type PactState = 'A user exists'[]
+
+export const composePactState = (...args: PactState): string => {
+  return args.join(' / ')
+}

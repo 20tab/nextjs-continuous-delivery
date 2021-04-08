@@ -28,6 +28,7 @@ test:
     - "yarn install"
   script:
     - "yarn test --coverage --color"
+    - "yarn pact --coverage --color"
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:
