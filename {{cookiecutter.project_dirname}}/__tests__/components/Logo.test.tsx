@@ -11,13 +11,13 @@ const setup = () => renderWithRedux(<Logo />)
 
 test('Logo renders correctly', () => {
   setup()
-  const logo = screen.getByTestId('logo')
+  const logo = screen.getByRole('link')
   expect(logo).toBeTruthy()
 })
 
 test('Logo is updated on dark mode toggle', () => {
   const store = setup()
-  const logo = screen.getByTestId('logo')
+  const logo = screen.getByRole('link')
   const image = logo.getElementsByTagName('img')[0]
 
   expect(image).toBeTruthy()

@@ -7,7 +7,7 @@ const Home = () => {
   return (
     <WithNavbar>
       <Container>
-        <Title data-testid='welcome_message'>Hello world!</Title>
+        <Title>Hello world!</Title>
         <Text>
           Start editing <Code>pages/index.tsx</Code>
         </Text>
