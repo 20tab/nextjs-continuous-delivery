@@ -1,7 +1,3 @@
-import { AxiosPromise } from 'axios'
-
-export type ApiResponse <T> = AxiosPromise<T>
-
 export interface ApiOptions {
   serverSide: boolean
 }

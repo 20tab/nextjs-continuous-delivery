@@ -11,7 +11,7 @@ pactWith(pactConfig, provider => {
   })
 
   describe('Login', () => {
-    test('A login request with correct credentials', async () => {
+    test('[Login] A request with correct credentials', async () => {
       await provider.addInteraction(login.succeeded)
       const response = await API.login(login.succeeded.withRequest.body)
 

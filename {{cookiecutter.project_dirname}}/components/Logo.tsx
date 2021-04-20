@@ -14,12 +14,7 @@ const Logo = props => {
   const imageSrc = isLight ? lightModeLogoPath : darkModeLogoPath
 
   return (
-    <Link
-      href='https://www.20tab.com'
-      target='_blank'
-      data-testid='logo'
-      {...props}
-    >
+    <Link href='https://www.20tab.com' target='_blank' {...props}>
       <Image src={imageSrc} />
     </Link>
   )

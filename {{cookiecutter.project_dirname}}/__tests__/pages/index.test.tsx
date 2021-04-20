@@ -7,5 +7,7 @@ import { renderWithRedux } from '@/__tests__/functions'
 
 test('Homepage render welcome message', () => {
   renderWithRedux(<Home />)
-  expect(screen.getByTestId('welcome_message')).toHaveTextContent('Hello world')
+  expect(
+    screen.getByRole('heading', { name: /hello world/i })
+  ).toHaveTextContent('Hello world')
 })
