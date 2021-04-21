@@ -35,6 +35,7 @@ WORKDIR /app
 
 COPY ./package.json /app
 COPY ./yarn.lock /app
+COPY ./public /app/public
 
 RUN yarn add express next basic-auth path
 
