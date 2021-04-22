@@ -23,7 +23,6 @@ FROM node:14-slim as remote
 WORKDIR /app
 COPY ./package.json /app
 COPY ./yarn.lock /app
-COPY ./public /app/public
 RUN yarn install --prod
 COPY --from=build /app/.next /app/.next
 COPY ./server.js /app
