@@ -1,5 +1,4 @@
 FROM node:14-slim as base
-
 WORKDIR /
 COPY ./package.json .
 COPY ./yarn.lock .
@@ -10,16 +9,13 @@ WORKDIR /app
 COPY . .
 
 FROM base as test
-
 CMD yarn pact --coverage --color && \
   yarn test --coverage --color
 
 FROM base as build
-
 RUN yarn build
 
 FROM node:14-slim as remote
-
 WORKDIR /app
 COPY ./package.json /app
 COPY ./yarn.lock /app
