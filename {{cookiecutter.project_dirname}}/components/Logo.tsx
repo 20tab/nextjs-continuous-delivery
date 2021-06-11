@@ -1,15 +1,14 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import { State } from '@/models/State'
-import { Theme } from '@/models/Theme'
+import { Theme } from '@/models/Utils'
+import { useAppSelector } from '@/utils/hooks/useAppSelector'
 
 export const lightModeLogoPath = '/images/logo.png'
 export const darkModeLogoPath = '/images/logo_negative.png'
 
 const Logo = props => {
-  const theme = useSelector<State, Theme>(state => state.ui.theme)
+  const theme = useAppSelector(state => state.utils.theme)
   const isLight = theme === Theme.light
   const imageSrc = isLight ? lightModeLogoPath : darkModeLogoPath
 

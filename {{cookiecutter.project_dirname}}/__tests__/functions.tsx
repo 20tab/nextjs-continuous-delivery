@@ -4,8 +4,8 @@ import { render } from '@testing-library/react'
 import { ThemeProvider } from 'styled-components'
 import React, { ReactElement } from 'react'
 
+import { Theme } from '@/models/Utils'
 import reducer from '@/store/reducers'
-import { Theme } from '@/models/Theme'
 import themes from '@/styles/themes'
 
 export const renderWithRedux = (ui: ReactElement) => {

@@ -1,9 +1,10 @@
+import { NextPage } from 'next'
 import React from 'react'
 import styled from 'styled-components'
 
 import { WithNavbar } from '@/components/templates/WithNavbar'
 
-const Home = () => {
+const Home: NextPage = () => {
   return (
     <WithNavbar>
       <Container>

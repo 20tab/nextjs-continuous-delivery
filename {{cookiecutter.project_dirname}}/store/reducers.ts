@@ -1,7 +1,7 @@
-import theme from '@/store/themeSlice'
+import utils from '@/store/utilsSlice'
 
 const reducers = {
-  ui: theme
+  utils
 }
 
 export default reducers

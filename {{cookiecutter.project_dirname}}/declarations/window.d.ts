@@ -4,7 +4,7 @@ import { State } from '@/models/State'
 
 declare global {
   interface Window {
-    store: Store<CombinedState<State>, AnyAction>
+    __NEXT_REDUX_WRAPPER_STORE__: Store<CombinedState<State>, AnyAction>
     __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: <R>(a: R) => R
   }
 }

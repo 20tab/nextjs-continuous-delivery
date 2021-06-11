@@ -4,8 +4,8 @@ import '@testing-library/jest-dom/extend-expect'
 
 import { Logo, lightModeLogoPath, darkModeLogoPath } from '@/components/Logo'
 import { renderWithRedux } from '@/__tests__/functions'
-import { changeTheme } from '@/store/themeSlice'
-import { Theme } from '@/models/Theme'
+import { changeTheme } from '@/store/utilsSlice'
+import { Theme } from '@/models/Utils'
 
 const setup = () => renderWithRedux(<Logo />)
 

@@ -8,10 +8,15 @@ stages:
   - Build
   - Deploy
   - Pact-tag
+  - Sentry
+
 
 variables:
   DOCKER_BUILDKIT: 1
   PACT_CONSUMER_NAME: {{cookiecutter.project_slug}}-frontend
+  SENTRY_ORG: __SENTRY_ORG__
+  SENTRY_PROJECT_NAME: {{cookiecutter.project_slug}}-frontend
+  SENTRY_URL: __SENTRY_URL__
   VERSION_BEFORE_REF: $CI_COMMIT_BEFORE_SHA
   VERSION_REF: $CI_COMMIT_SHA
 
@@ -19,6 +24,30 @@ cache:
   paths:
     - node_modules/
     - .yarn
+
+sentry_release:
+  stage: .pre
+  image: docker:20
+  script:
+    - RELEASE_START=$(date +%s)
+    - >
+      docker run --rm
+      -v ${PWD}:${PWD}
+      -w ${PWD}
+      -e SENTRY_AUTH_TOKEN
+      -e SENTRY_DSN
+      -e SENTRY_ORG
+      -e SENTRY_URL
+      getsentry/sentry-cli:latest sh -c
+      "sentry-cli releases new $VERSION_REF -p $SENTRY_PROJECT_NAME --log-level=debug;
+      sentry-cli releases set-commits $VERSION_REF --auto;
+      sentry-cli releases finalize $VERSION_REF"
+  only:
+    - develop
+    - master
+    - tags
+  except:
+    - triggers
 
 test:
   stage: Test
@@ -28,13 +57,17 @@ test:
     FRONTEND_IMAGE_TAG: "$CI_JOB_NAME-$CI_JOB_ID"
     FRONTEND_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_frontend"
   script:
-    - docker build --tag=${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_TAG} -f docker/remote.Dockerfile --target=test .
-    - docker run --name=${FRONTEND_CONTAINER_NAME} ${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_TAG}
-    - docker cp ${FRONTEND_CONTAINER_NAME}:/app/coverage .
-    - docker cp ${FRONTEND_CONTAINER_NAME}:/app/__tests__/pacts .
+    - >
+      docker build
+      --tag=$FRONTEND_IMAGE_NAME:$FRONTEND_IMAGE_TAG
+      --file=docker/remote.Dockerfile
+      --target=test .
+    - docker run --name=$FRONTEND_CONTAINER_NAME $FRONTEND_IMAGE_NAME:$FRONTEND_IMAGE_TAG
+    - docker cp $FRONTEND_CONTAINER_NAME:/app/coverage .
+    - docker cp $FRONTEND_CONTAINER_NAME:/app/__tests__/pacts .
   after_script:
-    - docker stop ${FRONTEND_CONTAINER_NAME}
-    - docker container rm ${FRONTEND_CONTAINER_NAME}
+    - docker stop $FRONTEND_CONTAINER_NAME
+    - docker container rm $FRONTEND_CONTAINER_NAME
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:
@@ -120,7 +153,13 @@ build:
     - export DOCKER_CONFIG=$PWD/.dockerconfig
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF -f docker/remote.Dockerfile --target remote --pull .
+    - >
+      docker build
+      --tag=$CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
+      --file=docker/remote.Dockerfile
+      --target=remote
+      --build-arg=SENTRY_AUTH_TOKEN
+      --pull .
     - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
   after_script:
     - docker logout $CI_REGISTRY
@@ -250,5 +289,79 @@ create-version-tag_production:
       --pacticipant $PACT_CONSUMER_NAME
       --version $VERSION_REF
       --tag "env:production"
+  only:
+    - tags
+
+
+.sentry_deploy_success:
+  stage: Sentry
+  when: on_success
+  image: docker:20
+  script:
+    - RELEASE_END=$(date +%s)
+    - >
+      docker run --rm
+      -e SENTRY_AUTH_TOKEN
+      -e SENTRY_DSN
+      -e SENTRY_ORG
+      -e SENTRY_URL
+      getsentry/sentry-cli:latest sentry-cli releases deploys $VERSION_REF new -e $SENTRY_ENV -t $((RELEASE_END-RELEASE_START))
+  except:
+    - triggers
+
+sentry_success_development:
+  extends: .sentry_deploy_success
+  variables:
+    SENTRY_ENV: Development
+  only:
+    - develop
+
+sentry_success_integration:
+  extends: .sentry_deploy_success
+  variables:
+    SENTRY_ENV: Integration
+  only:
+    - master
+
+sentry_success_production:
+  extends: .sentry_deploy_success
+  variables:
+    SENTRY_ENV: Production
+  only:
+    - tags
+
+.sentry_deploy_failure:
+  stage: Sentry
+  when: on_failure
+  image: docker:20
+  script:
+    - >
+      docker run --rm
+      -e SENTRY_AUTH_TOKEN
+      -e SENTRY_DSN
+      -e SENTRY_ORG
+      -e SENTRY_URL
+      getsentry/sentry-cli:latest sentry-cli send-event -m "Deploy to $SENTRY_ENV failed."
+  except:
+    - triggers
+
+sentry_failure_development:
+  extends: .sentry_deploy_failure
+  variables:
+    SENTRY_ENV: Development
+  only:
+    - develop
+
+sentry_failure_integration:
+  extends: .sentry_deploy_failure
+  variables:
+    SENTRY_ENV: Integration
+  only:
+    - master
+
+sentry_failure_production:
+  extends: .sentry_deploy_failure
+  variables:
+    SENTRY_ENV: Production
   only:
     - tags
