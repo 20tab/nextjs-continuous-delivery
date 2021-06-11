@@ -1,19 +1,17 @@
-import React from 'react'
-import Head from 'next/head'
-import { AppContext } from 'next/app'
-import { useSelector } from 'react-redux'
 import { ThemeProvider } from 'styled-components'
+import Head from 'next/head'
 import nookies from 'nookies'
+import React from 'react'
 
-import { changeTheme } from '@/store/themeSlice'
-import { GlobalStyle } from '@/styles/GlobalStyle'
-import { State } from '@/models/State'
-import { Theme } from '@/models/Theme'
 import { wrapper } from '@/store/store'
+import { changeTheme, getEnvs } from '@/store/utilsSlice'
+import { Theme } from '@/models/Utils'
+import { useAppSelector } from '@/utils/hooks/useAppSelector'
+import { GlobalStyle } from '@/styles/GlobalStyle'
 import themes from '@/styles/themes'
 
 function MyApp({ Component, pageProps }) {
-  const theme = useSelector<State, Theme>(state => state.ui.theme)
+  const theme = useAppSelector(state => state.utils.theme)
   const title = '{{cookiecutter.project_slug}}'
   const description = 'Descrizione {{cookiecutter.project_slug}}'
   const shareImage = 'https://www.mywebsite.it/share.png'
@@ -41,26 +39,39 @@ function MyApp({ Component, pageProps }) {
   )
 }
 
-MyApp.getInitialProps = async ({ Component, ctx }: AppContext) => {
-  const pageLevelInitialProps = Component.getInitialProps
-    ? await Component.getInitialProps(ctx)
-    : {}
+MyApp.getInitialProps = wrapper.getInitialPageProps(store =>
+  // TODO remove any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async ({ Component, ctx }: any) => {
+    const pageLevelInitialProps = Component.getInitialProps
+      ? await Component.getInitialProps(ctx)
+      : {}
 
-  const isServer = !!ctx
+    const isServer = !!ctx
 
-  if (isServer) {
-    const cookies = nookies.get(ctx)
+    if (isServer) {
+      const parsedEnv = Object.keys(process.env)
+        .filter(k => k.indexOf('NEXT_PUBLIC_') === 0)
+        .reduce((newData, k) => {
+          newData[k] = process.env[k]
+          return newData
+        }, {})
 
-    if (cookies.theme) {
-      ctx.store.dispatch(
-        changeTheme(cookies.theme === Theme.dark ? Theme.dark : Theme.light)
-      )
+      store.dispatch(getEnvs(parsedEnv))
+
+      const cookies = nookies.get(ctx)
+
+      if (cookies.theme) {
+        store.dispatch(
+          changeTheme(cookies.theme === Theme.dark ? Theme.dark : Theme.light)
+        )
+      }
+    }
+
+    return {
+      pageProps: { ...pageLevelInitialProps }
     }
   }
-
-  return {
-    pageProps: { ...pageLevelInitialProps }
-  }
-}
+)
 
 export default wrapper.withRedux(MyApp)

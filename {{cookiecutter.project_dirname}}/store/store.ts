@@ -1,13 +1,20 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { MakeStore, createWrapper } from 'next-redux-wrapper'
+import { Action } from 'redux'
+import { configureStore, ThunkAction } from '@reduxjs/toolkit'
+import { createWrapper } from 'next-redux-wrapper'
 
-import { State } from '@/models/State'
-import reducer from '@/store/reducers'
+import reducers from '@/store/reducers'
 
-const makeStore: MakeStore<State> = () => {
-  return configureStore<State>({ reducer })
-}
-
-export const wrapper = createWrapper<State>(makeStore, {
-  debug: false
+export const store = configureStore({
+  reducer: reducers
 })
+
+export type AppStore = typeof store
+export type AppState = ReturnType<AppStore['getState']>
+export type AppThunk<ReturnType = void> = ThunkAction<
+  ReturnType,
+  AppState,
+  unknown,
+  Action
+>
+
+export const wrapper = createWrapper<AppStore>(() => store)

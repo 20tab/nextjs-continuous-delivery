@@ -8,11 +8,15 @@ stages:
   - Build
   - Deploy
   - Pact-tag
+  - Sentry
+
 
 variables:
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: 1
   PACT_CONSUMER_NAME: {{cookiecutter.project_slug}}-frontend
+  SENTRY_ORG: __SENTRY_ORG__
+  SENTRY_PROJECT_NAME: {{cookiecutter.project_slug}}-frontend
+  SENTRY_URL: __SENTRY_URL__
   VERSION_BEFORE_REF: $CI_COMMIT_BEFORE_SHA
   VERSION_REF: $CI_COMMIT_SHA
 
@@ -21,20 +25,54 @@ cache:
     - node_modules/
     - .yarn
 
+sentry_release:
+  stage: .pre
+  image: docker:20
+  script:
+    - RELEASE_START=$(date +%s)
+    - >
+      docker run --rm
+      -v ${PWD}:${PWD}
+      -w ${PWD}
+      -e SENTRY_AUTH_TOKEN
+      -e SENTRY_DSN
+      -e SENTRY_ORG
+      -e SENTRY_URL
+      getsentry/sentry-cli:latest sh -c
+      "sentry-cli releases new $VERSION_REF -p $SENTRY_PROJECT_NAME --log-level=debug;
+      sentry-cli releases set-commits $VERSION_REF --auto;
+      sentry-cli releases finalize $VERSION_REF"
+  only:
+    - develop
+    - master
+    - tags
+  except:
+    - triggers
+
 test:
   stage: Test
-  image: node:14-slim
-  before_script:
-    - "yarn install"
+  image: docker:20
+  variables:
+    FRONTEND_IMAGE_NAME: "gitlabci_{{cookiecutter.project_slug}}_frontend"
+    FRONTEND_IMAGE_TAG: "$CI_JOB_NAME-$CI_JOB_ID"
+    FRONTEND_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_frontend"
   script:
-    - "yarn test --coverage --color"
-    - "yarn pact --coverage --color"
+    - >
+      docker build
+      --tag=$FRONTEND_IMAGE_NAME:$FRONTEND_IMAGE_TAG
+      --file=docker/remote.Dockerfile
+      --target=test .
+    - docker run --name=$FRONTEND_CONTAINER_NAME $FRONTEND_IMAGE_NAME:$FRONTEND_IMAGE_TAG
+    - docker cp $FRONTEND_CONTAINER_NAME:/app/coverage .
+    - docker cp $FRONTEND_CONTAINER_NAME:/app/__tests__/pacts .
+  after_script:
+    - docker stop $FRONTEND_CONTAINER_NAME
+    - docker container rm $FRONTEND_CONTAINER_NAME
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:
       - coverage
-      - __tests__/pacts
-      - __tests__/logs
+      - pacts
     expire_in: 1 day
 
 pages:
@@ -49,39 +87,60 @@ pages:
     - test
 
 publish:
-  image: pactfoundation/pact-cli:latest-node14
   stage: Pact-publish
+  image:
+    name: docker:20
+  before_script:
+    - if [ "$CI_COMMIT_BRANCH" ]; then PACT_CONSUMER_TAG="branch:$CI_COMMIT_BRANCH"; else PACT_CONSUMER_TAG="tag:$CI_COMMIT_TAG"; fi
   script:
-    - "pact-broker publish __tests__/pacts --consumer-app-version=$VERSION_REF --tag=all"
+    - >
+      docker run --rm
+      -e PACT_BROKER_BASE_URL
+      -e PACT_BROKER_PASSWORD
+      -e PACT_BROKER_USERNAME
+      -v $PWD/pacts:/pacts
+      pactfoundation/pact-cli:latest-node14 pact-broker publish /pacts
+      --consumer-app-version=$VERSION_REF
+      --tag=$PACT_CONSUMER_TAG
   dependencies:
     - test
 
 .can-i-deploy:
+  stage: Pact-check
   allow_failure: false
   dependencies:
     - publish
   image:
-    name: pactfoundation/pact-cli:latest-node14
-  stage: Pact-check
+    name: docker:20
+  script:
+    - >
+      docker run --rm
+      -e PACT_BROKER_BASE_URL
+      -e PACT_BROKER_PASSWORD
+      -e PACT_BROKER_USERNAME
+      pactfoundation/pact-cli:latest-node14 pact-broker can-i-deploy
+      --pacticipant $PACT_CONSUMER_NAME
+      --version $VERSION_REF
+      --to "env:$DEPLOY_ENV"
 
 can-i-deploy_development:
   extends: .can-i-deploy
-  script:
-    - pact-broker can-i-deploy --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --to development
+  variables:
+    DEPLOY_ENV: development
   only:
     - develop
 
 can-i-deploy_integration:
   extends: .can-i-deploy
-  script:
-    - pact-broker can-i-deploy --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --to integration
+  variables:
+    DEPLOY_ENV: integration
   only:
     - master
 
 can-i-deploy_production:
   extends: .can-i-deploy
-  script:
-    - pact-broker can-i-deploy --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --to production
+  variables:
+    DEPLOY_ENV: production
   only:
     - tags
 
@@ -91,125 +150,218 @@ build:
   services:
     - docker:20-dind
   before_script:
-    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+    - export DOCKER_CONFIG=$PWD/.dockerconfig
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
   script:
-    - "docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF --pull -f docker/remote.Dockerfile ."
-    - "docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF"
+    - >
+      docker build
+      --tag=$CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
+      --file=docker/remote.Dockerfile
+      --target=remote
+      --build-arg=SENTRY_AUTH_TOKEN
+      --pull .
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
   after_script:
-    - "docker logout $CI_REGISTRY"
+    - docker logout $CI_REGISTRY
   only:
     - develop
     - master
     - tags
 
-.deploy:
+.deploy-base:
   stage: Deploy
   image:
-    name: bitnami/kubectl:1.19
-    entrypoint: [""]
+    name: docker:20
+  script:
+    - >
+      docker run --rm -v $PWD:/app -v $KUBE_CA_PEM_FILE:$KUBE_CA_PEM_FILE
+      -e KUBECONFIG=/tmp/.kube/config
+      -e DEPLOY_VERSION
+      -e CI_ENVIRONMENT_SLUG
+      -e KUBE_CA_PEM_FILE
+      -e KUBE_TOKEN
+      -e KUBE_URL
+      --entrypoint=""
+      bitnami/kubectl:latest /app/scripts/deploy.sh
+
+.deploy:
+  extends: .deploy-base
   before_script:
-    - kubectl config set-cluster my-cluster --server=${KUBE_URL} --certificate-authority="${KUBE_CA_PEM_FILE}"
-    - kubectl config set-credentials admin --token=${KUBE_TOKEN}
-    - kubectl config set-context my-context --cluster=my-cluster --user=admin --namespace=default
-    - kubectl config use-context my-context
+    - export DEPLOY_VERSION=$VERSION_REF
+
+.rollback:
+  extends: .deploy-base
+  before_script:
+    - export DEPLOY_VERSION=$VERSION_BEFORE_REF
 
 deploy_development:
-  extends: .deploy
   environment:
     name: development
-  script:
-    - sed -i "s/__IMAGE_TAG__/$VERSION_REF/" k8s/development/frontend.yaml
-    - kubectl apply -f k8s/development/frontend.yaml
+  extends: .deploy
   only:
     - develop
 
+rollback_development:
+  environment:
+    name: development
+  extends: .rollback
+  only:
+    - develop
+  when: manual
+
 deploy_integration:
-  extends: .deploy
   environment:
     name: integration
-  script:
-    - sed -i "s/__IMAGE_TAG__/$VERSION_REF/" k8s/integration/frontend.yaml
-    - kubectl apply -f k8s/integration/frontend.yaml
+  extends: .deploy
   only:
     - master
 
+rollback_integration:
+  environment:
+    name: integration
+  extends: .rollback
+  only:
+    - master
+  when: manual
+
 deploy_production:
-  extends: .deploy
   environment:
     name: production
-  script:
-    - sed -i "s/__IMAGE_TAG__/$VERSION_REF/" k8s/production/frontend.yaml
-    - kubectl apply -f k8s/production/frontend.yaml
+  extends: .deploy
   only:
     - tags
 
-rollback_development:
-  extends: .deploy
-  environment:
-    name: development
-  script:
-    - sed -i "s/__IMAGE_TAG__/$VERSION_BEFORE_REF/" k8s/development/frontend.yaml
-    - kubectl apply -f k8s/development/frontend.yaml
-  only:
-    - develop
-  when: manual
-
-rollback_integration:
-  extends: .deploy
-  environment:
-    name: integration
-  script:
-    - sed -i "s/__IMAGE_TAG__/$VERSION_BEFORE_REF/" k8s/integration/frontend.yaml
-    - kubectl apply -f k8s/integration/frontend.yaml
-  only:
-    - master
-  when: manual
-
 rollback_production:
-  extends: .deploy
   environment:
     name: production
-  script:
-    - sed -i "s/__IMAGE_TAG__/$VERSION_BEFORE_REF/" k8s/production/frontend.yaml
-    - kubectl apply -f k8s/production/frontend.yaml
+  extends: .rollback
   only:
     - tags
   when: manual
 
 .create-version-tag:
   image:
-    name: pactfoundation/pact-cli:latest-node14
+    name: docker:20
   stage: Pact-tag
   except:
     - triggers
 
-create-version-tag_features:
-  extends: .create-version-tag
-  script:
-    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag "branch:$CI_COMMIT_BRANCH"
-  except:
-    - develop
-    - master
-  only:
-    - branches
 
 create-version-tag_development:
   extends: .create-version-tag
   script:
-    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag development --tag "branch:develop"
+    - >
+      docker run --rm
+      -e PACT_BROKER_BASE_URL
+      -e PACT_BROKER_PASSWORD
+      -e PACT_BROKER_USERNAME
+      pactfoundation/pact-cli:latest-node14 pact-broker create-version-tag
+      --pacticipant $PACT_CONSUMER_NAME
+      --version $VERSION_REF
+      --tag "env:development"
   only:
     - develop
 
 create-version-tag_integration:
   extends: .create-version-tag
   script:
-    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag integration --tag "branch:master"
+    - >
+      docker run --rm
+      -e PACT_BROKER_BASE_URL
+      -e PACT_BROKER_PASSWORD
+      -e PACT_BROKER_USERNAME
+      pactfoundation/pact-cli:latest-node14 pact-broker create-version-tag
+      --pacticipant $PACT_CONSUMER_NAME
+      --version $VERSION_REF
+      --tag "env:integration"
   only:
     - master
 
 create-version-tag_production:
   extends: .create-version-tag
   script:
-    - pact-broker create-version-tag --pacticipant $PACT_CONSUMER_NAME --version $VERSION_REF --tag production  --tag "tag:$CI_COMMIT_TAG"
+    - >
+      docker run --rm
+      -e PACT_BROKER_BASE_URL
+      -e PACT_BROKER_PASSWORD
+      -e PACT_BROKER_USERNAME
+      pactfoundation/pact-cli:latest-node14 pact-broker create-version-tag
+      --pacticipant $PACT_CONSUMER_NAME
+      --version $VERSION_REF
+      --tag "env:production"
+  only:
+    - tags
+
+
+.sentry_deploy_success:
+  stage: Sentry
+  when: on_success
+  image: docker:20
+  script:
+    - RELEASE_END=$(date +%s)
+    - >
+      docker run --rm
+      -e SENTRY_AUTH_TOKEN
+      -e SENTRY_DSN
+      -e SENTRY_ORG
+      -e SENTRY_URL
+      getsentry/sentry-cli:latest sentry-cli releases deploys $VERSION_REF new -e $SENTRY_ENV -t $((RELEASE_END-RELEASE_START))
+  except:
+    - triggers
+
+sentry_success_development:
+  extends: .sentry_deploy_success
+  variables:
+    SENTRY_ENV: Development
+  only:
+    - develop
+
+sentry_success_integration:
+  extends: .sentry_deploy_success
+  variables:
+    SENTRY_ENV: Integration
+  only:
+    - master
+
+sentry_success_production:
+  extends: .sentry_deploy_success
+  variables:
+    SENTRY_ENV: Production
+  only:
+    - tags
+
+.sentry_deploy_failure:
+  stage: Sentry
+  when: on_failure
+  image: docker:20
+  script:
+    - >
+      docker run --rm
+      -e SENTRY_AUTH_TOKEN
+      -e SENTRY_DSN
+      -e SENTRY_ORG
+      -e SENTRY_URL
+      getsentry/sentry-cli:latest sentry-cli send-event -m "Deploy to $SENTRY_ENV failed."
+  except:
+    - triggers
+
+sentry_failure_development:
+  extends: .sentry_deploy_failure
+  variables:
+    SENTRY_ENV: Development
+  only:
+    - develop
+
+sentry_failure_integration:
+  extends: .sentry_deploy_failure
+  variables:
+    SENTRY_ENV: Integration
+  only:
+    - master
+
+sentry_failure_production:
+  extends: .sentry_deploy_failure
+  variables:
+    SENTRY_ENV: Production
   only:
     - tags

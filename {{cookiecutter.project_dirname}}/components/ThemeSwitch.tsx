@@ -1,15 +1,15 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import nookies from 'nookies'
 
-import { State } from '@/models/State'
-import { Theme } from '@/models/Theme'
-import { changeTheme } from '@/store/themeSlice'
+import { Theme } from '@/models/Utils'
+import { changeTheme } from '@/store/utilsSlice'
+import { useAppSelector } from '@/utils/hooks/useAppSelector'
 
+import { useAppDispatch } from '@/utils/hooks/useAppDispatch'
 const ThemeSwitch = () => {
-  const dispatch = useDispatch()
-  const theme = useSelector<State, Theme>(state => state.ui.theme)
+  const dispatch = useAppDispatch()
+  const theme = useAppSelector(state => state.utils.theme)
   const isDark = theme === Theme.dark
 
   const handlePressTheme = () => {
