@@ -1,5 +1,7 @@
 import axios, { AxiosPromise } from 'axios'
 
+import { store } from '@/store/store'
+
 export interface ApiOptions {
   serverSide?: boolean
   token?: string
@@ -37,8 +39,7 @@ const getPublicApiURL = () => {
   if (process?.env?.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL
   } else {
-    const store = window?.__NEXT_REDUX_WRAPPER_STORE__
-    const state = store?.getState?.()
+    const state = store.getState()
     return state?.utils?.envs?.NEXT_PUBLIC_API_URL || ''
   }
 }

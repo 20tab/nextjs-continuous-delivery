@@ -1,5 +1,4 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import nookies from 'nookies'
 
@@ -7,8 +6,9 @@ import { Theme } from '@/models/Utils'
 import { changeTheme } from '@/store/utilsSlice'
 import { useAppSelector } from '@/utils/hooks/useAppSelector'
 
+import { useAppDispatch } from '@/utils/hooks/useAppDispatch'
 const ThemeSwitch = () => {
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const theme = useAppSelector(state => state.utils.theme)
   const isDark = theme === Theme.dark
 

@@ -3,9 +3,16 @@ import { HYDRATE } from 'next-redux-wrapper'
 
 import { Theme } from '@/models/Utils'
 
+type UtilsState = {
+  envs: { [key: string]: string }
+  theme: Theme
+}
+
+const initialState: UtilsState = { envs: {}, theme: Theme.light }
+
 const utilsSlice = createSlice({
   name: 'utils',
-  initialState: { envs: {}, theme: Theme.light },
+  initialState,
   extraReducers: {
     [HYDRATE]: (state, action) => {
       if (
@@ -14,7 +21,7 @@ const utilsSlice = createSlice({
       ) {
         state.envs = action.payload.utils.envs
       }
-      if (!state.theme && action.payload.utils.theme) {
+      if (action.payload.utils.theme) {
         state.theme = action.payload.utils.theme
       }
     }
