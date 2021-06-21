@@ -1,7 +1,5 @@
 # React Typescript (SSR) continuous delivery
 
-[![Code style: black](https://img.shields.io/badge/code%20style-standardJS-F3DF49.svg)](https://standardjs.com/)
-
 > A [React](https://github.com/facebook/create-react-app) project cookiecutter ready for continuous delivery.
 
 ## 📝 Conventions
@@ -16,7 +14,7 @@ In the following instructions:
 [Cookiecutter](https://cookiecutter.readthedocs.io) must be installed before initializing the project.
 
 ```console
-$ pip install --user cookiecutter
+$ python3 -m pip install cookiecutter
 ```
 
 ## 🚀️ Quickstart
@@ -25,15 +23,29 @@ Change directory and create a new project as in this example:
 
 ```console
 $ cd ~/projects/
-$ cookiecutter https://github.com/20tab/django-continuous-delivery.git
-project_name: My project name
+$ cookiecutter https://github.com/20tab/20tab-standard-project
+project_name: My Project Name
 project_slug [myprojectname]:
-project_dirname [myprojectname]:
 domain_url [myprojectname.com]:
-gitlab_group_slug [myprojectname]:
-Select use_media_volume:
+Select which_frontend:
+1 - None
+2 - React
+Choose from 1, 2 [1]:
+Select use_gitlab:
 1 - Yes
 2 - No
 Choose from 1, 2 [1]:
-$ cd myprojectname
+Select use_media:
+1 - Yes
+2 - No
+Choose from 1, 2 [1]:
+Generated '.env' file.
+Generated '/requirements/common.txt' file.
+Generated '/requirements/dev.txt' file.
+Generated '/requirements/prod.txt' file.
+Generated '/requirements/tests.txt' file.
+Generated '/static' directory.
+Choose the gitlab group path slug [myprojectname]:
+Insert a comma separated list of usernames to set as group owners:
+Insert a comma separated list of usernames to set as group mantainers:
 ```
