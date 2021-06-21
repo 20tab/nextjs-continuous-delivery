@@ -1,5 +1,3 @@
-image: node:14-slim
-
 stages:
   - Test
   - Report
@@ -12,6 +10,7 @@ stages:
 
 
 variables:
+  COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_BUILDKIT: 1
   PACT_CONSUMER_NAME: {{cookiecutter.project_slug}}-frontend
   SENTRY_ORG: __SENTRY_ORG__
@@ -28,6 +27,8 @@ cache:
 sentry_release:
   stage: .pre
   image: docker:20
+  services:
+    - docker:20-dind
   script:
     - RELEASE_START=$(date +%s)
     - >
@@ -52,6 +53,8 @@ sentry_release:
 test:
   stage: Test
   image: docker:20
+  services:
+    - docker:20-dind
   variables:
     FRONTEND_IMAGE_NAME: "gitlabci_{{cookiecutter.project_slug}}_frontend"
     FRONTEND_IMAGE_TAG: "$CI_JOB_NAME-$CI_JOB_ID"
@@ -90,6 +93,8 @@ publish:
   stage: Pact-publish
   image:
     name: docker:20
+  services:
+    - docker:20-dind
   before_script:
     - if [ "$CI_COMMIT_BRANCH" ]; then PACT_CONSUMER_TAG="branch:$CI_COMMIT_BRANCH"; else PACT_CONSUMER_TAG="tag:$CI_COMMIT_TAG"; fi
   script:
@@ -112,6 +117,8 @@ publish:
     - publish
   image:
     name: docker:20
+  services:
+    - docker:20-dind
   script:
     - >
       docker run --rm
@@ -168,16 +175,45 @@ build:
     - master
     - tags
 
+.development:
+  variables:
+    DEPLOY_ENVIRONMENT: development
+  environment:
+    name: Development
+    url: https://dev.{{cookiecutter.project_slug}}.com
+  only:
+    - develop
+
+.integration:
+  variables:
+    DEPLOY_ENVIRONMENT: integration
+  environment:
+    name: Integration
+    url: https://test.{{cookiecutter.project_slug}}.com
+  only:
+    - master
+
+.production:
+  variables:
+    DEPLOY_ENVIRONMENT: production
+  environment:
+    name: Production
+    url:  https://www.{{cookiecutter.project_slug}}.com
+  only:
+    - tags
+
 .deploy-base:
   stage: Deploy
   image:
     name: docker:20
+  services:
+    - docker:20-dind
   script:
     - >
       docker run --rm -v $PWD:/app -v $KUBE_CA_PEM_FILE:$KUBE_CA_PEM_FILE
       -e KUBECONFIG=/tmp/.kube/config
+      -e DEPLOY_ENVIRONMENT
       -e DEPLOY_VERSION
-      -e CI_ENVIRONMENT_SLUG
       -e KUBE_CA_PEM_FILE
       -e KUBE_TOKEN
       -e KUBE_URL
@@ -189,59 +225,47 @@ build:
   before_script:
     - export DEPLOY_VERSION=$VERSION_REF
 
+deploy_development:
+  extends:
+    - .development
+    - .deploy
+
+deploy_integration:
+  extends:
+    - .integration
+    - .deploy
+
+deploy_production:
+  extends:
+    - .production
+    - .deploy
+
 .rollback:
   extends: .deploy-base
   before_script:
     - export DEPLOY_VERSION=$VERSION_BEFORE_REF
-
-deploy_development:
-  environment:
-    name: development
-  extends: .deploy
-  only:
-    - develop
+  when: manual
 
 rollback_development:
-  environment:
-    name: development
-  extends: .rollback
-  only:
-    - develop
-  when: manual
-
-deploy_integration:
-  environment:
-    name: integration
-  extends: .deploy
-  only:
-    - master
+  extends:
+    - .development
+    - .rollback
 
 rollback_integration:
-  environment:
-    name: integration
-  extends: .rollback
-  only:
-    - master
-  when: manual
-
-deploy_production:
-  environment:
-    name: production
-  extends: .deploy
-  only:
-    - tags
+  extends:
+    - .integration
+    - .rollback
 
 rollback_production:
-  environment:
-    name: production
-  extends: .rollback
-  only:
-    - tags
-  when: manual
+  extends:
+    - .production
+    - .rollback
 
 .create-version-tag:
   image:
     name: docker:20
+  services:
+    - docker:20-dind
   stage: Pact-tag
   except:
     - triggers
@@ -297,6 +321,8 @@ create-version-tag_production:
   stage: Sentry
   when: on_success
   image: docker:20
+  services:
+    - docker:20-dind
   script:
     - RELEASE_END=$(date +%s)
     - >
@@ -334,6 +360,8 @@ sentry_success_production:
   stage: Sentry
   when: on_failure
   image: docker:20
+  services:
+    - docker:20-dind
   script:
     - >
       docker run --rm

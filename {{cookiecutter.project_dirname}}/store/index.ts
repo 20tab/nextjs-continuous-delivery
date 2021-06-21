@@ -4,11 +4,8 @@ import { createWrapper } from 'next-redux-wrapper'
 
 import reducers from '@/store/reducers'
 
-export const store = configureStore({
-  reducer: reducers
-})
-
-export type AppStore = typeof store
+export const makeStore = () => configureStore({ reducer: reducers })
+export type AppStore = ReturnType<typeof makeStore>
 export type AppState = ReturnType<AppStore['getState']>
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,
@@ -17,4 +14,4 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   Action
 >
 
-export const wrapper = createWrapper<AppStore>(() => store)
+export const wrapper = createWrapper<AppStore>(makeStore)

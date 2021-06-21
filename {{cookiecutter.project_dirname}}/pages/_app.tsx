@@ -3,7 +3,7 @@ import Head from 'next/head'
 import nookies from 'nookies'
 import React from 'react'
 
-import { wrapper } from '@/store/store'
+import { wrapper } from '@/store/'
 import { changeTheme, getEnvs } from '@/store/utilsSlice'
 import { Theme } from '@/models/Utils'
 import { useAppSelector } from '@/utils/hooks/useAppSelector'

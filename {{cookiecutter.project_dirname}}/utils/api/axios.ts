@@ -1,7 +1,5 @@
 import axios, { AxiosPromise } from 'axios'
 
-import { store } from '@/store/store'
-
 export interface ApiOptions {
   serverSide?: boolean
   token?: string
@@ -36,11 +34,13 @@ axios.interceptors.response.use(
 )
 
 const getPublicApiURL = () => {
-  if (process?.env?.NEXT_PUBLIC_API_URL) {
+  const isServer = typeof window === 'undefined'
+
+  if (isServer) {
     return process.env.NEXT_PUBLIC_API_URL
   } else {
-    const state = store.getState()
-    return state?.utils?.envs?.NEXT_PUBLIC_API_URL || ''
+    const state = window.__NEXT_DATA__?.props?.initialState
+    return state.utils?.envs?.NEXT_PUBLIC_API_URL || ''
   }
 }
 
