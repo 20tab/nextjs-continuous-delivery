@@ -1,9 +1,6 @@
 const { withSentryConfig } = require('@sentry/nextjs')
 
-const nextjsConfig = {
-  poweredByHeader: false,
-  rewrites: async () => [{ source: '/_api/:path*', destination: '/api/:path*' }]
-}
+const nextjsConfig = {}
 
 // Sentry config. For all available options, see:
 // https://github.com/getsentry/sentry-webpack-plugin#options
