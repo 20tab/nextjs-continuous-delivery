@@ -47,7 +47,7 @@ MyApp.getInitialProps = wrapper.getInitialPageProps(store =>
       ? await Component.getInitialProps(ctx)
       : {}
 
-    const isServer = !!ctx
+    const isServer = !!ctx.req
 
     if (isServer) {
       const parsedEnv = Object.keys(process.env)

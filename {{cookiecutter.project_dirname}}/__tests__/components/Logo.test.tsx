@@ -3,11 +3,11 @@ import { screen } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 
 import { Logo, lightModeLogoPath, darkModeLogoPath } from '@/components/Logo'
-import { renderWithRedux } from '@/__tests__/functions'
+import { renderWithReduxAndTheme } from '@/__tests__/functions'
 import { changeTheme } from '@/store/utilsSlice'
 import { Theme } from '@/models/Utils'
 
-const setup = () => renderWithRedux(<Logo />)
+const setup = () => renderWithReduxAndTheme(<Logo />)
 
 test('Logo renders correctly', () => {
   setup()

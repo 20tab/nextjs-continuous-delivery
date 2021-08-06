@@ -3,9 +3,9 @@ import { screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 
 import { ThemeSwitch } from '@/components/ThemeSwitch'
-import { renderWithRedux } from '@/__tests__/functions'
+import { renderWithReduxAndTheme } from '@/__tests__/functions'
 
-const setup = () => renderWithRedux(<ThemeSwitch />)
+const setup = () => renderWithReduxAndTheme(<ThemeSwitch />)
 
 test('ThemeSwitch renders correctly', () => {
   setup()
