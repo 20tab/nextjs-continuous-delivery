@@ -14,7 +14,7 @@ const Logo = props => {
 
   return (
     <Link href='https://www.20tab.com' target='_blank' {...props}>
-      <Image src={imageSrc} />
+      <Image src={imageSrc} alt='logo' />
     </Link>
   )
 }
