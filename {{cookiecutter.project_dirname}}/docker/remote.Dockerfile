@@ -1,4 +1,4 @@
-FROM node:14-slim as base
+FROM node:14-buster-slim as base
 WORKDIR /
 COPY ./package.json .
 COPY ./yarn.lock .
@@ -18,7 +18,7 @@ ARG SENTRY_AUTH_TOKEN
 RUN export SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 RUN yarn build
 
-FROM node:14-slim as remote
+FROM node:14-buster-slim as remote
 WORKDIR /app
 COPY ./package.json /app
 COPY ./yarn.lock /app
