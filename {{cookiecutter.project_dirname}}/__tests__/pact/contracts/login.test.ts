@@ -2,8 +2,8 @@ import { expect } from '@jest/globals'
 import { pactWith } from 'jest-pact'
 
 import * as API from '@/utils/api/'
-import { login } from '@/__tests__/pact/interactions/login'
 import pactConfig from '@/__tests__/pact/pact.config'
+import { login } from '@/__tests__/pact/interactions/login'
 import { token } from '@/__tests__/pact/data'
 
 pactWith(pactConfig, provider => {
