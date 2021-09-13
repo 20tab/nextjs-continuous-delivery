@@ -1,7 +1,8 @@
 import { HTTPMethod } from '@pact-foundation/pact/src/common/request'
 import { like } from '@pact-foundation/pact/src/dsl/matchers'
 
-import { composePactState, token } from '@/__tests__/pact/data'
+import { composePactState } from '@/__tests__/pact/utils'
+import { token } from '@/__tests__/pact/data'
 
 export const login = {
   succeeded: {
