@@ -6,9 +6,9 @@ const nextjsConfig = {}
 // https://github.com/getsentry/sentry-webpack-plugin#options
 const SentryWebpackPluginOptions = {
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  org: '__SENTRY_ORG__',
+  org: process.env.SENTRY_ORG,
   project: '{{cookiecutter.project_slug}}-frontend',
-  url: '__SENTRY_URL__'
+  url: process.env.SENTRY_URL
 }
 
 // Make sure adding Sentry options is the last code to run before exporting, to

@@ -16,6 +16,10 @@ FROM base as build
 RUN apt-get update && apt-get install ca-certificates -y
 ARG SENTRY_AUTH_TOKEN
 RUN export SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+ARG SENTRY_ORG
+RUN export SENTRY_ORG=$SENTRY_ORG
+ARG SENTRY_URL
+RUN export SENTRY_URL=$SENTRY_URL
 RUN yarn build
 
 FROM node:14-buster-slim as remote
