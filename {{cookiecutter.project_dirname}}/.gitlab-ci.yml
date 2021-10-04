@@ -8,7 +8,6 @@ stages:
   - Pact-tag
   - Sentry
 
-
 variables:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_BUILDKIT: 1
@@ -29,6 +28,8 @@ sentry_release:
   image: docker:20
   services:
     - docker:20-dind
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "develop" ||  $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG) && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
   script:
     - RELEASE_START=$(date +%s)
     - >
@@ -43,12 +44,6 @@ sentry_release:
       "sentry-cli releases new $VERSION_REF -p $SENTRY_PROJECT_NAME --log-level=debug;
       sentry-cli releases set-commits $VERSION_REF --auto;
       sentry-cli releases finalize $VERSION_REF"
-  only:
-    - develop
-    - master
-    - tags
-  except:
-    - triggers
 
 test:
   stage: Test
@@ -318,10 +313,8 @@ create-version-tag_production:
   only:
     - tags
 
-
 .sentry_deploy_success:
   stage: Sentry
-  when: on_success
   image: docker:20
   services:
     - docker:20-dind
@@ -334,33 +327,33 @@ create-version-tag_production:
       -e SENTRY_ORG
       -e SENTRY_URL
       getsentry/sentry-cli:latest sentry-cli releases deploys $VERSION_REF new -e $SENTRY_ENV -t $((RELEASE_END-RELEASE_START))
-  except:
-    - triggers
 
 sentry_success_development:
   extends: .sentry_deploy_success
-  variables:
-    SENTRY_ENV: Development
-  only:
-    - develop
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+      when: on_success
+      variables:
+        SENTRY_ENV: Development
 
 sentry_success_integration:
   extends: .sentry_deploy_success
-  variables:
-    SENTRY_ENV: Integration
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+      when: on_success
+      variables:
+        SENTRY_ENV: Integration
 
 sentry_success_production:
   extends: .sentry_deploy_success
-  variables:
-    SENTRY_ENV: Production
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+      when: on_success
+      variables:
+        SENTRY_ENV: Production
 
 .sentry_deploy_failure:
   stage: Sentry
-  when: on_failure
   image: docker:20
   services:
     - docker:20-dind
@@ -372,26 +365,27 @@ sentry_success_production:
       -e SENTRY_ORG
       -e SENTRY_URL
       getsentry/sentry-cli:latest sentry-cli send-event -m "Deploy to $SENTRY_ENV failed."
-  except:
-    - triggers
 
 sentry_failure_development:
   extends: .sentry_deploy_failure
-  variables:
-    SENTRY_ENV: Development
-  only:
-    - develop
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+      when: on_failure
+      variables:
+        SENTRY_ENV: Development
 
 sentry_failure_integration:
   extends: .sentry_deploy_failure
-  variables:
-    SENTRY_ENV: Integration
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+      when: on_failure
+      variables:
+        SENTRY_ENV: Integration
 
 sentry_failure_production:
   extends: .sentry_deploy_failure
-  variables:
-    SENTRY_ENV: Production
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+      when: on_failure
+      variables:
+        SENTRY_ENV: Production

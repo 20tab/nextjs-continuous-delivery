@@ -1,8 +1,10 @@
 import * as Sentry from '@sentry/nextjs'
 
-if (process.env.NODE_ENV !== 'development') {
+const { SENTRY_DNS, NODE_ENV } = process.env
+
+if (SENTRY_DNS && NODE_ENV === 'production') {
   Sentry.init({
-    dsn: process.env.SENTRY_DNS,
+    dsn: SENTRY_DNS,
     // To set a uniform sample rate
     tracesSampleRate: 0.3,
   })
