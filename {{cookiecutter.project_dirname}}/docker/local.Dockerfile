@@ -1,5 +1,7 @@
 FROM node:14-buster-slim
 
+ENV NODE_ENV="development"
+
 WORKDIR /
 
 COPY ./package.json .

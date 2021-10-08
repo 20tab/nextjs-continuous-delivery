@@ -29,7 +29,7 @@ sentry_release:
   services:
     - docker:20-dind
   rules:
-    - if: ($CI_COMMIT_BRANCH == "develop" ||  $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG) && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: ($CI_COMMIT_BRANCH == "develop" ||  $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG) && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
   script:
     - RELEASE_START=$(date +%s)
     - >
@@ -61,8 +61,8 @@ test:
       --file=docker/remote.Dockerfile
       --target=test .
     - docker run --name=$FRONTEND_CONTAINER_NAME $FRONTEND_IMAGE_NAME:$FRONTEND_IMAGE_TAG
-    - docker cp $FRONTEND_CONTAINER_NAME:/app/coverage .
-    - docker cp $FRONTEND_CONTAINER_NAME:/app/__tests__/pacts .
+    - docker cp $FRONTEND_CONTAINER_NAME:/temp/coverage .
+    - docker cp $FRONTEND_CONTAINER_NAME:/temp/__tests__/pacts .
   after_script:
     - docker stop $FRONTEND_CONTAINER_NAME
     - docker container rm $FRONTEND_CONTAINER_NAME
@@ -160,9 +160,10 @@ build:
       --tag=$CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
       --file=docker/remote.Dockerfile
       --target=remote
-      --build-arg=SENTRY_AUTH_TOKEN
-      --build-arg=SENTRY_ORG
-      --build-arg=SENTRY_URL
+      --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+      --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg SENTRY_ORG=$SENTRY_ORG
+      --build-arg SENTRY_URL=$SENTRY_URL
       --pull .
     - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
   after_script:
@@ -267,7 +268,6 @@ rollback_production:
   except:
     - triggers
 
-
 create-version-tag_development:
   extends: .create-version-tag
   script:
@@ -331,7 +331,7 @@ create-version-tag_production:
 sentry_success_development:
   extends: .sentry_deploy_success
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
       when: on_success
       variables:
         SENTRY_ENV: Development
@@ -339,7 +339,7 @@ sentry_success_development:
 sentry_success_integration:
   extends: .sentry_deploy_success
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
       when: on_success
       variables:
         SENTRY_ENV: Integration
@@ -347,7 +347,7 @@ sentry_success_integration:
 sentry_success_production:
   extends: .sentry_deploy_success
   rules:
-    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
       when: on_success
       variables:
         SENTRY_ENV: Production
@@ -369,7 +369,7 @@ sentry_success_production:
 sentry_failure_development:
   extends: .sentry_deploy_failure
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
       when: on_failure
       variables:
         SENTRY_ENV: Development
@@ -377,7 +377,7 @@ sentry_failure_development:
 sentry_failure_integration:
   extends: .sentry_deploy_failure
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
       when: on_failure
       variables:
         SENTRY_ENV: Integration
@@ -385,7 +385,7 @@ sentry_failure_integration:
 sentry_failure_production:
   extends: .sentry_deploy_failure
   rules:
-    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $SENTRY_DNS
+    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $SENTRY_DSN
       when: on_failure
       variables:
         SENTRY_ENV: Production

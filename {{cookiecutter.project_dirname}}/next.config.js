@@ -1,8 +1,17 @@
 const { withSentryConfig } = require('@sentry/nextjs')
 
-const nextjsConfig = {}
+const {
+  NEXT_PUBLIC_SENTRY_DSN,
+  SENTRY_AUTH_TOKEN,
+  SENTRY_ORG,
+  SENTRY_URL,
+} = process.env
 
-const { SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_URL } = process.env
+const nextjsConfig = {
+  env: {
+    NEXT_PUBLIC_SENTRY_DSN
+  }
+}
 
 // Sentry config. For all available options, see:
 // https://github.com/getsentry/sentry-webpack-plugin#options

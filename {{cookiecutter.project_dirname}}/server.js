@@ -4,18 +4,14 @@ const auth = require('basic-auth')
 const path = require('path')
 
 const port = parseInt(process.env.PORT, 10) || 3000
-const dev = process.env.NODE_ENV !== 'production'
-const app = next({ dev })
+const app = next({ dev: process.env.NODE_ENV !== 'production' })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   const server = express()
 
   // Basic auth
-  if ((
-    process.env.REACT_ENVIRONMENT === 'Development' ||
-    process.env.REACT_ENVIRONMENT === 'Integration' ||
-    process.env.REACT_ENVIRONMENT === 'Production') &&
+  if (
     process.env.BASIC_AUTH_USER &&
     process.env.BASIC_AUTH_PASSWORD
   ) {

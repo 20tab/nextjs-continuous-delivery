@@ -41,11 +41,6 @@ spec:
                 secretKeyRef:
                   name: secrets
                   key: API_URL
-            - name: NODE_ENV
-              valueFrom:
-                secretKeyRef:
-                  name: secrets
-                  key: NODE_ENV
             - name: REACT_ENVIRONMENT
               valueFrom:
                 secretKeyRef:
