@@ -7,8 +7,7 @@ RUN next telemetry disable
 COPY . .
 
 FROM base as test
-CMD yarn pact --coverage --color && \
-  yarn test --coverage --color --verbose
+CMD yarn coverage
 
 FROM base as build
 ARG SENTRY_DSN \

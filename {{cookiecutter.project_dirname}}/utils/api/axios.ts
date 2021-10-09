@@ -30,7 +30,7 @@ axios.interceptors.request.use(config => {
 // Response interceptor
 axios.interceptors.response.use(
   res => res,
-  err => Promise.reject(err)
+  /* istanbul ignore next */ err => Promise.reject(err)
 )
 
 const getPublicApiURL = () => {
@@ -40,7 +40,7 @@ const getPublicApiURL = () => {
     return process.env.NEXT_PUBLIC_API_URL
   } else {
     const state = window.__NEXT_DATA__?.props?.initialState
-    return state.utils?.envs?.NEXT_PUBLIC_API_URL || ''
+    return state?.utils?.envs?.NEXT_PUBLIC_API_URL || ''
   }
 }
 
@@ -52,7 +52,9 @@ const withApiOptions = <Response, Args extends unknown[] = []>(
     const serverSide = options && options.serverSide
     const headers = composeHeaders(options)
     const config = {
-      baseUrl: serverSide ? process?.env?.INTERNAL_API_URL : getPublicApiURL(),
+      baseUrl: serverSide
+        ? /* istanbul ignore next */ process?.env?.INTERNAL_API_URL
+        : getPublicApiURL(),
       headers
     }
 

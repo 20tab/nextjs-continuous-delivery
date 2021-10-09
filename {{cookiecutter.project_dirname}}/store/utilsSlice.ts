@@ -3,7 +3,7 @@ import { HYDRATE } from 'next-redux-wrapper'
 
 import { Theme } from '@/models/Utils'
 
-type UtilsState = {
+interface UtilsState {
   envs: { [key: string]: string }
   theme: Theme
 }
@@ -14,7 +14,7 @@ const utilsSlice = createSlice({
   name: 'utils',
   initialState,
   extraReducers: {
-    [HYDRATE]: (state, action) => {
+    [HYDRATE]: (state, action) => /* istanbul ignore next */ {
       if (
         !Object.keys(state.envs).length &&
         Object.keys(action.payload.utils.envs).length

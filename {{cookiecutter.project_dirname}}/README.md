@@ -60,16 +60,6 @@ or
 yarn eslint
 ```
 
-To run the pact test suite, execute:
-
-```bash
-npm run pact
-```
-or
-```bash
-yarn pact
-```
-
 ## Update package
 
 To update packages, execute:

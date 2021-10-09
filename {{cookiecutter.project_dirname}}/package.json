@@ -1,5 +1,5 @@
 {
-  "name": "template",
+  "name": "{{cookiecutter.project_slug}}",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,8 @@
     "test": "npx jest --testPathIgnorePatterns=pact/contracts --testEnvironment=jsdom --detectOpenHandles",
     "pact": "npx jest pact/contracts --detectOpenHandles",
     "eslint": "npx eslint . --fix-dry-run",
-    "audit:fix": "npm i --package-lock-only && npm audit fix && rm yarn.lock && yarn import && rm package-lock.json"
+    "audit:fix": "npm i --package-lock-only && npm audit fix && rm yarn.lock && yarn import && rm package-lock.json",
+    "coverage": "yarn pact --coverage --passWithNoTests --coverageDirectory ./coverage/pacts && yarn test --coverage --coverageDirectory ./coverage/tests && npx istanbul-merge --out ./coverage/coverage-final.json ./coverage/pacts/coverage-final.json ./coverage/tests/coverage-final.json && npx istanbul report --include ./coverage/coverage-final.json --dir ./coverage lcov clover json-summary && rm -rf ./coverage/pacts && rm -rf ./coverage/tests"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.2",
@@ -42,6 +43,7 @@
     "@types/styled-components": "^5.1.15",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "axios-mock-adapter": "^1.20.0",
     "babel-plugin-styled-components": "^1.13.2",
     "eslint": "^7.32.0",
     "eslint-config-next": "^11.1.2",
@@ -51,6 +53,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-react": "^7.26.1",
+    "istanbul-merge": "^1.1.1",
     "jest": "^27.2.5",
     "jest-pact": "^0.9.1",
     "prettier": "^2.4.1",
