@@ -1,5 +1,26 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Sentry integration
+:warning: **develop, master and tags**: should be protected!
+
+To enable sentry integration, gitlab respository should have the following variables:
+```git
+  SENTRY_AUTH_TOKEN (protected and masked) taken from your sentry
+  SENTRY_DSN (protected and masked) taken from your sentry
+  SENTRY_ORG (protected) ex: 20tab
+  SENTRY_URL (protected) ex: https://sentry.io/
+```
+
+## Pact Broker Integration
+To enable pact broken integration, the gitlab group respository should have the following variables:
+```git
+  PACT-ENABLED = true
+  PACT_BROKER_BASE_URL (protected and masked)
+  PACT_BROKER_PASSWORD (protected)
+  PACT_BROKER_USERNAME (protected)
+```
+:warning: **for disable integration**: just delete the PACT_ENABLED variable.
+
 ## Git
 
 To get the existing project, change directory, clone the project repository and enter the newly created **{{cookiecutter.project_slug}}** directory:
