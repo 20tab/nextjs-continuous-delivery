@@ -58,7 +58,7 @@ sentry_release:
 test-with-pacts:
   extends: .test
   rules:
-    - if: $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
   script:
     - echo $CI_COMMIT_TAG $CI_COMMIT_BRANCH
     - >
@@ -108,7 +108,7 @@ publish:
   services:
     - docker:20-dind
   rules:
-    - if: $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
   before_script:
@@ -162,7 +162,7 @@ pages:
 can-i-deploy_development:
   extends: .can-i-deploy
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
       variables:
@@ -171,7 +171,7 @@ can-i-deploy_development:
 can-i-deploy_integration:
   extends: .can-i-deploy
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG == null && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG == null && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
       variables:
@@ -180,7 +180,7 @@ can-i-deploy_integration:
 can-i-deploy_production:
   extends: .can-i-deploy
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
       variables:
@@ -318,7 +318,7 @@ rollback_production:
 create-version-tag_development:
   extends: .create-version-tag
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
   script:
@@ -335,7 +335,7 @@ create-version-tag_development:
 create-version-tag_integration:
   extends: .create-version-tag
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
   script:
@@ -352,7 +352,7 @@ create-version-tag_integration:
 create-version-tag_production:
   extends: .create-version-tag
   rules:
-    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED
+    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true" && $PACT_BROKER_BASE_URL && $PACT_ENABLED == 'true'
       changes:
         - '__tests__/pact/**/*'
   script:
