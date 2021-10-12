@@ -82,7 +82,7 @@ test-with-pacts:
 test:
   extends: .test
   rules:
-    - if: $PACT_ENABLED == null
+    - if: $PACT_ENABLED != true
   script:
     - echo $CI_COMMIT_TAG $CI_COMMIT_BRANCH
     - >
