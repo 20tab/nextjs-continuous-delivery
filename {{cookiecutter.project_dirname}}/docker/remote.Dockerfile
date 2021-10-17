@@ -7,6 +7,7 @@ RUN next telemetry disable
 COPY . .
 
 FROM base as test
+ENV TZ='Europe/Amsterdam'
 CMD yarn coverage
 
 FROM base as build
