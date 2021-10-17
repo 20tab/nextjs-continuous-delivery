@@ -27,15 +27,15 @@ const utilsSlice = createSlice({
     }
   },
   reducers: {
-    getEnvs: (state, action) => {
-      state.envs = action.payload
-    },
     changeTheme: (state, action) => {
       state.theme = action.payload
+    },
+    setEnvs: (state, action) => {
+      state.envs = action.payload
     }
   }
 })
 
-export const { getEnvs, changeTheme } = utilsSlice.actions
+export const { changeTheme, setEnvs } = utilsSlice.actions
 
 export default utilsSlice.reducer

@@ -4,7 +4,7 @@ import nookies from 'nookies'
 import React from 'react'
 
 import { wrapper } from '@/store/'
-import { changeTheme, getEnvs } from '@/store/utilsSlice'
+import { setEnvs, changeTheme } from '@/store/utilsSlice'
 import { Theme } from '@/models/Utils'
 import { useAppSelector } from '@/utils/hooks/useAppSelector'
 import { GlobalStyle } from '@/styles/GlobalStyle'
@@ -57,7 +57,7 @@ MyApp.getInitialProps = wrapper.getInitialPageProps(store =>
           return newData
         }, {})
 
-      store.dispatch(getEnvs(parsedEnv))
+      store.dispatch(setEnvs(parsedEnv))
 
       const cookies = nookies.get(ctx)
 
