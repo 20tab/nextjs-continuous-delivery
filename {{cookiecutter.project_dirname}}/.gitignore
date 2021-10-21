@@ -36,6 +36,12 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Terraform
+.terraform.lock*
+.terraform/
+*.tfstate*
+*.tfvars
+
 # vercel
 .vercel
 

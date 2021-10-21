@@ -1,5 +1,7 @@
 {
     "project_name": null,
     "project_slug": "{{ cookiecutter.project_name | slugify() }}",
+    "service_name": "{{ cookiecutter.project_name }}",
+    "service_slug": "{{ cookiecutter.project_slug }}",
     "_extensions": ["cookiecutter.extensions.SlugifyExtension"]
 }
