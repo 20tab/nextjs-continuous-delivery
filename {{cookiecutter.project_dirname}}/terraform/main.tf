@@ -1,12 +1,12 @@
 locals {
-  project_name = "{{cookiecutter.project_name}}"
-  project_slug = "{{cookiecutter.project_slug}}"
+  project_name     = "{{cookiecutter.project_name}}"
+  project_slug     = "{{cookiecutter.project_slug}}"
   environment_slug = { development = "dev", staging = "stage", production = "prod" }[lower(var.environment)]
 
   service_name = "${local.project_name} ${var.environment} {{cookiecutter.service_name}}"
   service_slug = "${local.project_slug}-${local.environment_slug}-{{cookiecutter.service_slug}}"
   service_labels = {
-    component   = var.service_slug
+    component   = local.service_slug
     domain      = var.project_domain
     environment = var.environment
     project     = local.project_name
@@ -49,7 +49,7 @@ provider "kubernetes" {
 resource "kubernetes_deployment" "frontend" {
 
   metadata {
-    name      = "${var.service_slug}-deployment"
+    name      = "${local.service_slug}-deployment"
     namespace = "${local.project_slug}-development"
   }
 
@@ -74,7 +74,7 @@ resource "kubernetes_deployment" "frontend" {
 
         container {
           image = var.service_container_image
-          name  = var.service_slug
+          name  = local.service_slug
 
           port {
             container_port = var.service_container_port
@@ -158,14 +158,14 @@ resource "kubernetes_deployment" "frontend" {
 resource "kubernetes_service" "frontend_cluster_ip" {
 
   metadata {
-    name      = "${var.service_slug}-cluster-ip-service"
+    name      = "${local.service_slug}-cluster-ip-service"
     namespace = "${local.project_slug}-development"
   }
 
   spec {
     type = "ClusterIP"
     selector = {
-      component = var.service_slug
+      component = local.service_slug
     }
 
     port {
