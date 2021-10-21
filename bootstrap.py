@@ -2,7 +2,6 @@
 """Boostrap a web project based on templates."""
 
 import os
-import secrets
 import shutil
 import subprocess
 from pathlib import Path
@@ -40,15 +39,18 @@ class BootstrapHandler:
         self.gitlab_group_slug = gitlab_group_slug
         self.gitlab_private_token = gitlab_private_token
         self.output_dir = OUTPUT_BASE_DIR or output_dir
-        self.service_dir = (Path(self.output_dir) / Path(self.project_dirname)).resolve()
+        self.service_dir = (
+            Path(self.output_dir) / Path(self.project_dirname)
+        ).resolve()
 
     def create_env_file(self):
         """Create env file from the template."""
         env_path = Path(self.service_dir) / Path(".env_template")
         env_template = env_path.read_text()
-        env_path.write_text(env_text)
+        env_path.write_text(env_template)
 
-    def init_frontend(self):
+    def init_service(self):
+        """Initialize the service."""
         if Path(self.service_dir).is_dir() and click.confirm(
             f'A directory "{self.service_dir}" already exists and '
             "must be deleted. Continue?"
@@ -78,8 +80,17 @@ class BootstrapHandler:
             "TF_VAR_project_slug": self.project_slug,
         }
         subprocess.run(
-            "terraform init -reconfigure -input=false && "
-            "terraform apply -auto-approve -input=false",
+            ["terraform", "init", "-reconfigure", "-input=false"],
+            cwd="terraform",
+            env=env,
+        )
+        subprocess.run(
+            [
+                "terraform",
+                "apply",
+                "-auto-approve",
+                "-input=false",
+            ],
             cwd="terraform",
             env=env,
         )
@@ -92,7 +103,7 @@ class BootstrapHandler:
 
     def run(self):
         """Run main process."""
-        self.init_frontend()
+        self.init_service()
         self.create_env_file()
         self.use_gitlab and self.init_gitlab()
         # self.change_output_owner()
@@ -107,7 +118,7 @@ def slugify_option(ctx, param, value):
 @click.option("--output-dir", default=".", required=OUTPUT_BASE_DIR is None)
 @click.option("--project-name", prompt=True)
 @click.option("--project-slug", callback=slugify_option)
-@click.option("--project-dirname", prompt=True)
+@click.option("--project-dirname")
 @click.option("--service-name", default="NextJS", prompt=True)
 @click.option("--service-slug", callback=slugify_option)
 @click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
@@ -132,10 +143,10 @@ def init_handler(
         service_slug or click.prompt("Service slug", default=slugify(service_name)),
     )
     project_dirname = project_dirname or click.prompt(
-            "Service dirname",
-            default=service_slug,
-            type=click.Choice([service_slug, project_slug]),
-        )
+        "Service dirname",
+        default=service_slug,
+        type=click.Choice([service_slug, project_slug]),
+    )
     use_gitlab = (
         use_gitlab
         if use_gitlab is not None
