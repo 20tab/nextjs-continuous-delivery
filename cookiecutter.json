@@ -1,8 +1,7 @@
 {
     "project_name": null,
-    "service_name": "{{ cookiecutter.project_name }}",
     "project_slug": "{{ cookiecutter.project_name | slugify() }}",
     "service_slug": "{{ cookiecutter.project_slug }}",
-    "project_dirname": "{{ cookiecutter.service_slug }}",
+    "project_dirname": ["{{ cookiecutter.service_slug }}", "{{ cookiecutter.project_slug }}"],
     "_extensions": ["cookiecutter.extensions.SlugifyExtension"]
 }

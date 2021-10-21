@@ -38,7 +38,6 @@ resource "gitlab_project" "frontend" {
   path                   = "frontend"
   description            = "The \"${var.project_name}\" project frontend service."
   namespace_id           = data.gitlab_group.group.id
-  default_branch         = "develop"
   initialize_with_readme = false
 }
 
