@@ -39,6 +39,12 @@ venv.bak/
 *.sublime-project
 *.sublime-workspace
 
+# Terraform
+.terraform.lock*
+.terraform/
+*.tfstate*
+*.tfvars
+
 # Vim
 [._]*.un~
 

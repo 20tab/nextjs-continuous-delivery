@@ -1,0 +1,8 @@
+[tool.black]
+target-version = ["py39"]
+
+[tool.isort]
+atomic = true
+profile = "black"
+combine_as_imports = true
+default_section = "THIRDPARTY"
