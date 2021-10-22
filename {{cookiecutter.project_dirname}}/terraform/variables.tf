@@ -14,9 +14,20 @@ variable "environment" {
   description = "The name of the deploy environment, e.g. \"Production\"."
 }
 
+variable "internal_api_url" {
+  description = "The internal API url."
+  type        = string
+}
+
 variable "project_domain" {
   description = "The project domain."
   type        = string
+}
+
+variable "project_protocol" {
+  description = "The project protocol."
+  type        = string
+  default     = "https"
 }
 
 variable "service_container_image" {

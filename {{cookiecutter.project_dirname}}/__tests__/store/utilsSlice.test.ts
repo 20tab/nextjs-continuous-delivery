@@ -12,10 +12,10 @@ describe('Utils Slice', () => {
       expect(
         reducer(
           undefined,
-          setEnvs({ NEXT_PUBLIC_API_URL: 'https://localhost:8443' })
+          setEnvs({ NEXT_PUBLIC_PROJECT_URL: 'https://localhost:8443' })
         )
       ).toEqual({
-        envs: { NEXT_PUBLIC_API_URL: 'https://localhost:8443' },
+        envs: { NEXT_PUBLIC_PROJECT_URL: 'https://localhost:8443' },
         theme: 'light'
       })
     })

@@ -104,8 +104,13 @@ resource "kubernetes_deployment" "frontend" {
           }
 
           env {
-            name  = "NEXT_PUBLIC_DOMAIN"
-            value = var.project_domain
+            name  = "INTERNAL_API_URL"
+            value = var.internal_api_url
+          }
+
+          env {
+            name  = "NEXT_PUBLIC_PROJECT_URL"
+            value = format("%s://%s", coalesce(var.project_protocol, "https"), var.project_domain)
           }
 
           env {

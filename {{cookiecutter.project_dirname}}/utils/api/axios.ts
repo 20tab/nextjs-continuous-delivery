@@ -37,10 +37,10 @@ const getPublicApiURL = () => {
   const isServer = typeof window === 'undefined'
 
   if (isServer) {
-    return process.env.NEXT_PUBLIC_API_URL
+    return process.env.NEXT_PUBLIC_PROJECT_URL
   } else {
     const state = window.__NEXT_DATA__?.props?.initialState
-    return state?.utils?.envs?.NEXT_PUBLIC_API_URL || ''
+    return state?.utils?.envs?.NEXT_PUBLIC_PROJECT_URL || ''
   }
 }
 

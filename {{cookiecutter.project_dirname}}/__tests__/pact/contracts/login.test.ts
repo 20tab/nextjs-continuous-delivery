@@ -8,7 +8,7 @@ import { token } from '@/__tests__/pact/data'
 
 pactWith(pactConfig, provider => {
   beforeEach(() => {
-    process.env.NEXT_PUBLIC_API_URL = provider.mockService.baseUrl
+    process.env.NEXT_PUBLIC_DOMAIN = provider.mockService.baseUrl
   })
 
   describe('Login', () => {
