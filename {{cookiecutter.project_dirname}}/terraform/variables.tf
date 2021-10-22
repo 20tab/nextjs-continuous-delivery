@@ -19,15 +19,9 @@ variable "internal_api_url" {
   type        = string
 }
 
-variable "project_domain" {
-  description = "The project domain."
+variable "project_url" {
+  description = "The project url."
   type        = string
-}
-
-variable "project_protocol" {
-  description = "The project protocol."
-  type        = string
-  default     = "https"
 }
 
 variable "service_container_image" {

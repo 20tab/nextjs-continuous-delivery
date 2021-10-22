@@ -1,9 +1,9 @@
 locals {
-  project_name     = "{{cookiecutter.project_name}}"
-  project_slug     = "{{cookiecutter.project_slug}}"
+  project_name     = "{{ cookiecutter.project_name }}"
+  project_slug     = "{{ cookiecutter.project_slug }}"
   environment_slug = { development = "dev", staging = "stage", production = "prod" }[lower(var.environment)]
 
-  service_slug = "${local.project_slug}-${local.environment_slug}-{{cookiecutter.service_slug}}"
+  service_slug = "${local.project_slug}-${local.environment_slug}-{{ cookiecutter.service_slug }}"
   service_labels = {
     component   = local.service_slug
     domain      = var.project_domain
@@ -110,7 +110,7 @@ resource "kubernetes_deployment" "frontend" {
 
           env {
             name  = "NEXT_PUBLIC_PROJECT_URL"
-            value = format("%s://%s", coalesce(var.project_protocol, "https"), var.project_domain)
+            value = var.project_url
           }
 
           env {

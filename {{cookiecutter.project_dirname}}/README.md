@@ -22,11 +22,11 @@ To enable the Pact broker integration, the following variables should be set in 
 
 ## Git
 
-To get the existing project, change directory, clone the project repository and enter the newly created **{{cookiecutter.project_slug}}** directory:
+To get the existing project, change directory, clone the project repository and enter the newly created **{{ cookiecutter.project_slug }}** directory:
 
 ```bash
-git clone GIT_REPOSITORY_URL {{cookiecutter.project_slug}}
-cd {{cookiecutter.project_slug}}
+git clone GIT_REPOSITORY_URL {{ cookiecutter.project_slug }}
+cd {{ cookiecutter.project_slug }}
 ```
 
 **NOTE** : Make sure you switch to the correct branch (e.g. `git checkout develop`)

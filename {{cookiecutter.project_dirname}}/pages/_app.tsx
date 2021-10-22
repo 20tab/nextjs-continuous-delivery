@@ -12,8 +12,8 @@ import themes from '@/styles/themes'
 
 function MyApp({ Component, pageProps }) {
   const theme = useAppSelector(state => state.utils.theme)
-  const title = '{{cookiecutter.project_name}}'
-  const description = 'Descrizione {{cookiecutter.project_slug}}'
+  const title = '{{ cookiecutter.project_name }}'
+  const description = '{{ cookiecutter.project_description }}'
   const shareImage = 'https://www.mywebsite.it/share.png'
   const descKey = 'og:description'
 
