@@ -45,6 +45,8 @@ provider "kubernetes" {
   )
 }
 
+/* Deployment */
+
 resource "kubernetes_deployment" "frontend" {
 
   metadata {
@@ -77,30 +79,6 @@ resource "kubernetes_deployment" "frontend" {
 
           port {
             container_port = var.service_container_port
-          }
-
-          env {
-            name = "BASIC_AUTH_USER"
-
-            value_from {
-
-              secret_key_ref {
-                key  = "BASIC_AUTH_USER"
-                name = "secrets"
-              }
-            }
-          }
-
-          env {
-            name = "BASIC_AUTH_PASSWORD"
-
-            value_from {
-
-              secret_key_ref {
-                key  = "BASIC_AUTH_PASSWORD"
-                name = "secrets"
-              }
-            }
           }
 
           env {
@@ -148,6 +126,8 @@ resource "kubernetes_deployment" "frontend" {
     }
   }
 }
+
+/* Cluster IP */
 
 resource "kubernetes_service" "frontend_cluster_ip" {
 
