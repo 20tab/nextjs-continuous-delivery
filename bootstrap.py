@@ -27,6 +27,9 @@ def init_service(
     project_name,
     project_slug,
     service_slug,
+    project_url_dev,
+    project_url_stage,
+    project_url_prod,
     output_dir,
 ):
     """Initialize the service."""
@@ -41,6 +44,9 @@ def init_service(
             "project_dirname": project_dirname,
             "project_name": project_name,
             "project_slug": project_slug,
+            "project_url_dev": project_url_dev,
+            "project_url_prod": project_url_prod,
+            "project_url_stage": project_url_stage,
             "service_slug": service_slug,
         },
         output_dir=output_dir,
@@ -96,6 +102,9 @@ def slugify_option(ctx, param, value):
 @click.option("--project-slug", callback=slugify_option)
 @click.option("--service-slug", callback=slugify_option)
 @click.option("--project-dirname")
+@click.option("--project-project-url-dev")
+@click.option("--project-project-url-stage")
+@click.option("--project-project-url-prod")
 @click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
 @click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
 @click.option("--gitlab-group-slug")
@@ -105,6 +114,9 @@ def init_handler(
     project_slug,
     service_slug,
     project_dirname,
+    project_url_dev,
+    project_url_stage,
+    project_url_prod,
     use_gitlab,
     gitlab_private_token,
     gitlab_group_slug,
@@ -121,6 +133,21 @@ def init_handler(
         default=service_slug,
         type=click.Choice([service_slug, project_slug]),
     )
+    project_url_dev = project_url_dev or click.prompt(
+        "Development environment complete URL",
+        default=f"dev.{service_slug}.com",
+        type=str,
+    )
+    project_url_stage = project_url_stage or click.prompt(
+        "Staging environment complete URL",
+        default=f"stage.{service_slug}.com",
+        type=str,
+    )
+    project_url_prod = project_url_prod or click.prompt(
+        "Production environment complete URL",
+        default=f"www.{service_slug}.com",
+        type=str,
+    )
     output_dir = OUTPUT_BASE_DIR or output_dir
     service_dir = (Path(output_dir) / Path(project_dirname)).resolve()
     init_service(
@@ -129,6 +156,9 @@ def init_handler(
         project_name,
         project_slug,
         service_slug,
+        project_url_dev,
+        project_url_stage,
+        project_url_prod,
         output_dir,
     )
     create_env_file(service_dir)
