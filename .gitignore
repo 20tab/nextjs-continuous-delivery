@@ -5,6 +5,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
 # Sphinx documentation
 docs/_build/
 
