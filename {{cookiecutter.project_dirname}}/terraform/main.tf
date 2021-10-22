@@ -104,17 +104,7 @@ resource "kubernetes_deployment" "frontend" {
           }
 
           env {
-            name  = "NEXT_PUBLIC_API_URL"
-            value = var.api_url
-          }
-
-          env {
-            name  = "PROJECT_DESCRIPTION"
-            value = var.project_description
-          }
-
-          env {
-            name  = "PROJECT_DOMAIN"
+            name  = "NEXT_PUBLIC_DOMAIN"
             value = var.project_domain
           }
 

@@ -1,8 +1,3 @@
-variable "api_url" {
-  description = "The api url."
-  type        = string
-}
-
 variable "digitalocean_token" {
   description = "The DigitalOcean access token."
   type        = string
@@ -17,12 +12,6 @@ variable "digitalocean_cluster_name" {
 variable "environment" {
   type        = string
   description = "The name of the deploy environment, e.g. \"Production\"."
-}
-
-variable "project_description" {
-  description = "The project description."
-  type        = string
-  default     = ""
 }
 
 variable "project_domain" {
