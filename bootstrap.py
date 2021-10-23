@@ -135,17 +135,17 @@ def init_handler(
     )
     project_url_dev = project_url_dev or click.prompt(
         "Development environment complete URL",
-        default=f"dev.{service_slug}.com",
+        default=f"dev.{project_slug}.com",
         type=str,
     )
     project_url_stage = project_url_stage or click.prompt(
         "Staging environment complete URL",
-        default=f"stage.{service_slug}.com",
+        default=f"stage.{project_slug}.com",
         type=str,
     )
     project_url_prod = project_url_prod or click.prompt(
         "Production environment complete URL",
-        default=f"www.{service_slug}.com",
+        default=f"www.{project_slug}.com",
         type=str,
     )
     output_dir = OUTPUT_BASE_DIR or output_dir
