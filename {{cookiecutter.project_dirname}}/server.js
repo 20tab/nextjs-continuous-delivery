@@ -1,6 +1,5 @@
 const express = require('express')
 const next = require('next')
-const auth = require('basic-auth')
 const path = require('path')
 
 const port = parseInt(process.env.PORT, 10) || 3000
@@ -9,27 +8,6 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   const server = express()
-
-  // Basic auth
-  if (
-    process.env.BASIC_AUTH_USER &&
-    process.env.BASIC_AUTH_PASSWORD
-  ) {
-    server.use(function (req, res, next) {
-      const credentials = auth(req)
-
-      if (!credentials ||
-        credentials.name !== process.env.BASIC_AUTH_USER ||
-        credentials.pass !== process.env.BASIC_AUTH_PASSWORD
-      ) {
-        res.status(401)
-        res.header('WWW-Authenticate', 'Basic realm="MyRealm"')
-        res.send('Access denied')
-      } else {
-        next()
-      }
-    })
-  }
 
   // Robots.txt
   server.use('/robots.txt', express.static(

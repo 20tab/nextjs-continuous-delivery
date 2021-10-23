@@ -1,15 +1,16 @@
 locals {
-  project_name     = "{{ cookiecutter.project_name }}"
-  project_slug     = "{{ cookiecutter.project_slug }}"
+  project_name = "{{ cookiecutter.project_name }}"
+  project_slug = "{{ cookiecutter.project_slug }}"
+  service_slug = "{{ cookiecutter.service_slug }}"
   environment_slug = { development = "dev", staging = "stage", production = "prod" }[lower(var.environment)]
+  namespace = "${local.project_slug}-${local.environment_slug}"
 
-  service_slug = "${local.project_slug}-${local.environment_slug}-{{ cookiecutter.service_slug }}"
   service_labels = {
     component   = local.service_slug
-    domain      = var.project_domain
     environment = var.environment
     project     = local.project_name
     terraform   = "true"
+    url         = var.project_url
   }
 }
 
@@ -56,7 +57,7 @@ resource "kubernetes_deployment" "frontend" {
 
   metadata {
     name      = "${local.service_slug}-deployment"
-    namespace = "${local.project_slug}-development"
+    namespace = local.namespace
   }
 
   spec {
@@ -112,7 +113,7 @@ resource "kubernetes_service" "frontend_cluster_ip" {
 
   metadata {
     name      = "${local.service_slug}-cluster-ip-service"
-    namespace = "${local.project_slug}-development"
+    namespace = local.namespace
   }
 
   spec {
