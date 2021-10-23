@@ -29,12 +29,10 @@ terraform {
   }
 }
 
+/* Providers */
+
 provider "digitalocean" {
   token = var.digitalocean_token
-}
-
-data "digitalocean_kubernetes_cluster" "main" {
-  name = var.digitalocean_cluster_name
 }
 
 provider "kubernetes" {
@@ -44,6 +42,13 @@ provider "kubernetes" {
     data.digitalocean_kubernetes_cluster.main.kube_config[0].cluster_ca_certificate
   )
 }
+
+/* Data Sources */
+
+data "digitalocean_kubernetes_cluster" "main" {
+  name = var.digitalocean_cluster_name
+}
+
 
 /* Deployment */
 

@@ -16,9 +16,13 @@ terraform {
   }
 }
 
+/* Providers */
+
 provider "gitlab" {
   token = var.gitlab_token
 }
+
+/* Data Sources */
 
 data "gitlab_group" "group" {
   full_path = var.gitlab_group_slug
@@ -32,6 +36,8 @@ data "http" "user_info" {
     Authorization = "Bearer ${var.gitlab_token}"
   }
 }
+
+/* Resources */
 
 resource "gitlab_project" "frontend" {
   name                   = "Frontend"
