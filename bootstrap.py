@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-"""Boostrap a web project based on templates."""
+"""Initialize a web project Next.js service based on a template."""
 
 import os
 import shutil
 import subprocess
+from functools import partial
 from pathlib import Path
 
 import click
@@ -14,11 +15,7 @@ GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
 OUTPUT_BASE_DIR = os.getenv("OUTPUT_BASE_DIR")
 
 
-def create_env_file(service_dir):
-    """Create env file from the template."""
-    env_path = Path(service_dir) / Path(".env_template")
-    env_template = env_path.read_text()
-    env_path.write_text(env_template)
+warning = partial(click.style, fg="yellow")
 
 
 def init_service(
@@ -54,6 +51,13 @@ def init_service(
     )
 
 
+def create_env_file(service_dir):
+    """Create env file from the template."""
+    env_path = Path(service_dir) / Path(".env_template")
+    env_template = env_path.read_text()
+    env_path.write_text(env_template)
+
+
 def init_gitlab(
     gitlab_group_slug,
     gitlab_private_token,
@@ -61,13 +65,19 @@ def init_gitlab(
     project_slug,
     service_dir,
     service_slug,
+    create_group_variables,
+    sentry_dsn,
+    digitalocean_token,
 ):
     """Initialize the Gitlab repositories."""
     env = {
+        "TF_VAR_create_group_variables": create_group_variables and "true" or "false",
+        "TF_VAR_digitalocean_token": digitalocean_token,
         "TF_VAR_gitlab_group_slug": gitlab_group_slug,
         "TF_VAR_gitlab_token": gitlab_private_token,
         "TF_VAR_project_name": project_name,
         "TF_VAR_project_slug": project_slug,
+        "TF_VAR_sentry_dsn": sentry_dsn,
         "TF_VAR_service_dir": service_dir,
         "TF_VAR_service_slug": service_slug,
     }
@@ -107,10 +117,13 @@ def slugify_option(ctx, param, value):
 @click.option("--project-url-dev")
 @click.option("--project-url-stage")
 @click.option("--project-url-prod")
+@click.option("--digitalocean-token")
+@click.option("--sentry-dsn")
 @click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
+@click.option("--create-group-variables", is_flag=True, default=None)
 @click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
 @click.option("--gitlab-group-slug")
-def init_handler(
+def run(
     output_dir,
     project_name,
     project_slug,
@@ -119,7 +132,10 @@ def init_handler(
     project_url_dev,
     project_url_stage,
     project_url_prod,
+    digitalocean_token,
+    sentry_dsn,
     use_gitlab,
+    create_group_variables,
     gitlab_private_token,
     gitlab_group_slug,
 ):
@@ -167,20 +183,37 @@ def init_handler(
     use_gitlab = (
         use_gitlab
         if use_gitlab is not None
-        else click.confirm("Do you want to configure Gitlab?", default=True)
+        else click.confirm(warning("Do you want to configure Gitlab?"), default=True)
     )
     if use_gitlab:
         gitlab_group_slug = gitlab_group_slug or click.prompt(
             "Gitlab group slug", default=project_slug
         )
         click.confirm(
-            f'Make sure the Gitlab "{gitlab_group_slug}" group exists '
-            "before proceeding. Continue?",
+            warning(
+                f'Make sure the Gitlab "{gitlab_group_slug}" group exists '
+                "before proceeding. Continue?",
+            ),
             abort=True,
         )
         gitlab_private_token = gitlab_private_token or click.prompt(
             "Gitlab private token (with API scope enabled)", hide_input=True
         )
+        create_group_variables = (
+            create_group_variables
+            if create_group_variables is not None
+            else click.confirm(
+                warning("Do you want to create Gitlab group variables?"),
+                default=False,
+            )
+        )
+        if create_group_variables:
+            sentry_dsn = sentry_dsn or click.prompt(
+                "Sentry DSN (leave blank if unused)", hide_input=True, default=""
+            )
+            digitalocean_token = digitalocean_token or click.prompt(
+                "DigitalOcean token", hide_input=True
+            )
         init_gitlab(
             gitlab_group_slug,
             gitlab_private_token,
@@ -188,8 +221,11 @@ def init_handler(
             project_slug,
             service_dir,
             service_slug,
+            create_group_variables,
+            sentry_dsn,
+            digitalocean_token,
         )
 
 
 if __name__ == "__main__":
-    init_handler()
+    run()

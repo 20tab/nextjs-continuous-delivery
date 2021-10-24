@@ -14,6 +14,8 @@ locals {
     terraform   = "true"
     url         = var.project_url
   }
+
+  digitalocean_k8s_cluster_name = coalesce(var.digitalocean_k8s_cluster_name, "${local.project_slug}-k8s-cluster")
 }
 
 terraform {
@@ -49,7 +51,7 @@ provider "kubernetes" {
 /* Data Sources */
 
 data "digitalocean_kubernetes_cluster" "main" {
-  name = var.digitalocean_cluster_name
+  name = local.digitalocean_k8s_cluster_name
 }
 
 

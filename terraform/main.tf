@@ -37,7 +37,7 @@ data "http" "user_info" {
   }
 }
 
-/* Resources */
+/* Project */
 
 resource "gitlab_project" "main" {
   name                   = title(var.service_slug)
@@ -80,6 +80,8 @@ resource "null_resource" "init_repo" {
   }
 }
 
+/* Branch Protections */
+
 resource "gitlab_branch_protection" "develop" {
   project            = gitlab_project.main.id
   branch             = "develop"
@@ -102,6 +104,8 @@ resource "gitlab_tag_protection" "tags" {
   create_access_level = "maintainer"
 }
 
+/* Badges */
+
 resource "gitlab_project_badge" "coverage" {
   project   = gitlab_project.main.id
   link_url  = "https://${var.project_slug}.gitlab.io/${var.service_slug}/"
@@ -112,4 +116,28 @@ resource "gitlab_project_badge" "pipeline" {
   project   = gitlab_project.main.id
   link_url  = "https://gitlab.com/%%{project_path}/pipelines"
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/pipeline.svg"
+}
+
+/* Group Variables */
+
+resource "gitlab_group_variable" "digitalocean_token" {
+  count = var.create_group_variables ? 1 : 0
+
+  group     = data.gitlab_group.group.id
+  key       = "DIGITALOCEAN_TOKEN"
+  value     = var.digitalocean_token
+  protected = true
+  masked    = true
+}
+
+/* Project Variables */
+
+resource "gitlab_project_variable" "sentry_dsn" {
+  count = var.sentry_dsn == "" ? 0 : 1
+
+  project   = gitlab_project.main.id
+  key       = "SENTRY_DSN"
+  value     = var.sentry_dsn
+  protected = true
+  masked    = true
 }

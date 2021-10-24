@@ -4,9 +4,10 @@ variable "digitalocean_token" {
   sensitive   = true
 }
 
-variable "digitalocean_cluster_name" {
+variable "digitalocean_k8s_cluster_name" {
   description = "The DigitalOcean cluster name."
   type        = string
+  default     = ""
 }
 
 variable "environment" {
