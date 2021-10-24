@@ -39,19 +39,19 @@ data "http" "user_info" {
 
 /* Resources */
 
-resource "gitlab_project" "frontend" {
-  name                   = "Frontend"
-  path                   = "frontend"
-  description            = "The \"${var.project_name}\" project frontend service."
+resource "gitlab_project" "main" {
+  name                   = title(var.service_slug)
+  path                   = var.service_slug
+  description            = "The \"${var.project_name}\" project ${var.service_slug} service."
   namespace_id           = data.gitlab_group.group.id
   initialize_with_readme = false
 }
 
-resource "null_resource" "init_frontend" {
-  depends_on = [gitlab_branch_protection.develop_frontend]
+resource "null_resource" "init_repo" {
+  depends_on = [gitlab_branch_protection.develop]
 
   triggers = {
-    frontend_project_id = gitlab_project.frontend.id
+    service_project_id = gitlab_project.main.id
   }
 
   provisioner "local-exec" {
@@ -69,47 +69,47 @@ resource "null_resource" "init_frontend" {
           "git remote set-url origin %s",
         ]),
         replace(
-          gitlab_project.frontend.http_url_to_repo,
+          gitlab_project.main.http_url_to_repo,
           "/^https://(.*)$/",
           "https://oauth2:${var.gitlab_token}@$1"
         ),
-        gitlab_project.frontend.ssh_url_to_repo,
+        gitlab_project.main.ssh_url_to_repo,
 
       )
     ])
   }
 }
 
-resource "gitlab_branch_protection" "develop_frontend" {
-  project            = gitlab_project.frontend.id
+resource "gitlab_branch_protection" "develop" {
+  project            = gitlab_project.main.id
   branch             = "develop"
   push_access_level  = "maintainer"
   merge_access_level = "developer"
 }
 
-resource "gitlab_branch_protection" "master_frontend" {
-  depends_on = [null_resource.init_frontend]
+resource "gitlab_branch_protection" "master" {
+  depends_on = [null_resource.init_repo]
 
-  project            = gitlab_project.frontend.id
+  project            = gitlab_project.main.id
   branch             = "master"
   push_access_level  = "no one"
   merge_access_level = "maintainer"
 }
 
-resource "gitlab_tag_protection" "tags_frontend" {
-  project             = gitlab_project.frontend.id
+resource "gitlab_tag_protection" "tags" {
+  project             = gitlab_project.main.id
   tag                 = "*"
   create_access_level = "maintainer"
 }
 
-resource "gitlab_project_badge" "coverage_frontend" {
-  project   = gitlab_project.frontend.id
-  link_url  = "https://${var.project_slug}.gitlab.io/frontend/"
+resource "gitlab_project_badge" "coverage" {
+  project   = gitlab_project.main.id
+  link_url  = "https://${var.project_slug}.gitlab.io/${var.service_slug}/"
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/pipeline.svg"
 }
 
-resource "gitlab_project_badge" "pipeline_frontend" {
-  project   = gitlab_project.frontend.id
+resource "gitlab_project_badge" "pipeline" {
+  project   = gitlab_project.main.id
   link_url  = "https://gitlab.com/%%{project_path}/pipelines"
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/pipeline.svg"
 }

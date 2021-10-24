@@ -18,7 +18,7 @@ const nextjsConfig = {
 const SentryWebpackPluginOptions = {
   authToken: SENTRY_AUTH_TOKEN,
   org: SENTRY_ORG,
-  project: '{{ cookiecutter.project_slug }}-frontend',
+  project: '{{ cookiecutter.project_slug }}-{{ cookiecutter.service_slug }}',
   url: SENTRY_URL
 }
 

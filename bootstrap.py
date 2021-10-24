@@ -37,7 +37,7 @@ def init_service(
         f'A directory "{service_dir}" already exists and ' "must be deleted. Continue?"
     ):
         shutil.rmtree(service_dir)
-    """Initialize the frontend service project."""
+    """Initialize the service project."""
     cookiecutter(
         ".",
         extra_context={
@@ -57,17 +57,19 @@ def init_service(
 def init_gitlab(
     gitlab_group_slug,
     gitlab_private_token,
-    service_dir,
     project_name,
     project_slug,
+    service_dir,
+    service_slug,
 ):
     """Initialize the Gitlab repositories."""
     env = {
         "TF_VAR_gitlab_group_slug": gitlab_group_slug,
         "TF_VAR_gitlab_token": gitlab_private_token,
-        "TF_VAR_service_dir": service_dir,
         "TF_VAR_project_name": project_name,
         "TF_VAR_project_slug": project_slug,
+        "TF_VAR_service_dir": service_dir,
+        "TF_VAR_service_slug": service_slug,
     }
     subprocess.run(
         ["terraform", "init", "-reconfigure", "-input=false"],
@@ -182,9 +184,10 @@ def init_handler(
         init_gitlab(
             gitlab_group_slug,
             gitlab_private_token,
-            service_dir,
             project_name,
             project_slug,
+            service_dir,
+            service_slug,
         )
 
 

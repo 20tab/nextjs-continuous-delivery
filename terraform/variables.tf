@@ -14,6 +14,11 @@ variable "service_dir" {
   type        = string
 }
 
+variable "service_slug" {
+  description = "The service slug."
+  type        = string
+}
+
 variable "project_description" {
   description = "The project description."
   type        = string

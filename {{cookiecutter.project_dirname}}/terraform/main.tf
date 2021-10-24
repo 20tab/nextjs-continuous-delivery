@@ -2,7 +2,9 @@ locals {
   project_name = "{{ cookiecutter.project_name }}"
   project_slug = "{{ cookiecutter.project_slug }}"
   service_slug = "{{ cookiecutter.service_slug }}"
+
   environment_slug = { development = "dev", staging = "stage", production = "prod" }[lower(var.environment)]
+
   namespace = "${local.project_slug}-${local.environment_slug}"
 
   service_labels = {
@@ -51,12 +53,27 @@ data "digitalocean_kubernetes_cluster" "main" {
 }
 
 
+/* Config Map */
+
+resource "kubernetes_config_map" "env" {
+  metadata {
+    name      = "${local.service_slug}-env"
+    namespace = local.namespace
+  }
+
+  data = {
+    INTERNAL_API_URL        = var.internal_api_url
+    NEXT_PUBLIC_PROJECT_URL = var.project_url
+    REACT_ENVIRONMENT       = var.environment
+  }
+}
+
 /* Deployment */
 
-resource "kubernetes_deployment" "frontend" {
+resource "kubernetes_deployment" "main" {
 
   metadata {
-    name      = "${local.service_slug}-deployment"
+    name      = local.service_slug
     namespace = local.namespace
   }
 
@@ -87,19 +104,10 @@ resource "kubernetes_deployment" "frontend" {
             container_port = var.service_container_port
           }
 
-          env {
-            name  = "INTERNAL_API_URL"
-            value = var.internal_api_url
-          }
-
-          env {
-            name  = "NEXT_PUBLIC_PROJECT_URL"
-            value = var.project_url
-          }
-
-          env {
-            name  = "REACT_ENVIRONMENT"
-            value = var.environment
+          env_from {
+            config_map_ref {
+              name = kubernetes_config_map.env.metadata[0].name
+            }
           }
         }
       }
@@ -109,10 +117,10 @@ resource "kubernetes_deployment" "frontend" {
 
 /* Cluster IP */
 
-resource "kubernetes_service" "frontend_cluster_ip" {
+resource "kubernetes_service" "cluster_ip" {
 
   metadata {
-    name      = "${local.service_slug}-cluster-ip-service"
+    name      = local.service_slug
     namespace = local.namespace
   }
 
