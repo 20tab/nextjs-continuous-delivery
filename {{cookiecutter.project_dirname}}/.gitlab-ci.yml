@@ -234,7 +234,8 @@ build:
     paths:
       - ${TF_ROOT}/plan.cache
     reports:
-      terraform: ${TF_ROOT}/plan.json{% else %}.deploy:
+      terraform: ${TF_ROOT}/plan.json
+{% else %}.deploy:
   stage: Deploy
   image:
     name: docker:20
@@ -252,8 +253,8 @@ build:
       -e KUBE_TOKEN
       -e KUBE_URL
       --entrypoint=""
-      bitnami/kubectl:latest /app/scripts/deploy.sh{% endif %}
-
+      bitnami/kubectl:latest /app/scripts/deploy.sh
+{% endif %}
 deploy_development:
   extends:
     - .development
