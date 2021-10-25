@@ -19,7 +19,6 @@ warning = partial(click.style, fg="yellow")
 
 
 def init_service(
-    service_dir,
     project_dirname,
     project_name,
     project_slug,
@@ -30,11 +29,7 @@ def init_service(
     output_dir,
 ):
     """Initialize the service."""
-    if Path(service_dir).is_dir() and click.confirm(
-        f'A directory "{service_dir}" already exists and ' "must be deleted. Continue?"
-    ):
-        shutil.rmtree(service_dir)
-    """Initialize the service project."""
+    click.echo("...cookiecutting the service")
     cookiecutter(
         ".",
         extra_context={
@@ -53,6 +48,7 @@ def init_service(
 
 def create_env_file(service_dir):
     """Create env file from the template."""
+    click.echo("...generating the .env file")
     env_path = Path(service_dir) / Path(".env_template")
     env_template = env_path.read_text()
     env_path.write_text(env_template)
@@ -69,7 +65,8 @@ def init_gitlab(
     sentry_dsn,
     digitalocean_token,
 ):
-    """Initialize the Gitlab repositories."""
+    """Initialize the Gitlab repository and associated resources."""
+    click.echo("...creating the Gitlab repository and associated resources")
     env = {
         "TF_VAR_create_group_variables": create_group_variables and "true" or "false",
         "TF_VAR_digitalocean_token": digitalocean_token,
@@ -108,23 +105,8 @@ def slugify_option(ctx, param, value):
     return value and slugify(value)
 
 
-@click.command()
-@click.option("--output-dir", default=".", required=OUTPUT_DIR is None)
-@click.option("--project-name", prompt=True)
-@click.option("--project-slug", callback=slugify_option)
-@click.option("--service-slug", callback=slugify_option)
-@click.option("--project-dirname")
-@click.option("--project-url-dev")
-@click.option("--project-url-stage")
-@click.option("--project-url-prod")
-@click.option("--digitalocean-token")
-@click.option("--sentry-dsn")
-@click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
-@click.option("--create-group-variables", is_flag=True, default=None)
-@click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
-@click.option("--gitlab-group-slug")
-@click.option("--uid", type=int)
 def run(
+    service_dir,
     output_dir,
     project_name,
     project_slug,
@@ -141,7 +123,67 @@ def run(
     gitlab_group_slug,
     uid,
 ):
-    """Init the bootstrap handler."""
+    """Run the bootstrap."""
+    click.echo(f"Initializing the {service_slug} service:")
+    init_service(
+        project_dirname,
+        project_name,
+        project_slug,
+        service_slug,
+        project_url_dev,
+        project_url_stage,
+        project_url_prod,
+        output_dir,
+    )
+    create_env_file(service_dir)
+    use_gitlab and init_gitlab(
+        gitlab_group_slug,
+        gitlab_private_token,
+        project_name,
+        project_slug,
+        service_dir,
+        service_slug,
+        create_group_variables,
+        sentry_dsn,
+        digitalocean_token,
+    )
+    change_output_owner(service_dir, uid)
+
+
+@click.command()
+@click.option("--output-dir", default=".", required=OUTPUT_DIR is None)
+@click.option("--project-name", prompt=True)
+@click.option("--project-slug", callback=slugify_option)
+@click.option("--service-slug", callback=slugify_option)
+@click.option("--project-dirname")
+@click.option("--project-url-dev")
+@click.option("--project-url-stage")
+@click.option("--project-url-prod")
+@click.option("--digitalocean-token")
+@click.option("--sentry-dsn")
+@click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
+@click.option("--create-group-variables", is_flag=True, default=None)
+@click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
+@click.option("--gitlab-group-slug")
+@click.option("--uid", type=int)
+def init_command(
+    output_dir,
+    project_name,
+    project_slug,
+    service_slug,
+    project_dirname,
+    project_url_dev,
+    project_url_stage,
+    project_url_prod,
+    digitalocean_token,
+    sentry_dsn,
+    use_gitlab,
+    create_group_variables,
+    gitlab_private_token,
+    gitlab_group_slug,
+    uid,
+):
+    """Collect options and run the bootstrap."""
     project_slug = slugify(
         project_slug or click.prompt("Project slug", default=slugify(project_name)),
     )
@@ -170,18 +212,10 @@ def run(
     )
     output_dir = OUTPUT_DIR or output_dir
     service_dir = (Path(output_dir) / Path(project_dirname)).resolve()
-    init_service(
-        service_dir,
-        project_dirname,
-        project_name,
-        project_slug,
-        service_slug,
-        project_url_dev,
-        project_url_stage,
-        project_url_prod,
-        output_dir,
-    )
-    create_env_file(service_dir)
+    if Path(service_dir).is_dir() and click.confirm(
+        f'A directory "{service_dir}" already exists and ' "must be deleted. Continue?"
+    ):
+        shutil.rmtree(service_dir)
     use_gitlab = (
         use_gitlab
         if use_gitlab is not None
@@ -216,19 +250,25 @@ def run(
             digitalocean_token = digitalocean_token or click.prompt(
                 "DigitalOcean token", hide_input=True
             )
-        init_gitlab(
-            gitlab_group_slug,
-            gitlab_private_token,
-            project_name,
-            project_slug,
-            service_dir,
-            service_slug,
-            create_group_variables,
-            sentry_dsn,
-            digitalocean_token,
-        )
-    change_output_owner(service_dir, uid)
+    run(
+        service_dir,
+        output_dir,
+        project_name,
+        project_slug,
+        service_slug,
+        project_dirname,
+        project_url_dev,
+        project_url_stage,
+        project_url_prod,
+        digitalocean_token,
+        sentry_dsn,
+        use_gitlab,
+        create_group_variables,
+        gitlab_private_token,
+        gitlab_group_slug,
+        uid,
+    )
 
 
 if __name__ == "__main__":
-    run()
+    init_command()
