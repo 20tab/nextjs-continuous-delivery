@@ -11,8 +11,8 @@ import click
 from cookiecutter.main import cookiecutter
 from slugify import slugify
 
-OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
+OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 
 
 warning = partial(click.style, fg="yellow")
