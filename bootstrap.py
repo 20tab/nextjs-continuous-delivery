@@ -262,7 +262,8 @@ def init_command(
         warning(
             f'A directory "{service_dir}" already exists and '
             "must be deleted. Continue?",
-        )
+        ),
+        abort=True,
     ):
         shutil.rmtree(service_dir)
     project_url_dev = project_url_dev or click.prompt(
