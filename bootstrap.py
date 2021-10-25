@@ -55,7 +55,7 @@ def init_service(
 def create_env_file(service_dir):
     """Create env file from the template."""
     click.echo(info("...generating the .env file"))
-    env_path = Path(service_dir) / Path(".env_template")
+    env_path = Path(service_dir) / ".env_template"
     env_template = env_path.read_text()
     env_path.write_text(env_template)
 
@@ -99,11 +99,6 @@ def init_gitlab(
 def change_output_owner(service_dir, uid):
     """Change the owner of the output directory recursively."""
     uid is not None and subprocess.run(["chown", "-R", uid, service_dir])
-
-
-def slugify_option(ctx, param, value):
-    """Slugify an option value."""
-    return value and slugify(value)
 
 
 def run(
@@ -207,6 +202,11 @@ def run(
         )
 
 
+def slugify_option(ctx, param, value):
+    """Slugify an option value."""
+    return value and slugify(value)
+
+
 def validate_or_prompt_url(value, message, default=None, required=False):
     """Validate the given URL or prompt until a valid value is provided."""
     if value is not None:
@@ -284,7 +284,7 @@ def init_command(
     service_slug = slugify(
         service_slug or click.prompt("Service slug", default="django"),
     )
-    service_dir = (Path(output_dir) / project_dirname).resolve()
+    service_dir = str(Path(output_dir) / project_dirname)
     if Path(service_dir).is_dir() and click.confirm(
         warning(
             f'A directory "{service_dir}" already exists and '
