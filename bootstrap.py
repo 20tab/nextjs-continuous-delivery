@@ -159,16 +159,15 @@ def run(
         else click.confirm(warning("Do you want to configure Gitlab?"), default=True)
     )
     if use_gitlab:
-        gitlab_group_slug = gitlab_group_slug or click.prompt(
-            "Gitlab group slug", default=project_slug
-        )
-        click.confirm(
-            warning(
-                f'Make sure the Gitlab "{gitlab_group_slug}" group exists '
-                "before proceeding. Continue?",
-            ),
-            abort=True,
-        )
+        if not gitlab_group_slug:
+            gitlab_group_slug = click.prompt("Gitlab group slug", default=project_slug)
+            click.confirm(
+                warning(
+                    f'Make sure the Gitlab "{gitlab_group_slug}" group exists '
+                    "before proceeding. Continue?"
+                ),
+                abort=True,
+            )
         gitlab_private_token = validate_or_prompt_password(
             gitlab_private_token,
             "Gitlab private token (with API scope enabled)",
