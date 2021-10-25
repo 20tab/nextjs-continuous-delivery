@@ -11,8 +11,8 @@ import click
 from cookiecutter.main import cookiecutter
 from slugify import slugify
 
+OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
-OUTPUT_BASE_DIR = os.getenv("OUTPUT_BASE_DIR")
 
 
 warning = partial(click.style, fg="yellow")
@@ -109,7 +109,7 @@ def slugify_option(ctx, param, value):
 
 
 @click.command()
-@click.option("--output-dir", default=".", required=OUTPUT_BASE_DIR is None)
+@click.option("--output-dir", default=".", required=OUTPUT_DIR is None)
 @click.option("--project-name", prompt=True)
 @click.option("--project-slug", callback=slugify_option)
 @click.option("--service-slug", callback=slugify_option)
@@ -168,7 +168,7 @@ def run(
         default=f"www.{project_slug}.com",
         type=str,
     )
-    output_dir = OUTPUT_BASE_DIR or output_dir
+    output_dir = OUTPUT_DIR or output_dir
     service_dir = (Path(output_dir) / Path(project_dirname)).resolve()
     init_service(
         service_dir,
