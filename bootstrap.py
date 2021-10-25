@@ -11,6 +11,8 @@ import click
 from cookiecutter.main import cookiecutter
 from slugify import slugify
 
+DEPLOY_TYPE_CHOICES = ["k8s-digitalocean", "k8s-other"]
+DEPLOY_TYPE_DEFAULT = "k8s-digitalocean"
 GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
 OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 
@@ -19,20 +21,22 @@ warning = partial(click.style, fg="yellow")
 
 
 def init_service(
-    project_dirname,
+    output_dir,
     project_name,
     project_slug,
+    project_dirname,
     service_slug,
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    output_dir,
+    deploy_type,
 ):
     """Initialize the service."""
     click.echo("...cookiecutting the service")
     cookiecutter(
         ".",
         extra_context={
+            "deploy_type": deploy_type,
             "project_dirname": project_dirname,
             "project_name": project_name,
             "project_slug": project_slug,
@@ -57,24 +61,24 @@ def create_env_file(service_dir):
 def init_gitlab(
     gitlab_group_slug,
     gitlab_private_token,
+    gitlab_project_variables,
+    gitlab_group_variables,
     project_name,
     project_slug,
-    service_dir,
     service_slug,
-    create_group_variables,
-    sentry_dsn,
-    digitalocean_token,
+    service_dir,
 ):
     """Initialize the Gitlab repository and associated resources."""
     click.echo("...creating the Gitlab repository and associated resources")
     env = {
-        "TF_VAR_create_group_variables": create_group_variables and "true" or "false",
-        "TF_VAR_digitalocean_token": digitalocean_token,
+        "TF_VAR_gitlab_group_variables": "{%s}"
+        % ", ".join(f"{k} = {v}" for k, v in gitlab_group_variables.items()),
         "TF_VAR_gitlab_group_slug": gitlab_group_slug,
         "TF_VAR_gitlab_token": gitlab_private_token,
         "TF_VAR_project_name": project_name,
         "TF_VAR_project_slug": project_slug,
-        "TF_VAR_sentry_dsn": sentry_dsn,
+        "TF_VAR_gitlab_project_variables": "{%s}"
+        % ", ".join(f"{k} = {v}" for k, v in gitlab_project_variables.items()),
         "TF_VAR_service_dir": service_dir,
         "TF_VAR_service_slug": service_slug,
     }
@@ -84,12 +88,7 @@ def init_gitlab(
         env=env,
     )
     subprocess.run(
-        [
-            "terraform",
-            "apply",
-            "-auto-approve",
-            "-input=false",
-        ],
+        ["terraform", "apply", "-auto-approve", "-input=false"],
         cwd="terraform",
         env=env,
     )
@@ -106,116 +105,51 @@ def slugify_option(ctx, param, value):
 
 
 def run(
-    service_dir,
+    uid,
     output_dir,
     project_name,
     project_slug,
-    service_slug,
     project_dirname,
+    service_slug,
+    service_dir,
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    digitalocean_token,
-    sentry_dsn,
-    use_gitlab,
-    create_group_variables,
-    gitlab_private_token,
-    gitlab_group_slug,
-    uid,
+    deploy_type,
+    digitalocean_token=None,
+    sentry_dsn=None,
+    use_gitlab=None,
+    create_group_variables=None,
+    gitlab_private_token=None,
+    gitlab_group_slug=None,
 ):
     """Run the bootstrap."""
+    deploy_type = (
+        deploy_type in DEPLOY_TYPE_CHOICES
+        or click.prompt(
+            "Deploy type",
+            default=DEPLOY_TYPE_DEFAULT,
+            type=click.Choice(DEPLOY_TYPE_CHOICES, case_sensitive=False),
+        )
+    ).lower()
+    if "digitalocean" in deploy_type:
+        digitalocean_token = digitalocean_token or click.prompt(
+            "DigitalOcean token", hide_input=True
+        )
     click.echo(f"Initializing the {service_slug} service:")
     init_service(
-        project_dirname,
+        output_dir,
         project_name,
         project_slug,
+        project_dirname,
         service_slug,
         project_url_dev,
         project_url_stage,
         project_url_prod,
-        output_dir,
+        deploy_type,
     )
     create_env_file(service_dir)
-    use_gitlab and init_gitlab(
-        gitlab_group_slug,
-        gitlab_private_token,
-        project_name,
-        project_slug,
-        service_dir,
-        service_slug,
-        create_group_variables,
-        sentry_dsn,
-        digitalocean_token,
-    )
     change_output_owner(service_dir, uid)
-
-
-@click.command()
-@click.option("--output-dir", default=".", required=OUTPUT_DIR is None)
-@click.option("--project-name", prompt=True)
-@click.option("--project-slug", callback=slugify_option)
-@click.option("--service-slug", callback=slugify_option)
-@click.option("--project-dirname")
-@click.option("--project-url-dev")
-@click.option("--project-url-stage")
-@click.option("--project-url-prod")
-@click.option("--digitalocean-token")
-@click.option("--sentry-dsn")
-@click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
-@click.option("--create-group-variables", is_flag=True, default=None)
-@click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
-@click.option("--gitlab-group-slug")
-@click.option("--uid", type=int)
-def init_command(
-    output_dir,
-    project_name,
-    project_slug,
-    service_slug,
-    project_dirname,
-    project_url_dev,
-    project_url_stage,
-    project_url_prod,
-    digitalocean_token,
-    sentry_dsn,
-    use_gitlab,
-    create_group_variables,
-    gitlab_private_token,
-    gitlab_group_slug,
-    uid,
-):
-    """Collect options and run the bootstrap."""
-    project_slug = slugify(
-        project_slug or click.prompt("Project slug", default=slugify(project_name)),
-    )
-    service_slug = slugify(
-        service_slug or click.prompt("Service slug", default="nextjs"),
-    )
-    project_dirname = project_dirname or click.prompt(
-        "Project dirname",
-        default=service_slug,
-        type=click.Choice([service_slug, project_slug]),
-    )
-    project_url_dev = project_url_dev or click.prompt(
-        "Development environment complete URL",
-        default=f"dev.{project_slug}.com",
-        type=str,
-    )
-    project_url_stage = project_url_stage or click.prompt(
-        "Staging environment complete URL",
-        default=f"stage.{project_slug}.com",
-        type=str,
-    )
-    project_url_prod = project_url_prod or click.prompt(
-        "Production environment complete URL",
-        default=f"www.{project_slug}.com",
-        type=str,
-    )
-    output_dir = OUTPUT_DIR or output_dir
-    service_dir = (Path(output_dir) / Path(project_dirname)).resolve()
-    if Path(service_dir).is_dir() and click.confirm(
-        f'A directory "{service_dir}" already exists and ' "must be deleted. Continue?"
-    ):
-        shutil.rmtree(service_dir)
     use_gitlab = (
         use_gitlab
         if use_gitlab is not None
@@ -235,6 +169,14 @@ def init_command(
         gitlab_private_token = gitlab_private_token or click.prompt(
             "Gitlab private token (with API scope enabled)", hide_input=True
         )
+        sentry_dsn = sentry_dsn or click.prompt(
+            "Sentry DSN (leave blank if unused)", hide_input=True, default=""
+        )
+        gitlab_project_variables = {}
+        sentry_dsn and gitlab_project_variables.update(
+            SENTRY_DSN='{value = "%s"}' % sentry_dsn
+        )
+        gitlab_group_variables = {}
         create_group_variables = (
             create_group_variables
             if create_group_variables is not None
@@ -244,29 +186,114 @@ def init_command(
             )
         )
         if create_group_variables:
-            sentry_dsn = sentry_dsn or click.prompt(
-                "Sentry DSN (leave blank if unused)", hide_input=True, default=""
+            digitalocean_token and gitlab_group_variables.update(
+                DIGITALOCEAN_TOKEN='{value = "%s"}' % digitalocean_token
             )
-            digitalocean_token = digitalocean_token or click.prompt(
-                "DigitalOcean token", hide_input=True
-            )
-    run(
-        service_dir,
-        output_dir,
+    init_gitlab(
+        gitlab_group_slug,
+        gitlab_private_token,
+        gitlab_project_variables,
+        gitlab_group_variables,
         project_name,
         project_slug,
         service_slug,
+        service_dir,
+    )
+
+
+@click.command()
+@click.option("--uid", type=int)
+@click.option("--output-dir", default=".", required=OUTPUT_DIR is None)
+@click.option("--project-name", prompt=True)
+@click.option("--project-slug", callback=slugify_option)
+@click.option("--project-dirname")
+@click.option("--service-slug", callback=slugify_option)
+@click.option("--project-url-dev")
+@click.option("--project-url-stage")
+@click.option("--project-url-prod")
+@click.option(
+    "--deploy-type",
+    type=click.Choice(DEPLOY_TYPE_CHOICES, case_sensitive=False),
+)
+@click.option("--digitalocean-token")
+@click.option("--sentry-dsn")
+@click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
+@click.option("--create-group-variables", is_flag=True, default=None)
+@click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
+@click.option("--gitlab-group-slug")
+def init_command(
+    uid,
+    output_dir,
+    project_name,
+    project_slug,
+    project_dirname,
+    service_slug,
+    project_url_dev,
+    project_url_stage,
+    project_url_prod,
+    deploy_type,
+    digitalocean_token,
+    sentry_dsn,
+    use_gitlab,
+    create_group_variables,
+    gitlab_private_token,
+    gitlab_group_slug,
+):
+    """Collect options and run the bootstrap."""
+    project_slug = slugify(
+        project_slug or click.prompt("Project slug", default=slugify(project_name)),
+    )
+    service_slug = slugify(
+        service_slug or click.prompt("Service slug", default="nextjs"),
+    )
+    project_dirname_choices = [
+        slugify(service_slug, separator=""),
+        slugify(project_slug, separator=""),
+    ]
+    project_dirname = project_dirname or click.prompt(
+        "Project dirname",
+        default=project_dirname_choices[0],
+        type=click.Choice(project_dirname_choices),
+    )
+    project_url_dev = project_url_dev or click.prompt(
+        "Development environment complete URL",
+        default=f"dev.{project_slug}.com",
+        type=str,
+    )
+    project_url_stage = project_url_stage or click.prompt(
+        "Staging environment complete URL",
+        default=f"stage.{project_slug}.com",
+        type=str,
+    )
+    project_url_prod = project_url_prod or click.prompt(
+        "Production environment complete URL",
+        default=f"www.{project_slug}.com",
+        type=str,
+    )
+    output_dir = OUTPUT_DIR or output_dir
+    service_dir = (Path(output_dir) / project_dirname).resolve()
+    if Path(service_dir).is_dir() and click.confirm(
+        f'A directory "{service_dir}" already exists and ' "must be deleted. Continue?"
+    ):
+        shutil.rmtree(service_dir)
+    run(
+        uid,
+        output_dir,
+        project_name,
+        project_slug,
         project_dirname,
+        service_slug,
+        service_dir,
         project_url_dev,
         project_url_stage,
         project_url_prod,
+        deploy_type,
         digitalocean_token,
         sentry_dsn,
         use_gitlab,
         create_group_variables,
         gitlab_private_token,
         gitlab_group_slug,
-        uid,
     )
 
 

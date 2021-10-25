@@ -120,24 +120,25 @@ resource "gitlab_project_badge" "pipeline" {
 
 /* Group Variables */
 
-resource "gitlab_group_variable" "digitalocean_token" {
-  count = var.create_group_variables ? 1 : 0
+resource "gitlab_group_variable" "vars" {
+  for_each = var.gitlab_group_variables
 
   group     = data.gitlab_group.group.id
-  key       = "DIGITALOCEAN_TOKEN"
-  value     = var.digitalocean_token
-  protected = true
-  masked    = true
+  key       = each.key
+  value     = each.value.value
+  protected = each.value.protected
+  masked    = each.value.masked
 }
 
 /* Project Variables */
 
-resource "gitlab_project_variable" "sentry_dsn" {
-  count = var.sentry_dsn == "" ? 0 : 1
+resource "gitlab_project_variable" "vars" {
+  for_each = var.gitlab_project_variables
 
-  project   = gitlab_project.main.id
-  key       = "SENTRY_DSN"
-  value     = var.sentry_dsn
-  protected = true
-  masked    = true
+  project           = gitlab_project.main.id
+  key               = each.key
+  value             = each.value.value
+  protected         = lookup(each.value, "protected", true)
+  masked            = lookup(each.value, "masked", true)
+  environment_scope = lookup(each.value, "environment_scope", "*")
 }
