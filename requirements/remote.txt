@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements/remote.txt requirements/remote.in
 #
-arrow==1.2.0
+arrow==1.2.1
     # via jinja2-time
 binaryornot==0.4.4
     # via cookiecutter
@@ -20,6 +20,8 @@ click==8.0.3
     #   cookiecutter
 cookiecutter==1.7.3
     # via -r requirements/common.in
+decorator==5.1.0
+    # via validators
 idna==3.3
     # via requests
 jinja2==3.0.2
@@ -42,9 +44,12 @@ six==1.16.0
     # via
     #   cookiecutter
     #   python-dateutil
+    #   validators
 text-unidecode==1.3
     # via python-slugify
 types-python-slugify==0.1.2
     # via -r requirements/common.in
 urllib3==1.26.7
     # via requests
+validators==0.18.2
+    # via -r requirements/common.in

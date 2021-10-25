@@ -8,6 +8,7 @@ from functools import partial
 from pathlib import Path
 
 import click
+import validators
 from cookiecutter.main import cookiecutter
 from slugify import slugify
 
@@ -16,8 +17,9 @@ DEPLOY_TYPE_DEFAULT = "k8s-digitalocean"
 GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
 OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 
-
+highlight = partial(click.style, fg="cyan")
 warning = partial(click.style, fg="yellow")
+info = partial(click.style, dim=True)
 
 
 def init_service(
@@ -32,7 +34,7 @@ def init_service(
     deploy_type,
 ):
     """Initialize the service."""
-    click.echo("...cookiecutting the service")
+    click.echo(info("...cookiecutting the service"))
     cookiecutter(
         ".",
         extra_context={
@@ -52,7 +54,7 @@ def init_service(
 
 def create_env_file(service_dir):
     """Create env file from the template."""
-    click.echo("...generating the .env file")
+    click.echo(info("...generating the .env file"))
     env_path = Path(service_dir) / Path(".env_template")
     env_template = env_path.read_text()
     env_path.write_text(env_template)
@@ -69,7 +71,7 @@ def init_gitlab(
     service_dir,
 ):
     """Initialize the Gitlab repository and associated resources."""
-    click.echo("...creating the Gitlab repository and associated resources")
+    click.echo(info("...creating the Gitlab repository and associated resources"))
     env = {
         "TF_VAR_gitlab_group_variables": "{%s}"
         % ", ".join(f"{k} = {v}" for k, v in gitlab_group_variables.items()),
@@ -134,10 +136,10 @@ def run(
         )
     ).lower()
     if "digitalocean" in deploy_type:
-        digitalocean_token = digitalocean_token or click.prompt(
-            "DigitalOcean token", hide_input=True
+        digitalocean_token = validate_or_prompt_password(
+            digitalocean_token, "DigitalOcean token", required=True
         )
-    click.echo(f"Initializing the {service_slug} service:")
+    click.echo(highlight(f"Initializing the {service_slug} service:"))
     init_service(
         output_dir,
         project_name,
@@ -167,11 +169,15 @@ def run(
             ),
             abort=True,
         )
-        gitlab_private_token = gitlab_private_token or click.prompt(
-            "Gitlab private token (with API scope enabled)", hide_input=True
+        gitlab_private_token = validate_or_prompt_password(
+            gitlab_private_token,
+            "Gitlab private token (with API scope enabled)",
+            required=True,
         )
-        sentry_dsn = sentry_dsn or click.prompt(
-            "Sentry DSN (leave blank if unused)", hide_input=True, default=""
+        sentry_dsn = validate_or_prompt_url(
+            sentry_dsn,
+            "Sentry DSN (leave blank if unused)",
+            default="",
         )
         gitlab_project_variables = {}
         sentry_dsn and gitlab_project_variables.update(
@@ -190,16 +196,38 @@ def run(
             digitalocean_token and gitlab_group_variables.update(
                 DIGITALOCEAN_TOKEN='{value = "%s"}' % digitalocean_token
             )
-    init_gitlab(
-        gitlab_group_slug,
-        gitlab_private_token,
-        gitlab_project_variables,
-        gitlab_group_variables,
-        project_name,
-        project_slug,
-        service_slug,
-        service_dir,
-    )
+        init_gitlab(
+            gitlab_group_slug,
+            gitlab_private_token,
+            gitlab_project_variables,
+            gitlab_group_variables,
+            project_name,
+            project_slug,
+            service_slug,
+            service_dir,
+        )
+
+
+def validate_or_prompt_url(value, message, default=None, required=False):
+    """Validate the given URL or prompt until a valid value is provided."""
+    if value is not None:
+        if not required and value == "" or validators.url(value):
+            return value
+        else:
+            click.echo("Please type a valid URL!")
+    new_value = click.prompt(message, default=default)
+    return validate_or_prompt_url(new_value, message, default, required)
+
+
+def validate_or_prompt_password(value, message, default=None, required=False):
+    """Validate the given password or prompt until a valid value is provided."""
+    if value is not None:
+        if not required and value == "" or validators.length(value, min=8):
+            return value
+        else:
+            click.echo("Please type at least 8 chars!")
+    new_value = click.prompt(message, default=default, hide_input=True)
+    return validate_or_prompt_password(new_value, message, default, required)
 
 
 @click.command()
@@ -266,20 +294,20 @@ def init_command(
         abort=True,
     ):
         shutil.rmtree(service_dir)
-    project_url_dev = project_url_dev or click.prompt(
+    project_url_dev = validate_or_prompt_url(
+        project_url_dev,
         "Development environment complete URL",
-        default=f"dev.{project_slug}.com",
-        type=str,
+        default=f"https://dev.{project_slug}.com/",
     )
-    project_url_stage = project_url_stage or click.prompt(
+    project_url_stage = validate_or_prompt_url(
+        project_url_stage,
         "Staging environment complete URL",
-        default=f"stage.{project_slug}.com",
-        type=str,
+        default=f"https://stage.{project_slug}.com/",
     )
-    project_url_prod = project_url_prod or click.prompt(
+    project_url_prod = validate_or_prompt_url(
+        project_url_prod,
         "Production environment complete URL",
-        default=f"www.{project_slug}.com",
-        type=str,
+        default=f"https://www.{project_slug}.com/",
     )
     run(
         uid,

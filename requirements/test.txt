@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements/test.txt requirements/test.in
 #
-arrow==1.2.0
+arrow==1.2.1
     # via jinja2-time
 attrs==21.2.0
     # via
@@ -29,6 +29,8 @@ cookiecutter==1.7.3
     # via -r requirements/common.in
 coverage[toml]==5.5
     # via -r requirements/test.in
+decorator==5.1.0
+    # via validators
 flake8==3.9.2
     # via
     #   -r requirements/test.in
@@ -84,7 +86,7 @@ python-dateutil==2.8.2
     # via arrow
 python-slugify==5.0.2
     # via cookiecutter
-regex==2021.10.21
+regex==2021.10.23
     # via black
 requests==2.26.0
     # via cookiecutter
@@ -92,6 +94,7 @@ six==1.16.0
     # via
     #   cookiecutter
     #   python-dateutil
+    #   validators
 snowballstemmer==2.1.0
     # via pydocstyle
 testfixtures==6.18.3
@@ -102,7 +105,7 @@ toml==0.10.2
     # via
     #   coverage
     #   mypy
-tomli==1.2.1
+tomli==1.2.2
     # via black
 types-python-slugify==0.1.2
     # via -r requirements/common.in
@@ -112,3 +115,5 @@ typing-extensions==3.10.0.2
     #   mypy
 urllib3==1.26.7
     # via requests
+validators==0.18.2
+    # via -r requirements/common.in
