@@ -57,8 +57,8 @@ def create_env_file(service_dir):
     """Create env file from the template."""
     click.echo(info("...generating the .env file"))
     env_path = Path(service_dir) / ".env_template"
-    env_template = env_path.read_text()
-    env_path.write_text(env_template)
+    env_text = env_path.read_text()
+    (Path(service_dir) / ".env").write_text(env_text)
 
 
 def init_gitlab(
