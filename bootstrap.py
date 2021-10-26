@@ -12,8 +12,8 @@ import validators
 from cookiecutter.main import cookiecutter
 from slugify import slugify
 
-DEPLOY_TYPE_CHOICES = ["k8s-digitalocean", "k8s-other"]
-DEPLOY_TYPE_DEFAULT = "k8s-digitalocean"
+DEPLOYMENT_TYPE_CHOICES = ["k8s-digitalocean", "k8s-other"]
+DEPLOYMENT_TYPE_DEFAULT = "k8s-digitalocean"
 GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
 OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 
@@ -32,14 +32,14 @@ def init_service(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    deploy_type,
+    deployment_type,
 ):
     """Initialize the service."""
     click.echo(info("...cookiecutting the service"))
     cookiecutter(
         ".",
         extra_context={
-            "deploy_type": deploy_type,
+            "deployment_type": deployment_type,
             "project_dirname": project_dirname,
             "project_name": project_name,
             "project_slug": project_slug,
@@ -140,7 +140,7 @@ def run(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    deploy_type,
+    deployment_type,
     digitalocean_token=None,
     sentry_dsn=None,
     use_gitlab=None,
@@ -149,16 +149,7 @@ def run(
     gitlab_group_slug=None,
 ):
     """Run the bootstrap."""
-    deploy_type = (
-        deploy_type in DEPLOY_TYPE_CHOICES
-        and deploy_type
-        or click.prompt(
-            "Deploy type",
-            default=DEPLOY_TYPE_DEFAULT,
-            type=click.Choice(DEPLOY_TYPE_CHOICES, case_sensitive=False),
-        )
-    ).lower()
-    if "digitalocean" in deploy_type:
+    if "digitalocean" in deployment_type:
         digitalocean_token = validate_or_prompt_password(
             digitalocean_token, "DigitalOcean token", required=True
         )
@@ -172,7 +163,7 @@ def run(
         project_url_dev,
         project_url_stage,
         project_url_prod,
-        deploy_type,
+        deployment_type,
     )
     create_env_file(service_dir)
     change_output_owner(service_dir, uid)
@@ -268,8 +259,8 @@ def validate_or_prompt_password(value, message, default=None, required=False):
 @click.option("--project-url-stage")
 @click.option("--project-url-prod")
 @click.option(
-    "--deploy-type",
-    type=click.Choice(DEPLOY_TYPE_CHOICES, case_sensitive=False),
+    "--deployment-type",
+    type=click.Choice(DEPLOYMENT_TYPE_CHOICES, case_sensitive=False),
 )
 @click.option("--digitalocean-token")
 @click.option("--sentry-dsn")
@@ -287,7 +278,7 @@ def init_command(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    deploy_type,
+    deployment_type,
     digitalocean_token,
     sentry_dsn,
     use_gitlab,
@@ -300,6 +291,9 @@ def init_command(
     project_slug = slugify(
         project_slug or click.prompt("Project slug", default=slugify(project_name)),
     )
+    service_slug = slugify(
+        service_slug or click.prompt("Service slug", default="nextjs"),
+    )
     project_dirname_choices = [
         slugify(service_slug, separator=""),
         slugify(project_slug, separator=""),
@@ -308,9 +302,6 @@ def init_command(
         "Project dirname",
         default=project_dirname_choices[0],
         type=click.Choice(project_dirname_choices),
-    )
-    service_slug = slugify(
-        service_slug or click.prompt("Service slug", default="django"),
     )
     service_dir = str(Path(output_dir) / project_dirname)
     if Path(service_dir).is_dir() and click.confirm(
@@ -336,6 +327,15 @@ def init_command(
         "Production environment complete URL",
         default=f"https://www.{project_slug}.com/",
     )
+    deployment_type = (
+        deployment_type in DEPLOYMENT_TYPE_CHOICES
+        and deployment_type
+        or click.prompt(
+            "Deploy type",
+            default=DEPLOYMENT_TYPE_DEFAULT,
+            type=click.Choice(DEPLOYMENT_TYPE_CHOICES, case_sensitive=False),
+        )
+    ).lower()
     run(
         uid,
         output_dir,
@@ -347,7 +347,7 @@ def init_command(
         project_url_dev,
         project_url_stage,
         project_url_prod,
-        deploy_type,
+        deployment_type,
         digitalocean_token,
         sentry_dsn,
         use_gitlab,

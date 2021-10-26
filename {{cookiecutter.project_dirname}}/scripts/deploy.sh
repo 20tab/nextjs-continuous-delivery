@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-{% if cookiecutter.deploy_type == "k8s-digitalocean" %}cd ${TF_ROOT}
+{% if cookiecutter.deployment_type == "k8s-digitalocean" %}cd ${TF_ROOT}
 gitlab-terraform init
 gitlab-terraform validate
 gitlab-terraform plan

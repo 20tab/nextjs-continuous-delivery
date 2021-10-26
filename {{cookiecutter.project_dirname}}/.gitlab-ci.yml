@@ -201,7 +201,7 @@ build:
       variables:
         ENVIRONMENT_SLUG: prod
 
-{% if cookiecutter.deploy_type == "k8s-digitalocean" %}.deploy:
+{% if cookiecutter.deployment_type == "k8s-digitalocean" %}.deploy:
   stage: Deploy
   image:
     name: docker:20
