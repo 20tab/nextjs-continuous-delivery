@@ -182,9 +182,6 @@ build:
     - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
       variables:
         ENVIRONMENT_SLUG: dev
-        TF_VAR_k8s_cluster_certificate: $DEV_K8S_CLUSTER_CERTIFICATE
-        TF_VAR_k8s_cluster_host: $DEV_K8S_CLUSTER_HOST
-        TF_VAR_k8s_cluster_token: $DEV_K8S_CLUSTER_TOKEN
 
 
 .staging:
@@ -195,9 +192,6 @@ build:
     - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
       variables:
         ENVIRONMENT_SLUG: stage
-        TF_VAR_k8s_cluster_certificate: $STAGE_K8S_CLUSTER_CERTIFICATE
-        TF_VAR_k8s_cluster_host: $STAGE_K8S_CLUSTER_HOST
-        TF_VAR_k8s_cluster_token: $STAGE_K8S_CLUSTER_TOKEN
 
 .production:
   environment:
@@ -207,9 +201,6 @@ build:
     - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
       variables:
         ENVIRONMENT_SLUG: prod
-        TF_VAR_k8s_cluster_certificate: $PROD_K8S_CLUSTER_CERTIFICATE
-        TF_VAR_k8s_cluster_host: $PROD_K8S_CLUSTER_HOST
-        TF_VAR_k8s_cluster_token: $PROD_K8S_CLUSTER_TOKEN
 
 .deploy:
   stage: Deploy
@@ -226,13 +217,12 @@ build:
       docker run --rm
       -u `id -u`
       -v ${PWD}:${PWD}
+      -v ${KUBECONFIG}:${KUBECONFIG}
       -w ${PWD}
       -e CI_JOB_TOKEN
       -e TF_ADDRESS=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/{{ cookiecutter.project_slug }}-${ENVIRONMENT_SLUG}
       -e TF_ROOT
-      -e TF_VAR_k8s_cluster_certificate
-      -e TF_VAR_k8s_cluster_host
-      -e TF_VAR_k8s_cluster_token
+      -e TF_VAR_k8s_cluster_config="${KUBECONFIG}"
       -e TF_VAR_environment="${CI_ENVIRONMENT_NAME}"
       -e TF_VAR_internal_api_url="${INTERNAL_API_URL}"
       -e TF_VAR_project_url="${CI_ENVIRONMENT_URL}"
