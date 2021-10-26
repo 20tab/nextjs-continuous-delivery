@@ -12,8 +12,6 @@ import validators
 from cookiecutter.main import cookiecutter
 from slugify import slugify
 
-DEPLOYMENT_TYPE_CHOICES = ["k8s-digitalocean", "k8s-other"]
-DEPLOYMENT_TYPE_DEFAULT = "k8s-digitalocean"
 GITLAB_TOKEN_ENV_VAR = "GITLAB_PRIVATE_TOKEN"
 OUTPUT_DIR = os.getenv("OUTPUT_DIR")
 
@@ -32,14 +30,12 @@ def init_service(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    deployment_type,
 ):
     """Initialize the service."""
     click.echo(info("...cookiecutting the service"))
     cookiecutter(
         ".",
         extra_context={
-            "deployment_type": deployment_type,
             "project_dirname": project_dirname,
             "project_name": project_name,
             "project_slug": project_slug,
@@ -140,8 +136,6 @@ def run(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    deployment_type,
-    digitalocean_token=None,
     sentry_dsn=None,
     use_gitlab=None,
     create_group_variables=None,
@@ -149,10 +143,6 @@ def run(
     gitlab_group_slug=None,
 ):
     """Run the bootstrap."""
-    if "digitalocean" in deployment_type:
-        digitalocean_token = validate_or_prompt_password(
-            digitalocean_token, "DigitalOcean token", required=True
-        )
     click.echo(highlight(f"Initializing the {service_slug} service:"))
     init_service(
         output_dir,
@@ -163,7 +153,6 @@ def run(
         project_url_dev,
         project_url_stage,
         project_url_prod,
-        deployment_type,
     )
     create_env_file(service_dir)
     change_output_owner(service_dir, uid)
@@ -205,10 +194,6 @@ def run(
                 default=False,
             )
         )
-        if create_group_variables:
-            digitalocean_token and gitlab_group_variables.update(
-                DIGITALOCEAN_TOKEN='{value = "%s"}' % digitalocean_token
-            )
         init_gitlab(
             gitlab_group_slug,
             gitlab_private_token,
@@ -258,11 +243,6 @@ def validate_or_prompt_password(value, message, default=None, required=False):
 @click.option("--project-url-dev")
 @click.option("--project-url-stage")
 @click.option("--project-url-prod")
-@click.option(
-    "--deployment-type",
-    type=click.Choice(DEPLOYMENT_TYPE_CHOICES, case_sensitive=False),
-)
-@click.option("--digitalocean-token")
 @click.option("--sentry-dsn")
 @click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
 @click.option("--create-group-variables", is_flag=True, default=None)
@@ -278,8 +258,6 @@ def init_command(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    deployment_type,
-    digitalocean_token,
     sentry_dsn,
     use_gitlab,
     create_group_variables,
@@ -327,15 +305,6 @@ def init_command(
         "Production environment complete URL",
         default=f"https://www.{project_slug}.com/",
     )
-    deployment_type = (
-        deployment_type in DEPLOYMENT_TYPE_CHOICES
-        and deployment_type
-        or click.prompt(
-            "Deploy type",
-            default=DEPLOYMENT_TYPE_DEFAULT,
-            type=click.Choice(DEPLOYMENT_TYPE_CHOICES, case_sensitive=False),
-        )
-    ).lower()
     run(
         uid,
         output_dir,
@@ -347,8 +316,6 @@ def init_command(
         project_url_dev,
         project_url_stage,
         project_url_prod,
-        deployment_type,
-        digitalocean_token,
         sentry_dsn,
         use_gitlab,
         create_group_variables,

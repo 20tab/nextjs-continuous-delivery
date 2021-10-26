@@ -14,8 +14,6 @@ locals {
     terraform   = "true"
     url         = var.project_url
   }
-
-  digitalocean_k8s_cluster_name = coalesce(var.digitalocean_k8s_cluster_name, "${local.project_slug}-k8s-cluster")
 }
 
 terraform {
@@ -23,10 +21,6 @@ terraform {
   }
 
   required_providers {
-    digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
-    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "2.6.0"
@@ -36,24 +30,11 @@ terraform {
 
 /* Providers */
 
-provider "digitalocean" {
-  token = var.digitalocean_token
-}
-
 provider "kubernetes" {
-  host  = data.digitalocean_kubernetes_cluster.main.endpoint
-  token = data.digitalocean_kubernetes_cluster.main.kube_config[0].token
-  cluster_ca_certificate = base64decode(
-    data.digitalocean_kubernetes_cluster.main.kube_config[0].cluster_ca_certificate
-  )
+  host                   = var.k8s_cluster_host
+  token                  = var.k8s_cluster_token
+  cluster_ca_certificate = var.k8s_cluster_certificate
 }
-
-/* Data Sources */
-
-data "digitalocean_kubernetes_cluster" "main" {
-  name = local.digitalocean_k8s_cluster_name
-}
-
 
 /* Config Map */
 

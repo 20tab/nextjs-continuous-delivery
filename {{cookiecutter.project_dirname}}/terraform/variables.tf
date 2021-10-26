@@ -1,13 +1,17 @@
-variable "digitalocean_token" {
-  description = "The DigitalOcean access token."
+variable "k8s_cluster_certificate" {
+  description = "The Kubernetes cluster certificate."
   type        = string
   sensitive   = true
 }
 
-variable "digitalocean_k8s_cluster_name" {
-  description = "The DigitalOcean cluster name."
+variable "k8s_cluster_host" {
+  description = "The Kubernetes cluster host."
   type        = string
-  default     = ""
+}
+
+variable "k8s_cluster_token" {
+  description = "The Kubernetes cluster token."
+  type        = string
 }
 
 variable "environment" {
