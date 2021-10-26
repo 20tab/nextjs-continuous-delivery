@@ -12,7 +12,6 @@ locals {
     environment = var.environment
     project     = local.project_name
     terraform   = "true"
-    url         = var.project_url
   }
 }
 
@@ -31,9 +30,6 @@ terraform {
 /* Providers */
 
 provider "kubernetes" {
-  host                   = var.k8s_cluster_host
-  token                  = var.k8s_cluster_token
-  cluster_ca_certificate = var.k8s_cluster_certificate
 }
 
 /* Config Map */

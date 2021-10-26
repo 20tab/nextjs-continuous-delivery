@@ -60,15 +60,17 @@ def create_env_file(service_dir):
 def init_gitlab(
     gitlab_group_slug,
     gitlab_private_token,
-    gitlab_project_variables,
-    gitlab_group_variables,
     project_name,
     project_slug,
     service_slug,
     service_dir,
+    gitlab_project_variables=None,
+    gitlab_group_variables=None,
 ):
     """Initialize the Gitlab repository and associated resources."""
     click.echo(info("...creating the Gitlab repository and associated resources"))
+    gitlab_project_variables = gitlab_project_variables or {}
+    gitlab_group_variables = gitlab_group_variables or {}
     env = {
         "TF_VAR_gitlab_group_variables": "{%s}"
         % ", ".join(f"{k} = {v}" for k, v in gitlab_group_variables.items()),
@@ -138,7 +140,6 @@ def run(
     project_url_prod,
     sentry_dsn=None,
     use_gitlab=None,
-    create_group_variables=None,
     gitlab_private_token=None,
     gitlab_group_slug=None,
 ):
@@ -185,24 +186,14 @@ def run(
         sentry_dsn and gitlab_project_variables.update(
             SENTRY_DSN='{value = "%s"}' % sentry_dsn
         )
-        gitlab_group_variables = {}
-        create_group_variables = (
-            create_group_variables
-            if create_group_variables is not None
-            else click.confirm(
-                warning("Do you want to create Gitlab group variables?"),
-                default=False,
-            )
-        )
         init_gitlab(
             gitlab_group_slug,
             gitlab_private_token,
-            gitlab_project_variables,
-            gitlab_group_variables,
             project_name,
             project_slug,
             service_slug,
             service_dir,
+            gitlab_project_variables,
         )
 
 
@@ -245,7 +236,6 @@ def validate_or_prompt_password(value, message, default=None, required=False):
 @click.option("--project-url-prod")
 @click.option("--sentry-dsn")
 @click.option("--use-gitlab/--no-gitlab", is_flag=True, default=None)
-@click.option("--create-group-variables", is_flag=True, default=None)
 @click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
 @click.option("--gitlab-group-slug")
 def init_command(
@@ -260,7 +250,6 @@ def init_command(
     project_url_prod,
     sentry_dsn,
     use_gitlab,
-    create_group_variables,
     gitlab_private_token,
     gitlab_group_slug,
 ):
@@ -281,7 +270,7 @@ def init_command(
         default=project_dirname_choices[0],
         type=click.Choice(project_dirname_choices),
     )
-    service_dir = str(Path(output_dir) / project_dirname)
+    service_dir = str((Path(output_dir) / project_dirname).resolve())
     if Path(service_dir).is_dir() and click.confirm(
         warning(
             f'A directory "{service_dir}" already exists and '
@@ -318,7 +307,6 @@ def init_command(
         project_url_prod,
         sentry_dsn,
         use_gitlab,
-        create_group_variables,
         gitlab_private_token,
         gitlab_group_slug,
     )

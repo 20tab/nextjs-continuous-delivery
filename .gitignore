@@ -49,6 +49,7 @@ venv.bak/
 .terraform/
 *.tfstate*
 *.tfvars
+*.log
 
 # Vim
 [._]*.un~

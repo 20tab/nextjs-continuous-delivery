@@ -1,19 +1,3 @@
-variable "k8s_cluster_certificate" {
-  description = "The Kubernetes cluster certificate."
-  type        = string
-  sensitive   = true
-}
-
-variable "k8s_cluster_host" {
-  description = "The Kubernetes cluster host."
-  type        = string
-}
-
-variable "k8s_cluster_token" {
-  description = "The Kubernetes cluster token."
-  type        = string
-}
-
 variable "environment" {
   type        = string
   description = "The name of the deploy environment, e.g. \"Production\"."
