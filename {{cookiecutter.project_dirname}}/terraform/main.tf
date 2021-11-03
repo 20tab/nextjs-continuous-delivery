@@ -10,7 +10,7 @@ locals {
   service_labels = {
     component   = local.service_slug
     environment = var.environment
-    project     = local.project_name
+    project     = local.project_slug
     terraform   = "true"
   }
 }
