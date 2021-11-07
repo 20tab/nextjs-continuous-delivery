@@ -1,0 +1,27 @@
+version: "3.4"
+
+services:
+
+  provider:
+    image: pactfoundation/pact-stub-server
+    command: -p 8080 -d pacts -o --insecure-tls
+    ports:
+      - "8080:8080"
+    working_dir: /app
+    volumes:
+      - ./__tests__/pacts/:/app/pacts/
+
+  consumer:
+    build:
+      context: ./
+      dockerfile: docker/local.Dockerfile
+    environment:
+      - INTERNAL_API_URL=http://provider:8080
+      - NEXT_PUBLIC_PROJECT_URL=http://localhost:8080
+      - REACT_ENVIRONMENT=${REACT_ENVIRONMENT:-Development}
+    links:
+      - "provider:provider"
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./:/app

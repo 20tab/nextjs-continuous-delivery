@@ -1,8 +1,12 @@
 import axios, { AxiosPromise } from 'axios'
+import { parseCookies } from 'nookies'
 
 export interface ApiOptions {
   serverSide?: boolean
-  token?: string
+  csrfToken?: string
+  sessionId?: string
+  csrfCookie?: boolean
+  locale?: string
 }
 
 export type ApiConfig = {
@@ -12,25 +16,42 @@ export type ApiConfig = {
 
 const composeHeaders = (options?: ApiOptions) => {
   const headers = {}
+  if (options?.csrfToken) {
+    headers['X-CSRFToken'] = options.csrfToken
+    headers['Cookie'] = `csrftoken=${options.csrfToken}`
+  }
 
-  if (options?.token) {
-    headers['Authorization'] = `Token ${options.token}`
+  if (options?.sessionId) {
+    const prevCookies = headers['Cookie'] ? `${headers['Cookie']}; ` : ''
+    headers['Cookie'] = prevCookies + `sessionid=${options.sessionId}`
   }
 
   return headers
 }
 
+const languages = {
+  en: 'en-US',
+  it: 'it-IT'
+}
+
 // Request interceptor
 axios.interceptors.request.use(config => {
-  config.headers['Content-Type'] = 'application/json; charset=utf-8'
+  if (typeof window !== 'undefined')
+    config.headers['Accept-Language'] = languages[window?.__NEXT_DATA__?.locale]
 
+  config.headers['Content-Type'] = 'application/json; charset=utf-8'
+  if (config.method !== 'get') {
+    if (parseCookies()?.csrftoken) {
+      config.headers['X-CSRFToken'] = parseCookies().csrftoken
+    }
+  }
   return config
 })
 
 // Response interceptor
 axios.interceptors.response.use(
   res => res,
-  /* istanbul ignore next */ err => Promise.reject(err)
+  err => Promise.reject(err)
 )
 
 const getPublicApiURL = () => {

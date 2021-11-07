@@ -14,7 +14,7 @@ const utilsSlice = createSlice({
   name: 'utils',
   initialState,
   extraReducers: {
-    [HYDRATE]: (state, action) => /* istanbul ignore next */ {
+    [HYDRATE]: (state, action) => {
       if (
         !Object.keys(state.envs).length &&
         Object.keys(action.payload.utils.envs).length
