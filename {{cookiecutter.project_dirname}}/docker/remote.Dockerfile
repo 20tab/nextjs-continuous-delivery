@@ -1,4 +1,4 @@
-FROM node:14-buster-slim as base
+FROM node:16-buster-slim as base
 WORKDIR /temp
 COPY package.json yarn.lock ./
 RUN yarn install
@@ -7,7 +7,7 @@ RUN next telemetry disable
 COPY . .
 
 FROM base as test
-ENV TZ='Europe/Amsterdam'
+ENV TZ='Europe/Rome'
 CMD yarn coverage
 
 FROM base as build
