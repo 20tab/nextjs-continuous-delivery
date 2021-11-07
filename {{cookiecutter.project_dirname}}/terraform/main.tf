@@ -41,7 +41,7 @@ resource "kubernetes_config_map" "env" {
   }
 
   data = {
-    INTERNAL_API_URL        = var.internal_api_url
+    INTERNAL_URL        = var.internal_url
     NEXT_PUBLIC_PROJECT_URL = var.project_url
     REACT_ENVIRONMENT       = var.environment
   }
