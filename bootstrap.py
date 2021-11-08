@@ -267,8 +267,7 @@ def init_command(
         project_slug or click.prompt("Project slug", default=slugify(project_name)),
     )
     service_slug = slugify(
-        service_slug
-        or click.prompt("Frontend service slug", default="frontend"),
+        service_slug or click.prompt("Service slug", default="frontend"),
         separator="",
     )
     project_dirname_choices = [
