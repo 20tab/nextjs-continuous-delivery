@@ -27,7 +27,7 @@ sentry_release:
   services:
     - docker:20-dind
   rules:
-    - if: $SENTRY_DSN && ($CI_COMMIT_BRANCH == "develop" ||  $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG) && $CI_JOB_TRIGGERED != "true"
+    - if: $SENTRY_DSN && ($CI_COMMIT_BRANCH == "develop" ||  $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG)
   script:
     - RELEASE_START=$(date +%s)
     - >
@@ -61,6 +61,7 @@ test:
       --target=test .
     - docker run --name=$SERVICE_CONTAINER_NAME $SERVICE_IMAGE_NAME:$SERVICE_IMAGE_TAG
     - docker cp $SERVICE_CONTAINER_NAME:/temp/coverage .
+    - docker cp $SERVICE_CONTAINER_NAME:/temp/junit.xml ./junit.xml
     - if [ "$PACT_ENABLED" == true ]; then docker cp $SERVICE_CONTAINER_NAME:/temp/__tests__/pacts .; fi
   after_script:
     - docker stop $SERVICE_CONTAINER_NAME
@@ -70,7 +71,11 @@ test:
     paths:
       - coverage
       - pacts
+    reports:
+      junit:
+      - junit.xml
     expire_in: 1 day
+    when: always
 
 publish:
   stage: Pact-publish
@@ -78,6 +83,7 @@ publish:
     name: docker:20
   services:
     - docker:20-dind
+  needs: ["test"]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
@@ -94,16 +100,15 @@ publish:
       pactfoundation/pact-cli:latest-node14 pact-broker publish /pacts
       --consumer-app-version=$VERSION_REF
       --tag=$PACT_CONSUMER_TAG
-  needs:
-    - test
 
 pages:
   stage: Report
   image: busybox
+  needs: ["test"]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
-    - mv coverage/lcov-report/* public
+    - mv coverage/tests/lcov-report/* public
   artifacts:
     paths:
       - public
@@ -111,8 +116,6 @@ pages:
 .can-i-deploy:
   stage: Pact-check
   allow_failure: false
-  needs:
-    - publish
   image:
     name: docker:20
   services:
@@ -130,26 +133,29 @@ pages:
 
 can-i-deploy_development:
   extends: .can-i-deploy
+  needs: ["publish"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "develop"
       variables:
         DEPLOY_ENV: development
 
 can-i-deploy_staging:
   extends: .can-i-deploy
+  needs: ["publish"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "master"
       variables:
         DEPLOY_ENV: staging
 
 can-i-deploy_production:
   extends: .can-i-deploy
+  needs: ["publish"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_TAG
       variables:
         DEPLOY_ENV: production
 
-build:
+.build:
   stage: Build
   image: docker:20
   services:
@@ -167,40 +173,63 @@ build:
       --build-arg SENTRY_DSN=$SENTRY_DSN
       --build-arg SENTRY_ORG=$SENTRY_ORG
       --build-arg SENTRY_URL=$SENTRY_URL
+      --build-arg SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME
       --pull .
     - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
   after_script:
     - docker logout $CI_REGISTRY
+
+build_development:
+  extends: .build
+  needs: ["test"]
   rules:
-    - if: ($CI_COMMIT_BRANCH == "develop" ||  $CI_COMMIT_BRANCH == "master" ||  $CI_COMMIT_TAG) && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED != "true" && $CI_COMMIT_BRANCH == "develop"
+
+build_development_pacts:
+  extends: .build
+  needs: ["can-i-deploy_development"]
+  rules:
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_BRANCH == "develop"
+
+build_staging:
+  extends: .build
+  needs: ["test"]
+  rules:
+    - if: $PACT_ENABLED != "true" && $CI_COMMIT_BRANCH == "master"
+
+build_staging_pacts:
+  extends: .build
+  needs: ["can-i-deploy_staging"]
+  rules:
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_BRANCH == "master"
+
+build_production:
+  extends: .build
+  needs: ["test"]
+  rules:
+    - if: $PACT_ENABLED != "true" && $CI_COMMIT_TAG
+
+build_production_pacts:
+  extends: .build
+  needs: ["can-i-deploy_production"]
+  rules:
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_TAG
 
 .development:
   environment:
     name: Development
     url: {{ cookiecutter.project_url_dev }}
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
-      variables:
-        ENVIRONMENT_SLUG: dev
-
 
 .staging:
   environment:
     name: Staging
     url: {{ cookiecutter.project_url_stage }}
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
-      variables:
-        ENVIRONMENT_SLUG: stage
+
 
 .production:
   environment:
     name: Production
     url:  {{ cookiecutter.project_url_prod }}
-  rules:
-    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
-      variables:
-        ENVIRONMENT_SLUG: prod
 
 .deploy:
   stage: Deploy
@@ -221,10 +250,10 @@ build:
       -w ${PWD}
       -e CI_JOB_TOKEN
       -e KUBE_CONFIG_PATH="${KUBECONFIG}"
-      -e TF_ADDRESS=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/{{ cookiecutter.project_slug }}-${ENVIRONMENT_SLUG}
+      -e TF_ADDRESS=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/nextsurvey-${ENVIRONMENT_SLUG}
       -e TF_ROOT
       -e TF_VAR_environment="${CI_ENVIRONMENT_NAME}"
-      -e TF_VAR_internal_url="${INTERNAL_URL}"
+      -e TF_VAR_internal_api_url="${INTERNAL_API_URL}"
       -e TF_VAR_project_url="${CI_ENVIRONMENT_URL}"
       -e TF_VAR_service_container_image
       -e TF_VAR_service_container_port
@@ -241,16 +270,73 @@ deploy_development:
   extends:
     - .development
     - .deploy
+  needs: ["build_development"]
+  rules:
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "develop"
+      variables:
+        ENVIRONMENT_SLUG: dev
+
+deploy_development_pacts:
+  extends:
+    - .development
+    - .deploy
+  needs: ["build_development_pacts"]
+  rules:
+    - if: $PACT_ENABLED != "true"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "develop"
+      variables:
+        ENVIRONMENT_SLUG: dev
 
 deploy_staging:
   extends:
     - .staging
     - .deploy
+  needs: ["build_staging"]
+  rules:
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        ENVIRONMENT_SLUG: stage
+
+deploy_staging_pacts:
+  extends:
+    - .staging
+    - .deploy
+  needs: ["build_staging_pacts"]
+  rules:
+    - if: $PACT_ENABLED != "true"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        ENVIRONMENT_SLUG: stage
 
 deploy_production:
   extends:
     - .production
     - .deploy
+  needs: ["build_production"]
+  rules:
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $CI_COMMIT_TAG
+      variables:
+        ENVIRONMENT_SLUG: prod
+
+deploy_production_pacts:
+  extends:
+    - .production
+    - .deploy
+  needs: ["build_production_pacts"]
+  rules:
+    - if: $PACT_ENABLED != "true"
+      when: never
+    - if: $CI_COMMIT_TAG
+      variables:
+        ENVIRONMENT_SLUG: prod
 
 .rollback:
   extends: .deploy
@@ -262,7 +348,7 @@ rollback_development:
     - .development
     - .rollback
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
+    - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
       allow_failure: true
 
@@ -271,7 +357,7 @@ rollback_staging:
     - .staging
     - .rollback
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
+    - if: $CI_COMMIT_BRANCH == "master"
       when: manual
       allow_failure: true
 
@@ -280,7 +366,7 @@ rollback_production:
     - .production
     - .rollback
   rules:
-    - if: $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
+    - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
 
@@ -293,8 +379,9 @@ rollback_production:
 
 create-version-tag_development:
   extends: .create-version-tag
+  needs: ["deploy_development_pacts"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "develop"
   script:
     - >
       docker run --rm
@@ -308,8 +395,9 @@ create-version-tag_development:
 
 create-version-tag_staging:
   extends: .create-version-tag
+  needs: ["deploy_staging_pacts"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "master"
   script:
     - >
       docker run --rm
@@ -323,8 +411,9 @@ create-version-tag_staging:
 
 create-version-tag_production:
   extends: .create-version-tag
+  needs: ["deploy_production_pacts"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_TAG
   script:
     - >
       docker run --rm
@@ -353,24 +442,66 @@ create-version-tag_production:
 
 sentry_success_development:
   extends: .sentry_deploy_success
+  needs: ["deploy_development"]
   rules:
-    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop"
+      when: on_success
+      variables:
+        SENTRY_ENV: Development
+
+sentry_success_development_pacts:
+  extends: .sentry_deploy_success
+  needs: ["deploy_development_pacts"]
+  rules:
+    - if: $PACT_ENABLED != "true"
+      when: never
+    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop"
       when: on_success
       variables:
         SENTRY_ENV: Development
 
 sentry_success_staging:
   extends: .sentry_deploy_success
+  needs: ["deploy_staging"]
   rules:
-    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "master"
+      when: on_success
+      variables:
+        SENTRY_ENV: Staging
+
+sentry_success_staging_pacts:
+  extends: .sentry_deploy_success
+  needs: ["deploy_staging_pacts"]
+  rules:
+    - if: $PACT_ENABLED != "true"
+      when: never
+    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "master"
       when: on_success
       variables:
         SENTRY_ENV: Staging
 
 sentry_success_production:
   extends: .sentry_deploy_success
+  needs: ["deploy_production"]
   rules:
-    - if: $SENTRY_DSN && $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $SENTRY_DSN && $CI_COMMIT_TAG
+      when: on_success
+      variables:
+        SENTRY_ENV: Production
+
+sentry_success_production_pacts:
+  extends: .sentry_deploy_success
+  needs: ["deploy_production_pacts"]
+  rules:
+    - if: $PACT_ENABLED == "true"
+      when: never
+    - if: $SENTRY_DSN && $CI_COMMIT_TAG
       when: on_success
       variables:
         SENTRY_ENV: Production
@@ -392,7 +523,7 @@ sentry_success_production:
 sentry_failure_development:
   extends: .sentry_deploy_failure
   rules:
-    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop" && $CI_JOB_TRIGGERED != "true"
+    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop"
       when: on_failure
       variables:
         SENTRY_ENV: Development
@@ -400,7 +531,7 @@ sentry_failure_development:
 sentry_failure_staging:
   extends: .sentry_deploy_failure
   rules:
-    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "master" && $CI_JOB_TRIGGERED != "true"
+    - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "master"
       when: on_failure
       variables:
         SENTRY_ENV: Staging
@@ -408,7 +539,7 @@ sentry_failure_staging:
 sentry_failure_production:
   extends: .sentry_deploy_failure
   rules:
-    - if: $SENTRY_DSN && $CI_COMMIT_TAG && $CI_JOB_TRIGGERED != "true"
+    - if: $SENTRY_DSN && $CI_COMMIT_TAG
       when: on_failure
       variables:
         SENTRY_ENV: Production

@@ -8,7 +8,7 @@ COPY . .
 
 FROM base as test
 ENV TZ='Europe/Rome'
-CMD yarn coverage
+CMD yarn ci:unit-test && yarn ci:contract-test && yarn coverage
 
 FROM base as build
 ARG SENTRY_DSN \

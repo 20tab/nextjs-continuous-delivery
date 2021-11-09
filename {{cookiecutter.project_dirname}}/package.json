@@ -6,10 +6,12 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "node server.js",
-    "test": "npx jest --testPathIgnorePatterns=pact/contracts --testEnvironment=jsdom --detectOpenHandles",
-    "pact": "npx jest pact/contracts --detectOpenHandles",
     "eslint": "npx eslint . --fix-dry-run",
-    "coverage": "yarn pact --coverage --passWithNoTests --coverageDirectory ./coverage/pacts && yarn test --coverage --coverageDirectory ./coverage/tests && npx istanbul-merge --out ./coverage/coverage-final.json ./coverage/pacts/coverage-final.json ./coverage/tests/coverage-final.json && npx istanbul report --include ./coverage/coverage-final.json --dir ./coverage text-summary text clover json-summary && rm -rf ./coverage/pacts && mv -v ./coverage/tests/* ./coverage/ && rm -rf ./coverage/tests/"
+    "pact": "npx jest pact/contracts --detectOpenHandles",
+    "test": "npx jest --testPathIgnorePatterns=pact/contracts --testEnvironment=jsdom --detectOpenHandles",
+    "ci:unit-test": "npx jest --detectOpenHandles --testPathIgnorePatterns=pact/contracts --testEnvironment=jsdom --coverage --coverageDirectory ./coverage/tests --ci --reporters=default --reporters=jest-junit",
+    "ci:contract-test": "npx jest pact/contracts --detectOpenHandles --coverage --passWithNoTests --coverageDirectory ./coverage/pacts",
+    "coverage": "npx istanbul-merge --out ./coverage/coverage-final.json ./coverage/pacts/coverage-final.json ./coverage/tests/coverage-final.json && npx istanbul report --include ./coverage/coverage-final.json --dir ./coverage text-summary text json-summary"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.2",
@@ -39,12 +41,12 @@
     "@types/basic-auth": "^1.1.3",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.2",
-    "@types/node": "^16.11.6",
+    "@types/node": "^16.11.7",
     "@types/react": "^17.0.34",
     "@types/react-redux": "^7.1.20",
     "@types/styled-components": "^5.1.15",
-    "@typescript-eslint/eslint-plugin": "^5.3.0",
-    "@typescript-eslint/parser": "^5.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/parser": "^5.3.1",
     "axios-mock-adapter": "^1.20.0",
     "babel-plugin-styled-components": "^1.13.3",
     "eslint": "<8.0.0",
@@ -56,10 +58,11 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-react": "^7.26.1",
     "jest": "^27.3.1",
+    "jest-junit": "^13.0.0",
     "jest-pact": "^0.9.1",
     "prettier": "^2.4.1",
     "typescript": "^4.4.4",
-    "webpack": "^5.62.1"
+    "webpack": "^5.63.0"
   },
   "prettier": {
     "arrowParens": "avoid",
@@ -123,7 +126,8 @@
     ],
     "collectCoverageFrom": [
       "components/**/*.{ts,tsx}",
-      "utils/**/*.{ts,tsx}"
+      "utils/hooks/*.{ts,tsx}",
+      "utils/*.{ts,tsx}"
     ],
     "moduleNameMapper": {
       "@/(.*)$": "<rootDir>/$1"
