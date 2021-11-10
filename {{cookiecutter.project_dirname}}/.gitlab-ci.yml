@@ -87,7 +87,7 @@ publish:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL
+    - if: $PACT_ENABLED == "true"
   before_script:
     - if [ "$CI_COMMIT_BRANCH" ]; then PACT_CONSUMER_TAG="branch:$CI_COMMIT_BRANCH"; else PACT_CONSUMER_TAG="tag:$CI_COMMIT_TAG"; fi
   script:
@@ -120,6 +120,7 @@ pages:
     name: docker:20
   services:
     - docker:20-dind
+  needs: ["publish"]
   script:
     - >
       docker run --rm
@@ -133,25 +134,22 @@ pages:
 
 can-i-deploy_development:
   extends: .can-i-deploy
-  needs: ["publish"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "develop"
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_BRANCH == "develop"
       variables:
         DEPLOY_ENV: development
 
 can-i-deploy_staging:
   extends: .can-i-deploy
-  needs: ["publish"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "master"
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_BRANCH == "master"
       variables:
         DEPLOY_ENV: staging
 
 can-i-deploy_production:
   extends: .can-i-deploy
-  needs: ["publish"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_TAG
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_TAG
       variables:
         DEPLOY_ENV: production
 
@@ -290,7 +288,7 @@ deploy_production:
 .rollback:
   extends: .deploy
   before_script:
-    - export TF_VAR_container_image=${CI_REGISTRY_IMAGE}:${VERSION_BEFORE_REF}
+    - export TF_VAR_service_container_image=${CI_REGISTRY_IMAGE}:${VERSION_BEFORE_REF}
 
 rollback_development:
   extends:
@@ -333,7 +331,7 @@ create-version-tag_development:
   extends: .create-version-tag
   needs: ["deploy_development"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "develop"
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_BRANCH == "develop"
   script:
     - >
       docker run --rm
@@ -349,7 +347,7 @@ create-version-tag_staging:
   extends: .create-version-tag
   needs: ["deploy_staging"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_BRANCH == "master"
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_BRANCH == "master"
   script:
     - >
       docker run --rm
@@ -365,7 +363,7 @@ create-version-tag_production:
   extends: .create-version-tag
   needs: ["deploy_production"]
   rules:
-    - if: $PACT_ENABLED == "true" && $PACT_BROKER_BASE_URL && $CI_COMMIT_TAG
+    - if: $PACT_ENABLED == "true" && $CI_COMMIT_TAG
   script:
     - >
       docker run --rm
