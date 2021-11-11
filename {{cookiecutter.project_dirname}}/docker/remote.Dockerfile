@@ -29,9 +29,8 @@ RUN apt-get update && apt-get install -y \
 
 FROM build as remote
 WORKDIR /app
-COPY package.json yarn.lock server.js ./
+COPY package.json yarn.lock server.js next.config.js ./
 COPY public /app/public
 COPY --from=build /temp/.next ./.next
-COPY --from=build /temp/next.config.js ./next.config.js
 RUN yarn install --prod && rm -rf /temp
 CMD ["yarn", "start"]
