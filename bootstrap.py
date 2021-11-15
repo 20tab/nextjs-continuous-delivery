@@ -27,6 +27,7 @@ def init_service(
     project_slug,
     project_dirname,
     service_slug,
+    internal_service_port,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -36,6 +37,7 @@ def init_service(
     cookiecutter(
         ".",
         extra_context={
+            "internal_service_port": internal_service_port,
             "project_dirname": project_dirname,
             "project_name": project_name,
             "project_slug": project_slug,
@@ -134,6 +136,7 @@ def run(
     project_slug,
     project_dirname,
     service_slug,
+    internal_service_port,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -159,6 +162,7 @@ def run(
         project_slug,
         project_dirname,
         service_slug,
+        internal_service_port,
         project_url_dev,
         project_url_stage,
         project_url_prod,
@@ -239,6 +243,7 @@ def validate_or_prompt_password(value, message, default=None, required=False):
 @click.option("--project-slug", callback=slugify_option)
 @click.option("--project-dirname")
 @click.option("--service-slug", callback=slugify_option)
+@click.option("--internal-service-port", default=3000, type=int)
 @click.option("--project-url-dev")
 @click.option("--project-url-stage")
 @click.option("--project-url-prod")
@@ -253,6 +258,7 @@ def init_command(
     project_slug,
     project_dirname,
     service_slug,
+    internal_service_port,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -298,6 +304,7 @@ def init_command(
         project_slug,
         project_dirname,
         service_slug,
+        internal_service_port,
         project_url_dev,
         project_url_stage,
         project_url_prod,

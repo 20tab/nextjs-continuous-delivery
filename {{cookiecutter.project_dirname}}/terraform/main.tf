@@ -13,6 +13,8 @@ locals {
     project     = local.project_slug
     terraform   = "true"
   }
+
+  service_container_port = coalesce(var.service_container_port, "{{ cookiecutter.internal_service_port }}")
 }
 
 terraform {
@@ -42,6 +44,7 @@ resource "kubernetes_config_map" "env" {
 
   data = {
     INTERNAL_URL        = var.internal_url
+    INTERNAL_SERVICE_PORT        = local.service_container_port
     NEXT_PUBLIC_PROJECT_URL = var.project_url
     REACT_ENVIRONMENT       = var.environment
   }
@@ -80,7 +83,7 @@ resource "kubernetes_deployment" "main" {
           name  = local.service_slug
 
           port {
-            container_port = var.service_container_port
+            container_port = local.service_container_port
           }
 
           env_from {
@@ -110,8 +113,8 @@ resource "kubernetes_service" "cluster_ip" {
     }
 
     port {
-      port        = var.service_container_port
-      target_port = var.service_container_port
+      port        = local.service_container_port
+      target_port = local.service_container_port
     }
 
   }
