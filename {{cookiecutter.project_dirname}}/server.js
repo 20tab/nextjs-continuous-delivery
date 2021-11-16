@@ -2,7 +2,7 @@ const express = require('express')
 const next = require('next')
 const path = require('path')
 
-const port = parseInt(process.env.PORT, 10) || 3000
+const port = parseInt(process.env.PORT, 10) || {{ cookiecutter.internal_service_port }}
 const app = next({ dev: process.env.NODE_ENV !== 'production' })
 const handle = app.getRequestHandler()
 

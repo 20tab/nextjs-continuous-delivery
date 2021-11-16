@@ -3,8 +3,8 @@ variable "environment" {
   description = "The name of the deploy environment, e.g. \"Production\"."
 }
 
-variable "internal_url" {
-  description = "The internal url."
+variable "internal_backend_url" {
+  description = "The internal backend url."
   type        = string
 }
 
@@ -20,8 +20,8 @@ variable "service_container_image" {
 
 variable "service_container_port" {
   description = "The service container port."
-  type        = number
-  default     = 3000
+  type        = string
+  default     = ""
 }
 
 variable "service_replicas" {

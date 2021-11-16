@@ -121,7 +121,7 @@ docker-compose up
 :warning: **env variable** in custom mode you must be sure to have env, set in the system or in `.env` file.
 
 ```bash
-  INTERNAL_URL=http://localhost:8080
+  INTERNAL_BACKEND_URL=http://localhost:8080
   NEXT_PUBLIC_PROJECT_URL=http://localhost:8080
   REACT_ENVIRONMENT=Development
 ```

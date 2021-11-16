@@ -74,7 +74,7 @@ const withApiOptions = <Response, Args extends unknown[] = []>(
     const headers = composeHeaders(options)
     const config = {
       baseUrl: serverSide
-        ? /* istanbul ignore next */ process?.env?.INTERNAL_URL
+        ? /* istanbul ignore next */ process?.env?.INTERNAL_BACKEND_URL
         : getPublicApiURL(),
       headers
     }
