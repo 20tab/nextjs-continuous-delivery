@@ -3,8 +3,8 @@ variable "environment" {
   description = "The name of the deploy environment, e.g. \"Production\"."
 }
 
-variable "internal_url" {
-  description = "The internal url."
+variable "internal_backend_url" {
+  description = "The internal backend url."
   type        = string
 }
 

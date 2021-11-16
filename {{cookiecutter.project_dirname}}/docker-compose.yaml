@@ -16,7 +16,7 @@ services:
       context: ./
       dockerfile: docker/local.Dockerfile
     environment:
-      - INTERNAL_URL=http://provider:8080
+      - INTERNAL_BACKEND_URL=http://provider:8080
       - NEXT_PUBLIC_PROJECT_URL=http://localhost:8080
       - REACT_ENVIRONMENT=${REACT_ENVIRONMENT:-Development}
     links:
