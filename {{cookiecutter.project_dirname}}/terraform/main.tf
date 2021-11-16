@@ -43,7 +43,7 @@ resource "kubernetes_config_map" "env" {
   }
 
   data = {
-    INTERNAL_BACKEND_URL            = var.internal_backend_url
+    INTERNAL_BACKEND_URL    = var.internal_backend_url
     PORT                    = local.service_container_port
     NEXT_PUBLIC_PROJECT_URL = var.project_url
     REACT_ENVIRONMENT       = var.environment
