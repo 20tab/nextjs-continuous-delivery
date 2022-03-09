@@ -214,7 +214,6 @@ build_production:
     name: Staging
     url: {{ cookiecutter.project_url_stage }}
 
-
 .production:
   environment:
     name: Production
@@ -247,7 +246,7 @@ build_production:
       -e TF_VAR_service_container_image
       -e TF_VAR_service_container_port
       -e TF_VAR_service_replicas
-      -e TF_VAR_stacks="${STACKS}"
+      -e TF_VAR_stack_slug="${STACK_SLUG}"
       registry.gitlab.com/gitlab-org/terraform-images/stable:latest ./scripts/deploy.sh
   artifacts:
     name: plan
@@ -265,6 +264,7 @@ deploy_development:
     - if: $CI_COMMIT_BRANCH == "develop"
       variables:
         ENVIRONMENT_SLUG: dev
+        STACK_SLUG: "${STACK_SLUG_DEV}"
 
 deploy_staging:
   extends:
@@ -275,6 +275,7 @@ deploy_staging:
     - if: $CI_COMMIT_BRANCH == "master"
       variables:
         ENVIRONMENT_SLUG: stage
+        STACK_SLUG: "${STACK_SLUG_STAGE}"
 
 deploy_production:
   extends:
@@ -285,6 +286,7 @@ deploy_production:
     - if: $CI_COMMIT_TAG
       variables:
         ENVIRONMENT_SLUG: prod
+        STACK_SLUG: "${STACK_SLUG_PROD}"
 
 .rollback:
   extends: .deploy

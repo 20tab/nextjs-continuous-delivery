@@ -36,7 +36,7 @@ variable "service_replicas" {
   default     = 1
 }
 
-variable "stacks" {
-  description = "The stacks and environments structure as a json string."
+variable "stack_slug" {
+  description = "The slug of the stack where the service is deployed."
   type        = string
 }

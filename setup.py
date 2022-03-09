@@ -169,13 +169,17 @@ def init_gitlab(
         raise click.Abort()
 
 
-def change_output_owner(service_dir, uid):
+def change_output_owner(service_dir, uid, gid=None):
     """Change the owner of the output directory recursively."""
-    uid is not None and subprocess.run(["chown", "-R", uid, service_dir])
+    if uid:
+        subprocess.run(
+            ["chown", "-R", ":".join(map(str, filter(None, (uid, gid)))), service_dir]
+        )
 
 
 def run(
     uid,
+    gid,
     output_dir,
     project_name,
     project_slug,
@@ -192,7 +196,7 @@ def run(
     terraform_dir=None,
     logs_dir=None,
 ):
-    """Run the bootstrap."""
+    """Run the setup."""
     service_dir = str((Path(output_dir) / project_dirname).resolve())
     if Path(service_dir).is_dir() and click.confirm(
         warning(
@@ -218,7 +222,7 @@ def run(
         project_url_prod,
     )
     create_env_file(service_dir)
-    change_output_owner(service_dir, uid)
+    change_output_owner(service_dir, uid, gid)
     use_gitlab = (
         use_gitlab
         if use_gitlab is not None
@@ -292,6 +296,7 @@ def validate_or_prompt_password(value, message, default=None, required=False):
 
 @click.command()
 @click.option("--uid", type=int)
+@click.option("--gid", type=int)
 @click.option("--output-dir", default=".", required=OUTPUT_DIR is None)
 @click.option("--project-name", prompt=True)
 @click.option("--project-slug", callback=slugify_option)
@@ -309,6 +314,7 @@ def validate_or_prompt_password(value, message, default=None, required=False):
 @click.option("--logs-dir")
 def init_command(
     uid,
+    gid,
     output_dir,
     project_name,
     project_slug,
@@ -325,7 +331,7 @@ def init_command(
     terraform_dir,
     logs_dir,
 ):
-    """Collect options and run the bootstrap."""
+    """Collect options and run the setup."""
     output_dir = OUTPUT_DIR or output_dir
     project_slug = slugify(
         project_slug or click.prompt("Project slug", default=slugify(project_name)),
@@ -357,6 +363,7 @@ def init_command(
     )
     run(
         uid,
+        gid,
         output_dir,
         project_name,
         project_slug,
