@@ -7,6 +7,10 @@ locals {
 
   namespace = "${local.project_slug}-${local.environment_slug}"
 
+  stacks        = jsondecode(var.stacks)
+  stack_slug    = coalesce([for k, v in local.stacks : lookup(v, local.environment_slug, "") != "" ? k : ""])
+  resource_name = local.stack_slug[0] == "main" ? local.project_slug : "${local.project_slug}-${local.stack_slug[0]}"
+
   service_labels = {
     component   = local.service_slug
     environment = var.environment
@@ -22,21 +26,40 @@ terraform {
   }
 
   required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.6.0"
+      version = "2.8.0"
     }
   }
 }
 
 /* Providers */
 
+provider "digitalocean" {
+  token = var.digitalocean_token
+}
+
 provider "kubernetes" {
+  host  = data.digitalocean_kubernetes_cluster.main.endpoint
+  token = data.digitalocean_kubernetes_cluster.main.kube_config[0].token
+  cluster_ca_certificate = base64decode(
+    data.digitalocean_kubernetes_cluster.main.kube_config[0].cluster_ca_certificate
+  )
+}
+
+/* Data Sources */
+
+data "digitalocean_kubernetes_cluster" "main" {
+  name = "${local.resource_name}-k8s-cluster"
 }
 
 /* Config Map */
 
-resource "kubernetes_config_map" "env" {
+resource "kubernetes_config_map_v1" "env" {
   metadata {
     name      = "${local.service_slug}-env"
     namespace = local.namespace
@@ -52,7 +75,7 @@ resource "kubernetes_config_map" "env" {
 
 /* Deployment */
 
-resource "kubernetes_deployment" "main" {
+resource "kubernetes_deployment_v1" "main" {
 
   metadata {
     name      = local.service_slug
@@ -88,7 +111,7 @@ resource "kubernetes_deployment" "main" {
 
           env_from {
             config_map_ref {
-              name = kubernetes_config_map.env.metadata[0].name
+              name = kubernetes_config_map_v1.env.metadata[0].name
             }
           }
         }
@@ -99,7 +122,7 @@ resource "kubernetes_deployment" "main" {
 
 /* Cluster IP */
 
-resource "kubernetes_service" "cluster_ip" {
+resource "kubernetes_service_v1" "cluster_ip" {
 
   metadata {
     name      = local.service_slug
