@@ -8,8 +8,8 @@ locals {
   namespace = "${local.project_slug}-${local.environment_slug}"
 
   stacks        = jsondecode(var.stacks)
-  stack_slug    = coalesce([for k, v in local.stacks : lookup(v, local.environment_slug, "") != "" ? k : ""])
-  resource_name = local.stack_slug[0] == "main" ? local.project_slug : "${local.project_slug}-${local.stack_slug[0]}"
+  stack_slug    = compact([for k, v in local.stacks : lookup(v, local.environment_slug, "") != "" ? k : ""])[0]
+  resource_name = local.stack_slug == "main" ? local.project_slug : "${local.project_slug}-${local.stack_slug}"
 
   service_labels = {
     component   = local.service_slug
