@@ -142,7 +142,7 @@ yarn dev
 
 # Gitlab pipeline - CI/CD
 
-:warning: **develop, master and tags**: should be protected!
+:warning: **develop, main and tags**: should be protected!
 ## Pact broker Integration
 To enable the Pact broker integration, the following variables should be set in the Gitlab respository:
 ```git
