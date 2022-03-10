@@ -88,7 +88,7 @@ def validate_or_prompt_url(value, message, default=None, required=False):
         if not required and value == "" or validators.url(value):
             return value.strip("/")
         else:
-            click.echo("Please type a valid URL!")
+            click.echo(error("Please type a valid URL!"))
     new_value = click.prompt(message, default=default)
     return validate_or_prompt_url(new_value, message, default, required)
 
@@ -99,7 +99,7 @@ def validate_or_prompt_password(value, message, default=None, required=False):
         if not required and value == "" or validators.length(value, min=8):
             return value
         else:
-            click.echo("Please type at least 8 chars!")
+            click.echo(error("Please type at least 8 chars!"))
     new_value = click.prompt(message, default=default, hide_input=True)
     return validate_or_prompt_password(new_value, message, default, required)
 
