@@ -27,6 +27,7 @@ def collect(
     project_url_stage,
     project_url_prod,
     sentry_dsn,
+    use_redis,
     use_gitlab,
     gitlab_private_token,
     gitlab_group_slug,
@@ -53,6 +54,7 @@ def collect(
         default=f"https://www.{project_slug}.com/",
     )
     service_dir = clean_service_dir(output_dir, project_dirname)
+    use_redis = clean_use_redis(use_redis)
     if use_gitlab := clean_use_gitlab(use_gitlab):
         gitlab_group_slug, gitlab_private_token = clean_gitlab_group_data(
             project_slug, gitlab_group_slug, gitlab_private_token
@@ -74,6 +76,7 @@ def collect(
         "project_url_stage": project_url_stage,
         "project_url_prod": project_url_prod,
         "sentry_dsn": sentry_dsn,
+        "use_redis": use_redis,
         "use_gitlab": use_gitlab,
         "gitlab_private_token": gitlab_private_token,
         "gitlab_group_slug": gitlab_group_slug,
@@ -141,6 +144,13 @@ def clean_service_dir(output_dir, project_dirname):
     ):
         shutil.rmtree(service_dir)
     return service_dir
+
+
+def clean_use_redis(use_redis):
+    """Tell whether Redis should be used."""
+    if use_redis is None:
+        return click.confirm(warning("Do you want to configure Redis?"), default=False)
+    return use_redis
 
 
 def clean_use_gitlab(use_gitlab):

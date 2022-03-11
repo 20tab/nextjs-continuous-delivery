@@ -33,6 +33,7 @@ def run(
     project_url_stage,
     project_url_prod,
     sentry_dsn,
+    use_redis,
     use_gitlab,
     gitlab_private_token,
     gitlab_group_slug,
@@ -54,6 +55,7 @@ def run(
         project_url_dev,
         project_url_stage,
         project_url_prod,
+        use_redis,
     )
     create_env_file(service_dir)
     use_gitlab = (
@@ -92,6 +94,7 @@ def init_service(
     project_url_dev,
     project_url_stage,
     project_url_prod,
+    use_redis,
 ):
     """Initialize the service."""
     click.echo(info("...cookiecutting the service"))
@@ -106,6 +109,7 @@ def init_service(
             "project_url_prod": project_url_prod,
             "project_url_stage": project_url_stage,
             "service_slug": service_slug,
+            "use_redis": use_redis,
         },
         output_dir=output_dir,
         no_input=True,
