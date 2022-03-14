@@ -99,7 +99,7 @@ def init_service(
     """Initialize the service."""
     click.echo(info("...cookiecutting the service"))
     cookiecutter(
-        ".",
+        os.path.dirname(os.path.dirname(__file__)),
         extra_context={
             "internal_service_port": internal_service_port,
             "project_dirname": project_dirname,
