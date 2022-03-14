@@ -117,7 +117,7 @@ def clean_project_slug(project_name, project_slug):
 def clean_service_slug(service_slug):
     """Return the service slug."""
     return slugify(
-        service_slug or click.prompt("Service slug", default="backend"),
+        service_slug or click.prompt("Service slug", default="frontend"),
         separator="",
     )
 
