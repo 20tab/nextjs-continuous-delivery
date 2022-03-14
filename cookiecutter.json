@@ -1,9 +1,9 @@
 {
     "project_name": null,
     "project_slug": "{{ cookiecutter.project_name | slugify() }}",
-    "service_slug": "{{ cookiecutter.project_slug }}",
+    "service_slug": "frontend",
     "project_description": "",
-    "project_dirname": ["{{ cookiecutter.service_slug }}", "{{ cookiecutter.project_slug }}"],
+    "project_dirname": "frontend",
     "internal_service_port": "3000",
     "project_url_dev": null,
     "project_url_stage": null,

@@ -37,7 +37,7 @@ def collect(
     """Collect options and run the setup."""
     project_slug = clean_project_slug(project_name, project_slug)
     service_slug = clean_service_slug(service_slug)
-    project_dirname = clean_project_dirname(project_slug, project_dirname, service_slug)
+    project_dirname = clean_project_dirname(project_dirname, project_slug, service_slug)
     project_url_dev = validate_or_prompt_url(
         project_url_dev,
         "Development environment complete URL",
@@ -122,7 +122,7 @@ def clean_service_slug(service_slug):
     )
 
 
-def clean_project_dirname(project_slug, project_dirname, service_slug):
+def clean_project_dirname(project_dirname, project_slug, service_slug):
     """Return the project directory name."""
     project_dirname_choices = [service_slug, slugify(project_slug, separator="")]
     return project_dirname or click.prompt(
