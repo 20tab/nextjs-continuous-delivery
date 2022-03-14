@@ -3,17 +3,19 @@ import Head from 'next/head'
 import nookies from 'nookies'
 import React from 'react'
 
-import { wrapper } from '@/store/'
+import { getLoggedUser } from '@/utils/api'
+import { GlobalStyle } from '@/styles/GlobalStyle'
+import { login } from '@/store/userSlice'
 import { setEnvs, changeTheme } from '@/store/utilsSlice'
 import { Theme } from '@/models/Utils'
 import { useAppSelector } from '@/utils/hooks/useAppSelector'
-import { GlobalStyle } from '@/styles/GlobalStyle'
+import { wrapper } from '@/store/'
 import themes from '@/styles/themes'
 
 function MyApp({ Component, pageProps }) {
   const theme = useAppSelector(state => state.utils.theme)
-  const title = '{{cookiecutter.project_slug}}'
-  const description = 'Descrizione {{cookiecutter.project_slug}}'
+  const title = '{{ cookiecutter.project_name }}'
+  const description = '{{ cookiecutter.project_description }}'
   const shareImage = 'https://www.mywebsite.it/share.png'
   const descKey = 'og:description'
 
@@ -65,6 +67,20 @@ MyApp.getInitialProps = wrapper.getInitialPageProps(store =>
         store.dispatch(
           changeTheme(cookies.theme === Theme.dark ? Theme.dark : Theme.light)
         )
+      }
+
+      if (cookies.sessionid) {
+        try {
+          const { data } = await getLoggedUser({
+            serverSide: true,
+            sessionId: cookies.sessionid,
+            locale: ctx.locale
+          })
+          store.dispatch(login(data))
+        } catch (error) {
+          nookies.destroy(ctx, 'sessionid')
+          console.error(error)
+        }
       }
     }
 

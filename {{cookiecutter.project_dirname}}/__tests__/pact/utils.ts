@@ -28,4 +28,7 @@ export type PactInteraction = {
   }
 }
 
-type PactState = 'A user exists'[]
+type PactState = (
+  | 'A logged-in user testuser session exists'
+  | 'A user testuser exists'
+)[]

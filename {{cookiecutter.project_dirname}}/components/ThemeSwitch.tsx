@@ -44,7 +44,7 @@ const Input = styled.input`
   outline: none;
 
   &:checked + span {
-    background-color: ${props => props.theme.text};
+    background-color: ${({ theme }) => theme.colors.text};
 
     &::before {
       transform: translateX(20px);
@@ -52,7 +52,7 @@ const Input = styled.input`
   }
 
   &:focus + span {
-    box-shadow: 0 0 1px ${props => props.theme.text};
+    box-shadow: 0 0 1px ${({ theme }) => theme.colors.text};
   }
 `
 
@@ -63,7 +63,7 @@ const Slider = styled.span`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: ${props => props.theme.text};
+  background-color: ${({ theme }) => theme.colors.text};
   transition: 0.4s;
   border-radius: 34px;
 
@@ -74,7 +74,7 @@ const Slider = styled.span`
     width: 20px;
     left: 2px;
     bottom: 2px;
-    background-color: ${props => props.theme.background};
+    background-color: ${({ theme }) => theme.colors.background};
     border-radius: 50%;
     -webkit-transition: 0.4s;
     transition: 0.4s;

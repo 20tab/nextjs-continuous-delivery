@@ -1,4 +1,4 @@
-FROM node:14-buster-slim as base
+FROM node:16-buster-slim as base
 WORKDIR /temp
 COPY package.json yarn.lock ./
 RUN yarn install
@@ -7,8 +7,8 @@ RUN next telemetry disable
 COPY . .
 
 FROM base as test
-ENV TZ='Europe/Amsterdam'
-CMD yarn coverage
+ENV TZ='Europe/Rome'
+CMD yarn ci:unit-test && yarn ci:contract-test && yarn coverage
 
 FROM base as build
 ARG SENTRY_DSN \
@@ -17,6 +17,7 @@ ARG SENTRY_DSN \
   SENTRY_URL
 ENV NEXT_PUBLIC_SENTRY_DSN=$SENTRY_DSN \
   NODE_ENV="production" \
+  PORT={{ cookiecutter.internal_service_port }} \
   SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
   SENTRY_ORG=$SENTRY_ORG \
   SENTRY_URL=$SENTRY_URL
@@ -29,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 
 FROM build as remote
 WORKDIR /app
-COPY package.json yarn.lock server.js ./
+COPY package.json yarn.lock server.js next.config.js ./
 COPY public /app/public
 COPY --from=build /temp/.next ./.next
 RUN yarn install --prod && rm -rf /temp

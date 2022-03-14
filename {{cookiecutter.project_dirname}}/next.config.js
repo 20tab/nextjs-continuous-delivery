@@ -4,6 +4,7 @@ const {
   NEXT_PUBLIC_SENTRY_DSN,
   SENTRY_AUTH_TOKEN,
   SENTRY_ORG,
+  SENTRY_PROJECT_NAME,
   SENTRY_URL,
 } = process.env
 
@@ -18,7 +19,7 @@ const nextjsConfig = {
 const SentryWebpackPluginOptions = {
   authToken: SENTRY_AUTH_TOKEN,
   org: SENTRY_ORG,
-  project: '{{cookiecutter.project_slug}}-frontend',
+  project: SENTRY_PROJECT_NAME,
   url: SENTRY_URL
 }
 
