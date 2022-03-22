@@ -71,7 +71,13 @@ Development environment complete URL [https://dev.my-project-name.com/]:
 Staging environment complete URL [https://stage.my-project-name.com/]:
 Production environment complete URL [https://www.my-project-name.com/]:
 Do you want to configure Redis? [y/N]:
-Do you want to configure Gitlab? [Y/n]: n
+Do you want to configure GitLab? [Y/n]:
+GitLab group slug [my-project-name]:
+Make sure the GitLab "my-project-name" group exists before proceeding. Continue? [y/N]: y
+GitLab private token (with API scope enabled):
+Comma-separated GitLab group owners []:
+Comma-separated GitLab group maintainers []:
+Comma-separated GitLab group developers []:
 Initializing the frontend service:
 ...cookiecutting the service
 ...generating the .env file
