@@ -140,11 +140,11 @@ docker-compose up provider && \
 yarn dev
 ```
 
-# Gitlab pipeline - CI/CD
+# GitLab pipeline - CI/CD
 
 :warning: **develop, main and tags**: should be protected!
 ## Pact broker Integration
-To enable the Pact broker integration, the following variables should be set in the Gitlab respository:
+To enable the Pact broker integration, the following variables should be set in the GitLab respository:
 ```git
   PACT_ENABLED = true
   PACT_BROKER_BASE_URL (protected and masked)
@@ -154,7 +154,7 @@ To enable the Pact broker integration, the following variables should be set in 
 ## Monitoring
 ### Sentry integration
 
-To enable the Sentry integration, the following variables should be set in the Gitlab respository:
+To enable the Sentry integration, the following variables should be set in the GitLab respository:
 ```git
   SENTRY_AUTH_TOKEN (protected and masked) from Sentry
   SENTRY_DSN (protected and masked) from Sentry
