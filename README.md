@@ -2,7 +2,7 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
-> A [20tab](https://www.20tab.com/) standard project.
+> A [NextJS](https://nextjs.org/) project template ready for continuous delivery.
 
 ## 🧩 Requirements
 
@@ -26,14 +26,6 @@ Then, install the following requirements
 |🐍 Python Dependencies | `pip install -r talos/requirements/common.txt` |
 
 ## 🔑 Credentials
-
-### 🌊 DigitalOcean
-If DigitalOcean is chosen for deployment, a Personal Access Token with _write_ permission is required.<br/>
-Additionally if DigitalOcean Spaces is the chosen media storage backend, a pair of S3 access keys is required.
-[DigitalOcean API Slugs](https://slugs.do-api.dev/)
-
-**Note:** all credentials can be generated in the DigitalOcean API configuration section.<br/>
-⚠️ Beware that the token is shown only once after creation.
 
 ### 🦊 GitLab
 If the GitLab integration is enabled, a Personal Access Token with _api_ permission is required.<br/>
