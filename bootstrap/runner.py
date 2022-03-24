@@ -61,7 +61,7 @@ def run(
     use_gitlab = (
         use_gitlab
         if use_gitlab is not None
-        else click.confirm(warning("Do you want to configure Gitlab?"), default=True)
+        else click.confirm(warning("Do you want to configure GitLab?"), default=True)
     )
     if use_gitlab:
         gitlab_project_variables = {}
@@ -136,8 +136,8 @@ def init_gitlab(
     terraform_dir,
     logs_dir,
 ):
-    """Initialize the Gitlab repository and associated resources."""
-    click.echo(info("...creating the Gitlab repository and associated resources"))
+    """Initialize the GitLab repository and associated resources."""
+    click.echo(info("...creating the GitLab repository and associated resources"))
     terraform_dir = Path(terraform_dir) / service_slug
     os.makedirs(terraform_dir, exist_ok=True)
     env = dict(
@@ -193,7 +193,7 @@ def init_gitlab(
             apply_stderr_path.write_text(apply_process.stderr)
             click.echo(
                 error(
-                    "Error applying Terraform Gitlab configuration "
+                    "Error applying Terraform GitLab configuration "
                     f"(check {apply_stderr_path} and {apply_log_path})"
                 )
             )

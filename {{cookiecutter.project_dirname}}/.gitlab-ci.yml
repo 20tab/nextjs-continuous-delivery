@@ -227,6 +227,8 @@ build_production:
     - docker:20-dind
   variables:
     TF_ROOT: ${CI_PROJECT_DIR}/terraform
+    TERRAFORM_CMD: "gitlab-terraform"
+    TERRAFORM_IMAGE: "registry.gitlab.com/gitlab-org/terraform-images/stable:latest"
   before_script:
     - export TF_VAR_service_container_image=${CI_REGISTRY_IMAGE}:${VERSION_REF}
   script:
@@ -236,7 +238,9 @@ build_production:
       -v ${PWD}:${PWD}
       -w ${PWD}
       -e CI_JOB_TOKEN
+      -e TERRAFORM_CMD
       -e TF_ADDRESS=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/{{ cookiecutter.project_slug }}_${ENVIRONMENT_SLUG}
+      -e TF_IN_AUTOMATION=1
       -e TF_ROOT
       -e TF_VAR_digitalocean_token="${DIGITALOCEAN_TOKEN}"
       -e TF_VAR_environment="${CI_ENVIRONMENT_NAME}"
@@ -247,7 +251,7 @@ build_production:
       -e TF_VAR_service_container_port
       -e TF_VAR_service_replicas
       -e TF_VAR_stack_slug="${STACK_SLUG}"
-      registry.gitlab.com/gitlab-org/terraform-images/stable:latest ./scripts/deploy.sh
+      ${TERRAFORM_IMAGE}: ./scripts/deploy.sh
   artifacts:
     name: plan
     paths:
