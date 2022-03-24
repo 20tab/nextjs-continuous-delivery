@@ -32,7 +32,6 @@ def run(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    terraform_backend,
     sentry_dsn,
     use_redis,
     use_gitlab,
@@ -56,7 +55,6 @@ def run(
         project_url_dev,
         project_url_stage,
         project_url_prod,
-        terraform_backend,
         use_redis,
     )
     create_env_file(service_dir)
@@ -96,7 +94,6 @@ def init_service(
     project_url_dev,
     project_url_stage,
     project_url_prod,
-    terraform_backend,
     use_redis,
 ):
     """Initialize the service."""
@@ -112,7 +109,6 @@ def init_service(
             "project_url_prod": project_url_prod,
             "project_url_stage": project_url_stage,
             "service_slug": service_slug,
-            "terraform_backend": terraform_backend,
             "use_redis": use_redis,
         },
         output_dir=output_dir,
