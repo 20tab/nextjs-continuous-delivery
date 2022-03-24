@@ -9,6 +9,8 @@ import click
 import validators
 from slugify import slugify
 
+from bootstrap.constants import TERRAFORM_BACKEND_CHOICES, TERRAFORM_BACKEND_DEFAULT
+
 error = partial(click.style, fg="red")
 
 warning = partial(click.style, fg="yellow")
@@ -27,6 +29,7 @@ def collect(
     project_url_stage,
     project_url_prod,
     sentry_dsn,
+    terraform_backend,
     use_redis,
     use_gitlab,
     gitlab_private_token,
@@ -54,6 +57,7 @@ def collect(
         default=f"https://www.{project_slug}.com/",
     )
     service_dir = clean_service_dir(output_dir, project_dirname)
+    terraform_backend = clean_terraform_backend(terraform_backend)
     use_redis = clean_use_redis(use_redis)
     if use_gitlab := clean_use_gitlab(use_gitlab):
         gitlab_group_slug, gitlab_private_token = clean_gitlab_group_data(
@@ -75,6 +79,7 @@ def collect(
         "project_url_dev": project_url_dev,
         "project_url_stage": project_url_stage,
         "project_url_prod": project_url_prod,
+        "terraform_backend": terraform_backend,
         "sentry_dsn": sentry_dsn,
         "use_redis": use_redis,
         "use_gitlab": use_gitlab,
@@ -144,6 +149,19 @@ def clean_service_dir(output_dir, project_dirname):
     ):
         shutil.rmtree(service_dir)
     return service_dir
+
+
+def clean_terraform_backend(terraform_backend):
+    """Return the terraform backend."""
+    return (
+        terraform_backend
+        if terraform_backend in TERRAFORM_BACKEND_CHOICES
+        else click.prompt(
+            "Terraform backend",
+            default=TERRAFORM_BACKEND_DEFAULT,
+            type=click.Choice(TERRAFORM_BACKEND_CHOICES, case_sensitive=False),
+        )
+    ).lower()
 
 
 def clean_use_redis(use_redis):
