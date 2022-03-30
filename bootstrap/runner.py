@@ -34,7 +34,6 @@ def run(
     project_url_prod,
     sentry_dsn,
     use_redis,
-    use_gitlab,
     gitlab_private_token,
     gitlab_group_slug,
     terraform_dir,
@@ -58,12 +57,7 @@ def run(
         use_redis,
     )
     create_env_file(service_dir)
-    use_gitlab = (
-        use_gitlab
-        if use_gitlab is not None
-        else click.confirm(warning("Do you want to configure GitLab?"), default=True)
-    )
-    if use_gitlab:
+    if gitlab_group_slug:
         gitlab_project_variables = {}
         if sentry_dsn:
             gitlab_project_variables.update(

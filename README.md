@@ -113,7 +113,7 @@ If you don't want DigitalOcean DNS configuration the following args are required
 `--project-url-prod=https://www.project-domain.com`
 
 #### Redis
-For enable redis integration the following arguments are needed:
+For enabling redis integration the following arguments are needed:
 
 `--use-redis`<br/>
 `--digitalocean-redis-cluster-region=fra1`<br/>
@@ -123,17 +123,13 @@ Disabled args
 `--no-redis`
 
 ### 🦊 GitLab
-> **⚠️ Important:  Make sure the GitLab group exists before create.**
+> **⚠️ Important:  Make sure the GitLab group exists before creating.**
 > https://gitlab.com/gitlab-org/gitlab/-/issues/244345
 
-For enable gitlab integration the following arguments are needed:
+For enabling gitlab integration the following arguments are needed:
 
-`--use-gitlab`<br/>
 `--gitlab-private-token={{gitlab-private-token}}`<br/>
 `--gitlab-group-slug={{gitlab-group-slug}}`
-
-Disabled args
-`--no-gitlab`
 
 Add user to repository using comma separeted arguments
 
@@ -142,11 +138,11 @@ Add user to repository using comma separeted arguments
 `--gitlab-group-developers=user1, user@example.org`
 
 #### 🪖 Sentry
-For enable sentry integration the following arguments are needed:
+For enabling sentry integration the following arguments are needed:
 
 `--sentry-dsn={{frontend-sentry-dsn}}`
 
-#### 🔇 Silent
-Is command for use default if no args are provided
+#### 🔇 Quiet
+No confirmations shown.
 
-`--silent`
+`--quiet`
