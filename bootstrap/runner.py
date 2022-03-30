@@ -29,6 +29,7 @@ def run(
     service_dir,
     service_slug,
     internal_service_port,
+    deployment_type,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -51,6 +52,7 @@ def run(
         project_dirname,
         service_slug,
         internal_service_port,
+        deployment_type,
         project_url_dev,
         project_url_stage,
         project_url_prod,
@@ -85,6 +87,7 @@ def init_service(
     project_dirname,
     service_slug,
     internal_service_port,
+    deployment_type,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -95,6 +98,7 @@ def init_service(
     cookiecutter(
         os.path.dirname(os.path.dirname(__file__)),
         extra_context={
+            "deployment_type": deployment_type,
             "internal_service_port": internal_service_port,
             "project_dirname": project_dirname,
             "project_name": project_name,
