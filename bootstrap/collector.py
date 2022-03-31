@@ -9,6 +9,8 @@ import click
 import validators
 from slugify import slugify
 
+from bootstrap.constants import DEPLOYMENT_TYPE_CHOICES, DEPLOYMENT_TYPE_DIGITALOCEAN
+
 error = partial(click.style, fg="red")
 
 warning = partial(click.style, fg="yellow")
@@ -23,6 +25,7 @@ def collect(
     project_dirname,
     service_slug,
     internal_service_port,
+    deployment_type,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -38,6 +41,7 @@ def collect(
     project_slug = clean_project_slug(project_name, project_slug)
     service_slug = clean_service_slug(service_slug)
     project_dirname = clean_project_dirname(project_dirname, project_slug, service_slug)
+    deployment_type = clean_deployment_type(deployment_type)
     project_url_dev = validate_or_prompt_url(
         project_url_dev,
         "Development environment complete URL",
@@ -75,6 +79,7 @@ def collect(
         "service_dir": service_dir,
         "service_slug": service_slug,
         "internal_service_port": internal_service_port,
+        "deployment_type": deployment_type,
         "project_url_dev": project_url_dev,
         "project_url_stage": project_url_stage,
         "project_url_prod": project_url_prod,
@@ -146,6 +151,19 @@ def clean_service_dir(output_dir, project_dirname):
     ):
         shutil.rmtree(service_dir)
     return service_dir
+
+
+def clean_deployment_type(deployment_type):
+    """Return the deployment type."""
+    return (
+        deployment_type
+        if deployment_type in DEPLOYMENT_TYPE_CHOICES
+        else click.prompt(
+            "Deploy type",
+            default=DEPLOYMENT_TYPE_DIGITALOCEAN,
+            type=click.Choice(DEPLOYMENT_TYPE_CHOICES, case_sensitive=False),
+        )
+    ).lower()
 
 
 def clean_use_redis(use_redis):
