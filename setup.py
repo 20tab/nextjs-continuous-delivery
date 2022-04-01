@@ -36,6 +36,7 @@ OUTPUT_DIR = os.getenv("OUTPUT_BASE_DIR") or "."
 @click.option("--gitlab-group-slug")
 @click.option("--terraform-dir")
 @click.option("--logs-dir")
+@click.option("--quiet", is_flag=True)
 def main(**options):
     """Run the setup."""
     try:
