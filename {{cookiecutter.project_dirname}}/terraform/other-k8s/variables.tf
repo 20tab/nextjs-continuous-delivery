@@ -1,8 +1,3 @@
-variable "digitalocean_token" {
-  description = "The Digital Ocean access token."
-  type        = string
-  sensitive   = true
-}
 
 variable "environment" {
   type        = string
@@ -14,9 +9,33 @@ variable "internal_backend_url" {
   type        = string
 }
 
+variable "kubernetes_cluster_ca_certificate" {
+  description = "The base64 encoded Kubernetes CA certificate."
+  type        = string
+  sensitive   = true
+}
+
+variable "kubernetes_host" {
+  description = "The Kubernetes host."
+  type        = string
+}
+
+variable "kubernetes_token" {
+  description = "A Kubernetes admin token."
+  type        = string
+  sensitive   = true
+}
+
 variable "project_url" {
   description = "The project url."
   type        = string
+}
+
+variable "sentry_dsn" {
+  description = "The Sentry project DSN."
+  type        = string
+  default     = ""
+  sensitive   = true
 }
 
 variable "service_container_image" {

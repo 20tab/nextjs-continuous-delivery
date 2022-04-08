@@ -5,6 +5,7 @@
     "project_description": "",
     "project_dirname": "frontend",
     "internal_service_port": "3000",
+    "deployment_type": ["digitalocean-k8s", "other-k8s"],
     "project_url_dev": null,
     "project_url_stage": null,
     "project_url_prod": null,

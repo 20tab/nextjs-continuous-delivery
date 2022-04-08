@@ -29,13 +29,13 @@ def run(
     service_dir,
     service_slug,
     internal_service_port,
+    deployment_type,
     project_url_dev,
     project_url_stage,
     project_url_prod,
     terraform_backend,
     sentry_dsn,
     use_redis,
-    use_gitlab,
     gitlab_private_token,
     gitlab_group_slug,
     terraform_dir,
@@ -53,6 +53,7 @@ def run(
         project_dirname,
         service_slug,
         internal_service_port,
+        deployment_type,
         project_url_dev,
         project_url_stage,
         project_url_prod,
@@ -60,12 +61,7 @@ def run(
         use_redis,
     )
     create_env_file(service_dir)
-    use_gitlab = (
-        use_gitlab
-        if use_gitlab is not None
-        else click.confirm(warning("Do you want to configure GitLab?"), default=True)
-    )
-    if use_gitlab:
+    if gitlab_group_slug:
         gitlab_project_variables = {}
         if sentry_dsn:
             gitlab_project_variables.update(
@@ -93,6 +89,7 @@ def init_service(
     project_dirname,
     service_slug,
     internal_service_port,
+    deployment_type,
     project_url_dev,
     project_url_stage,
     project_url_prod,
@@ -104,6 +101,7 @@ def init_service(
     cookiecutter(
         os.path.dirname(os.path.dirname(__file__)),
         extra_context={
+            "deployment_type": deployment_type,
             "internal_service_port": internal_service_port,
             "project_dirname": project_dirname,
             "project_name": project_name,
