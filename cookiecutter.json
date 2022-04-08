@@ -10,6 +10,6 @@
     "project_url_stage": null,
     "project_url_prod": null,
     "terraform_backend": "gitlab",
-    "use_redis": false,
+    "use_redis": "False",
     "_extensions": ["cookiecutter.extensions.SlugifyExtension"]
 }
