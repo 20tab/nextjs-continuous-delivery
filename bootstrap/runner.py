@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 from time import time
+from typing import Optional
 
 import click
 from cookiecutter.main import cookiecutter
@@ -30,33 +31,33 @@ warning = partial(click.style, fg="yellow")
 class Runner:
     """The bootstrap runner."""
 
-    uid: int
-    gid: int
     output_dir: Path
     project_name: str
     project_slug: str
     project_dirname: str
     service_dir: Path
     service_slug: str
-    internal_backend_url: str
+    internal_backend_url: Optional[str]
     internal_service_port: int
     deployment_type: str
     terraform_backend: str
-    terraform_cloud_hostname: str
-    terraform_cloud_token: str
-    terraform_cloud_organization: str
-    terraform_cloud_organization_create: bool
-    terraform_cloud_admin_email: str
+    terraform_cloud_hostname: Optional[str] = None
+    terraform_cloud_token: Optional[str] = None
+    terraform_cloud_organization: Optional[str] = None
+    terraform_cloud_organization_create: Optional[bool] = None
+    terraform_cloud_admin_email: Optional[str] = None
     environment_distribution: str
-    project_url_dev: str
-    project_url_stage: str
-    project_url_prod: str
-    sentry_dsn: str
-    use_redis: bool
-    gitlab_private_token: str
-    gitlab_group_slug: str
-    terraform_dir: Path
-    logs_dir: Path
+    project_url_dev: str = ""
+    project_url_stage: str = ""
+    project_url_prod: str = ""
+    sentry_dsn: Optional[str] = None
+    use_redis: bool = False
+    gitlab_private_token: Optional[str] = None
+    gitlab_group_slug: Optional[str] = None
+    uid: Optional[int] = None
+    gid: Optional[int] = None
+    terraform_dir: Optional[Path] = None
+    logs_dir: Optional[Path] = None
     run_id: str = field(init=False)
     stacks_environments: dict = field(init=False, default_factory=dict)
     tfvars: dict = field(init=False, default_factory=dict)

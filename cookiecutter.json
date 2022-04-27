@@ -10,6 +10,7 @@
     "project_url_stage": null,
     "project_url_prod": null,
     "terraform_backend": "gitlab",
+    "terraform_cloud_organization": null,
     "use_redis": false,
     "environment_distribution": "1",
     "tfvars": {},

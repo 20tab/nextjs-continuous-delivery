@@ -72,10 +72,7 @@ class TestBootstrapCollector(TestCase):
                 clean_gitlab_group_data("my-project", None, None),
                 ("my-gitlab-group", "mYV4l1DT0k3N"),
             )
-        self.assertEqual(
-            clean_gitlab_group_data("my-project", "", ""),
-            ("", ""),
-        )
+        self.assertEqual(clean_gitlab_group_data("my-project", "", ""), (None, None))
 
     def test_clean_project_dirname(self):
         """Test cleaning the project directory."""
@@ -121,12 +118,12 @@ class TestBootstrapCollector(TestCase):
         """Test cleaning the Terraform ."""
         self.assertEqual(
             clean_terraform_backend("gitlab", None, None, None, None, None),
-            ("gitlab", "", "", "", None, ""),
+            ("gitlab", None, None, None, None, None),
         )
         with input("gitlab"):
             self.assertEqual(
                 clean_terraform_backend("wrong-backend", None, None, None, None, None),
-                ("gitlab", "", "", "", None, ""),
+                ("gitlab", None, None, None, None, None),
             )
         with input("terraform-cloud", "", "myOrg", "y", "bad-email", "admin@test.com"):
             self.assertEqual(
@@ -158,7 +155,7 @@ class TestBootstrapCollector(TestCase):
                     "mytfcT0k3N",
                     "myOrg",
                     False,
-                    "",
+                    None,
                 ),
             )
 
