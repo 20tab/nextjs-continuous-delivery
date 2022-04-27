@@ -40,7 +40,7 @@ yarn-error.log*
 .terraform.lock*
 .terraform/
 *.tfstate*
-*.tfvars
+terraform.tfvars
 
 # vercel
 .vercel

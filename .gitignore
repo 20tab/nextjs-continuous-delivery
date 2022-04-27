@@ -47,9 +47,9 @@ venv.bak/
 # Terraform
 .terraform.lock*
 .terraform/
-*.tfstate*
-*.tfvars
 *.log
+*.tfstate*
+terraform.tfvars
 
 # Vim
 [._]*.un~

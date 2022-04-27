@@ -1,14 +1,10 @@
 locals {
-  service_slug = "{{ cookiecutter.service_slug }}"
-
   service_labels = {
-    component   = local.service_slug
+    component   = var.service_slug
     environment = var.environment
     project     = var.project_slug
     terraform   = "true"
   }
-
-  service_container_port = coalesce(var.service_container_port, "{{ cookiecutter.internal_service_port }}")
 }
 
 terraform {
@@ -29,7 +25,7 @@ terraform {
 resource "kubernetes_secret_v1" "main" {
 
   metadata {
-    name      = "${local.service_slug}-env-vars"
+    name      = "${var.service_slug}-env-vars"
     namespace = var.namespace
   }
 
@@ -46,7 +42,7 @@ resource "kubernetes_secret_v1" "main" {
 
 resource "kubernetes_config_map_v1" "main" {
   metadata {
-    name      = "${local.service_slug}-env-vars"
+    name      = "${var.service_slug}-env-vars"
     namespace = var.namespace
   }
 
@@ -54,7 +50,7 @@ resource "kubernetes_config_map_v1" "main" {
     var.extra_config_values,
     {
       INTERNAL_BACKEND_URL    = var.internal_backend_url
-      PORT                    = local.service_container_port
+      PORT                    = var.service_container_port
       NEXT_PUBLIC_PROJECT_URL = var.project_url
       REACT_ENVIRONMENT       = var.environment
     }
@@ -65,7 +61,7 @@ resource "kubernetes_config_map_v1" "main" {
 
 resource "kubernetes_deployment_v1" "main" {
   metadata {
-    name      = local.service_slug
+    name      = var.service_slug
     namespace = var.namespace
     annotations = {
       "reloader.stakater.com/auto" = "true"
@@ -86,9 +82,9 @@ resource "kubernetes_deployment_v1" "main" {
         }
         container {
           image = var.service_container_image
-          name  = local.service_slug
+          name  = var.service_slug
           port {
-            container_port = local.service_container_port
+            container_port = var.service_container_port
           }
           env_from {
             secret_ref {
@@ -105,17 +101,17 @@ resource "kubernetes_deployment_v1" "main" {
 
 resource "kubernetes_service_v1" "cluster_ip" {
   metadata {
-    name      = local.service_slug
+    name      = var.service_slug
     namespace = var.namespace
   }
   spec {
     type = "ClusterIP"
     selector = {
-      component = local.service_slug
+      component = var.service_slug
     }
     port {
-      port        = local.service_container_port
-      target_port = local.service_container_port
+      port        = var.service_container_port
+      target_port = var.service_container_port
     }
   }
 }

@@ -51,11 +51,16 @@ variable "service_container_image" {
 variable "service_container_port" {
   description = "The service container port."
   type        = string
-  default     = ""
+  default     = "{{ cookiecutter.internal_service_port }}"
 }
 
 variable "service_replicas" {
   description = "The desired numbers of replicas to deploy."
   type        = number
   default     = 1
+}
+
+variable "service_slug" {
+  description = "The service slug."
+  type        = string
 }
