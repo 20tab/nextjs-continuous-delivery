@@ -19,6 +19,7 @@ variable "extra_secret_values" {
 variable "internal_backend_url" {
   description = "The internal backend url."
   type        = string
+  default     = ""
 }
 
 variable "namespace" {

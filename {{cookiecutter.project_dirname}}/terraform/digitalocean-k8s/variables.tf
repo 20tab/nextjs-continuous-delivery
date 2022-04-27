@@ -7,6 +7,7 @@ variable "digitalocean_token" {
 variable "internal_backend_url" {
   description = "The internal backend url."
   type        = string
+  default     = ""
 }
 
 variable "environment" {
