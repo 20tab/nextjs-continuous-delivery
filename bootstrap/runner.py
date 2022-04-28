@@ -7,7 +7,6 @@ from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 from time import time
-from typing import Optional
 
 import click
 from cookiecutter.main import cookiecutter
@@ -37,27 +36,27 @@ class Runner:
     project_dirname: str
     service_dir: Path
     service_slug: str
-    internal_backend_url: Optional[str]
+    internal_backend_url: str | None
     internal_service_port: int
     deployment_type: str
     terraform_backend: str
-    terraform_cloud_hostname: Optional[str] = None
-    terraform_cloud_token: Optional[str] = None
-    terraform_cloud_organization: Optional[str] = None
-    terraform_cloud_organization_create: Optional[bool] = None
-    terraform_cloud_admin_email: Optional[str] = None
+    terraform_cloud_hostname: str | None = None
+    terraform_cloud_token: str | None = None
+    terraform_cloud_organization: str | None = None
+    terraform_cloud_organization_create: bool | None = None
+    terraform_cloud_admin_email: str | None = None
     environment_distribution: str
     project_url_dev: str = ""
     project_url_stage: str = ""
     project_url_prod: str = ""
-    sentry_dsn: Optional[str] = None
+    sentry_dsn: str | None = None
     use_redis: bool = False
-    gitlab_private_token: Optional[str] = None
-    gitlab_group_slug: Optional[str] = None
-    uid: Optional[int] = None
-    gid: Optional[int] = None
-    terraform_dir: Optional[Path] = None
-    logs_dir: Optional[Path] = None
+    gitlab_private_token: str | None = None
+    gitlab_group_slug: str | None = None
+    uid: int | None = None
+    gid: int | None = None
+    terraform_dir: Path | None = None
+    logs_dir: Path | None = None
     run_id: str = field(init=False)
     stacks_environments: dict = field(init=False, default_factory=dict)
     tfvars: dict = field(init=False, default_factory=dict)
@@ -189,13 +188,13 @@ class Runner:
         click.echo(info("...creating the GitLab repository and associated resources"))
         group_variables, project_variables = self.get_gitlab_variables()
         env = dict(
-            TF_VAR_gitlab_group_variables="{%s}"
+            TF_VAR_group_variables="{%s}"
             % ", ".join(f"{k} = {v}" for k, v in group_variables.items()),
-            TF_VAR_gitlab_group_slug=self.gitlab_group_slug,
+            TF_VAR_group_slug=self.gitlab_group_slug,
             TF_VAR_gitlab_token=self.gitlab_private_token,
             TF_VAR_project_name=self.project_name,
             TF_VAR_project_slug=self.project_slug,
-            TF_VAR_gitlab_project_variables="{%s}"
+            TF_VAR_project_variables="{%s}"
             % ", ".join(f"{k} = {v}" for k, v in project_variables.items()),
             TF_VAR_service_dir=self.service_dir,
             TF_VAR_service_slug=self.service_slug,
