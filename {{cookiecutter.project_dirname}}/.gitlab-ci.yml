@@ -226,21 +226,11 @@ build_production:
   services:
     - docker:20-dind
   variables:
-    TF_ROOT: ${CI_PROJECT_DIR}/terraform/{{ cookiecutter.deployment_type }}
-    TERRAFORM_CMD: {{ {"terraform-cloud": "terraform"}.get(cookiecutter.terraform_backend, "gitlab-terraform") }}
-    TERRAFORM_IMAGE: {{ {"terraform-cloud": "hashicorp/terraform"}.get(cookiecutter.terraform_backend, "registry.gitlab.com/gitlab-org/terraform-images/stable") }}:latest
+    TF_ROOT: ${CI_PROJECT_DIR}/terraform/digitalocean-k8s
+    TERRAFORM_BACKEND: terraform-cloud
   before_script:
     - export TF_VAR_service_container_image=${CI_REGISTRY_IMAGE}:${VERSION_REF}{% if cookiecutter.terraform_backend == "terraform-cloud" %}
     - export TF_WORKSPACE={{ cookiecutter.project_slug }}-${ENVIRONMENT_SLUG}
-    - |
-      cat > ${TF_CLI_CONFIG_FILE} <<EOF
-      {
-        "credentials": {"app.terraform.io": {
-            "token": "${TFC_TOKEN}"
-          }
-        }
-      }
-      EOF{% endif %}
   script:
     - >
       docker run --rm
@@ -269,8 +259,6 @@ build_production:
       ${TERRAFORM_IMAGE}: ./scripts/deploy.sh
   artifacts:
     name: plan
-    paths:
-      - ${TF_ROOT}/plan.cache
     reports:
       terraform: ${TF_ROOT}/plan.json
 

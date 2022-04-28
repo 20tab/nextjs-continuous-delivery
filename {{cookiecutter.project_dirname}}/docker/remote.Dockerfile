@@ -14,12 +14,14 @@ FROM base as build
 ARG SENTRY_DSN \
   SENTRY_AUTH_TOKEN \
   SENTRY_ORG \
+  SENTRY_PROJECT_NAME \
   SENTRY_URL
 ENV NEXT_PUBLIC_SENTRY_DSN=$SENTRY_DSN \
   NODE_ENV="production" \
   PORT={{ cookiecutter.internal_service_port }} \
   SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
   SENTRY_ORG=$SENTRY_ORG \
+  SENTRY_PROJECT_NAME=SENTRY_PROJECT_NAME \
   SENTRY_URL=$SENTRY_URL
 RUN apt-get update && apt-get install -y \
     ca-certificates \
