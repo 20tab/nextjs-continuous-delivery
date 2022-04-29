@@ -9,10 +9,9 @@ import { makeStore } from '@/store'
 export const store = makeStore()
 
 export const renderWithReduxAndTheme = (element: ReactElement) => {
-  render(
+  return render(
     <ThemeProvider theme={themes[store.getState().utils.theme]}>
       <Provider store={store}>{element}</Provider>
     </ThemeProvider>
-  )
-  return store
+  ).container
 }

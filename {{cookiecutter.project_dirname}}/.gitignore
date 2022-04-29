@@ -6,9 +6,10 @@
 .pnp.js
 
 # testing
-/coverage
 __tests__/logs
-__tests__/pacts
+/coverage
+/pacts
+junit.xml
 
 # next.js
 /.next/

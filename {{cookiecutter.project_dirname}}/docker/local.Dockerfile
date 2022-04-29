@@ -1,4 +1,6 @@
-FROM node:16-buster-slim
+# syntax=docker/dockerfile:1
+
+FROM node:16.13.1-buster-slim
 
 ENV NODE_ENV="development"
 

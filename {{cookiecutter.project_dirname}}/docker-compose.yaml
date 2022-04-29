@@ -9,7 +9,7 @@ services:
       - "8080:8080"
     working_dir: /app
     volumes:
-      - ./__tests__/pacts/:/app/pacts/
+      - ./pacts/:/app/pacts/
 
   consumer:
     build:
