@@ -10,8 +10,7 @@
     "pact": "npx jest pact/contracts --detectOpenHandles",
     "test": "npx jest --testPathIgnorePatterns=pact/contracts --testEnvironment=jsdom --detectOpenHandles",
     "ci:unit-test": "npx jest --color --detectOpenHandles --testPathIgnorePatterns=pact/contracts --testEnvironment=jsdom --coverage --coverageDirectory ./coverage/tests --ci --reporters=default --reporters=jest-junit",
-    "ci:contract-test": "npx jest pact/contracts --color --detectOpenHandles --passWithNoTests",
-    "coverage": "npx istanbul-merge --out ./coverage/coverage-final.json ./coverage/pacts/coverage-final.json ./coverage/tests/coverage-final.json && npx istanbul report --include ./coverage/coverage-final.json --dir ./coverage text-summary text json-summary"
+    "ci:contract-test": "npx jest pact/contracts --color --detectOpenHandles --passWithNoTests"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.1",
