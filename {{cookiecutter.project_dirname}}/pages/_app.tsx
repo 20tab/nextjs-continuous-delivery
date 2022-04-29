@@ -66,7 +66,6 @@ MyApp.getInitialProps = wrapper.getInitialPageProps(store =>
           changeTheme(cookies.theme === Theme.dark ? Theme.dark : Theme.light)
         )
       }
-
     }
 
     return {
