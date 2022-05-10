@@ -6,9 +6,10 @@
 .pnp.js
 
 # testing
-/coverage
 __tests__/logs
-__tests__/pacts
+/coverage
+/pacts
+junit.xml
 
 # next.js
 /.next/
@@ -40,7 +41,7 @@ yarn-error.log*
 .terraform.lock*
 .terraform/
 *.tfstate*
-*.tfvars
+terraform.tfvars
 
 # vercel
 .vercel

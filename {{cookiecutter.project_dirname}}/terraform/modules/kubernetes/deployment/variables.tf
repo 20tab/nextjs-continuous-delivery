@@ -19,6 +19,7 @@ variable "extra_secret_values" {
 variable "internal_backend_url" {
   description = "The internal backend url."
   type        = string
+  default     = ""
 }
 
 variable "namespace" {
@@ -51,11 +52,16 @@ variable "service_container_image" {
 variable "service_container_port" {
   description = "The service container port."
   type        = string
-  default     = ""
+  default     = "{{ cookiecutter.internal_service_port }}"
 }
 
 variable "service_replicas" {
   description = "The desired numbers of replicas to deploy."
   type        = number
   default     = 1
+}
+
+variable "service_slug" {
+  description = "The service slug."
+  type        = string
 }

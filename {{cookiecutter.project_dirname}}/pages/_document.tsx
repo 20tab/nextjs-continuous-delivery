@@ -27,14 +27,17 @@ export default class MyDocument extends Document {
 
       const initialProps = await Document.getInitialProps(ctx)
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const styles: any = (
+        <>
+          {initialProps.styles}
+          {sheet.getStyleElement()}
+        </>
+      )
+
       return {
         ...initialProps,
-        styles: (
-          <>
-            {initialProps.styles}
-            {sheet.getStyleElement()}
-          </>
-        )
+        styles: styles
       }
     } finally {
       sheet.seal()

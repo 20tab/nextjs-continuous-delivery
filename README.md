@@ -1,4 +1,4 @@
-# Talos - NextJS
+# Talos Submodule - NextJS
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
@@ -17,7 +17,7 @@ In order to run Talos via Docker, a working [Docker installation](https://docs.d
 In order to run Talos as a shell command, first clone the repository in a local projects directory
 ```console
 cd ~/projects
-git clone https://github.com/20tab/react-ts-continuous-delivery talos-nextjs
+git clone git@github.com:20tab/react-ts-continuous-delivery.git talos-nextjs
 ```
 Then, install the following requirements
 | Requirements | Instructions |
@@ -50,7 +50,7 @@ docker run --interactive --tty --rm --volume $PWD:/data 20tab/talos-nextjs:lates
 ### 👨‍💻 Shell command
 
 ```console
-./talos-nextjs/setup.py
+./talos-nextjs/start.py
 ```
 
 ### Example
@@ -59,20 +59,31 @@ Project name: My Project Name
 Project slug [my-project-name]:
 Service slug [frontend]:
 Project dirname (frontend, myprojectname) [frontend]: myprojectname
+Deploy type (digitalocean-k8s, other-k8s) [digitalocean-k8s]:
+Terraform backend (gitlab, terraform-cloud) [terraform-cloud]:
+Terraform host name [app.terraform.io]:
+Terraform Cloud User token:
+Terraform Organization: my-organization-name
+Do you want to create Terraform Cloud Organization 'my-organization-name'? [y/N]:
+Choose the environments distribution:
+  1 - All environments share the same stack (Default)
+  2 - Dev and Stage environments share the same stack, Prod has its own
+  3 - Each environment has its own stack
+ (1, 2, 3) [1]:
 Development environment complete URL [https://dev.my-project-name.com/]:
 Staging environment complete URL [https://stage.my-project-name.com/]:
 Production environment complete URL [https://www.my-project-name.com/]:
 Do you want to configure Redis? [y/N]:
-Do you want to configure GitLab? [Y/n]:
+Do you want to use GitLab? [Y/n]:
 GitLab group slug [my-project-name]:
 Make sure the GitLab "my-project-name" group exists before proceeding. Continue? [y/N]: y
 GitLab private token (with API scope enabled):
-Comma-separated GitLab group owners []:
-Comma-separated GitLab group maintainers []:
-Comma-separated GitLab group developers []:
+Sentry DSN (leave blank if unused) []:
 Initializing the frontend service:
 ...cookiecutting the service
 ...generating the .env file
+...creating the GitLab repository and associated resources
+...creating the Terraform Cloud resources
 ```
 
 ## 🗒️ Arguments
@@ -97,13 +108,50 @@ The following arguments can be appended to the Docker and shell commands
 #### Project dirname
 `--project-dirname="myprojectname"`
 
-### 🎖️ Frontend Service
+### 🎖️ Service
 
 #### Service slug
 `--service-slug=frontend`
 
 #### Service port
 `--internal-service-port=3000`
+
+#### Backend Internal Url
+`--internal-backend-url=http://backend:8000`
+
+### 📐 Architecture
+
+#### Deploy type
+Description | Argument
+------------- | -------------
+DigitalOcean Kubernates  | `--deployment-type=digitalocean-k8s`
+Other Kubernetes | `--deployment-type=other-k8s`
+
+#### Terraform backend
+Name | Argument
+------------- | -------------
+Terraform Cloud | `--terraform-backend=terraform-cloud`
+GitLab | `--terraform-backend=gitlab`
+
+##### Terraform Cloud required argument
+`--terraform-cloud-hostname=app.terraform.io`<br/>
+`--terraform-cloud-token={{terraform-cloud-token}}`<br/>
+`--terraform-cloud-organization`
+
+##### Terraform Cloud create organization
+`--terraform-cloud-organization-create`<br/>
+`--terraform-cloud-admin-email={{terraform-cloud-admin-email}}`
+
+Disabled args
+`--terraform-cloud-organization-create-skip`
+
+#### Environment distribution
+Choose the environments distribution:
+Value  | Description | Argument
+------------- | ------------- | -------------
+1  | All environments share the same stack (Default) | `--environment-distribution=1`
+2  | Dev and Stage environments share the same stack, Prod has its own | `--environment-distribution=2`
+3  | Each environment has its own stack | `--environment-distribution=3`
 
 #### Project Domain
 If you don't want DigitalOcean DNS configuration the following args are required
@@ -115,9 +163,7 @@ If you don't want DigitalOcean DNS configuration the following args are required
 #### Redis
 For enabling redis integration the following arguments are needed:
 
-`--use-redis`<br/>
-`--digitalocean-redis-cluster-region=fra1`<br/>
-`--digitalocean-redis-cluster-node-size=db-s-1vcpu-2gb`
+`--use-redis`
 
 Disabled args
 `--no-redis`
@@ -130,12 +176,6 @@ For enabling gitlab integration the following arguments are needed:
 
 `--gitlab-private-token={{gitlab-private-token}}`<br/>
 `--gitlab-group-slug={{gitlab-group-slug}}`
-
-Add user to repository using comma separeted arguments
-
-`--gitlab-group-owners=user1, user@example.org`<br/>
-`--gitlab-group-maintainers=user1, user@example.org`<br/>
-`--gitlab-group-developers=user1, user@example.org`
 
 #### 🪖 Sentry
 For enabling sentry integration the following arguments are needed:

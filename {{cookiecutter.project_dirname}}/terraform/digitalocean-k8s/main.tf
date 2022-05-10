@@ -1,20 +1,12 @@
 locals {
-  project_name     = "{{ cookiecutter.project_name }}"
-  project_slug     = "{{ cookiecutter.project_slug }}"
   environment_slug = { development = "dev", staging = "stage", production = "prod" }[lower(var.environment)]
 
-  namespace = "${local.project_slug}-${local.environment_slug}"
+  namespace = "${var.project_slug}-${local.environment_slug}"
 
-  cluster_prefix = var.stack_slug == "main" ? local.project_slug : "${local.project_slug}-${var.stack_slug}"
-
-  extra_config_values = {}
-  extra_secret_values = {}
+  cluster_prefix = var.stack_slug == "main" ? var.project_slug : "${var.project_slug}-${var.stack_slug}"
 }
 
 terraform {
-  backend "http" {
-  }
-
   required_providers {
     digitalocean = {
       source  = "digitalocean/digitalocean"
@@ -60,9 +52,10 @@ module "deployment" {
 
   namespace = local.namespace
 
-  project_slug = local.project_slug
+  project_slug = var.project_slug
   project_url  = var.project_url
 
+  service_slug            = var.service_slug
   service_container_image = var.service_container_image
   service_container_port  = var.service_container_port
   service_replicas        = var.service_replicas
@@ -70,6 +63,6 @@ module "deployment" {
   internal_backend_url = var.internal_backend_url
   sentry_dsn           = var.sentry_dsn
 
-  extra_config_values = local.extra_config_values
-  extra_secret_values = local.extra_secret_values
+  extra_config_values = var.extra_config_values
+  extra_secret_values = var.extra_secret_values
 }
