@@ -87,6 +87,11 @@ resource "kubernetes_deployment_v1" "main" {
             container_port = var.service_container_port
           }
           env_from {
+            config_map_ref {
+              name = kubernetes_config_map_v1.main.metadata[0].name
+            }
+          }
+          env_from {
             secret_ref {
               name = kubernetes_secret_v1.main.metadata[0].name
             }
