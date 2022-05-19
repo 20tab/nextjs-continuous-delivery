@@ -3,7 +3,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 # Getting Started
 
 This service is generated from [20tab standard project](https://github.com/20tab/20tab-standard-project) template or
-[20tab nextjs template](https://github.com/20tab/react-ts-continuous-delivery)
+[20tab nextjs template](https://github.com/20tab/nextjs-continuous-delivery)
 
 ## Git
 

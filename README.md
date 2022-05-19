@@ -17,7 +17,7 @@ In order to run Talos via Docker, a working [Docker installation](https://docs.d
 In order to run Talos as a shell command, first clone the repository in a local projects directory
 ```console
 cd ~/projects
-git clone git@github.com:20tab/react-ts-continuous-delivery.git talos-nextjs
+git clone git@github.com:20tab/nextjs-continuous-delivery.git talos-nextjs
 ```
 Then, install the following requirements
 | Requirements | Instructions |
