@@ -206,17 +206,17 @@ build_production:
 
 .development:
   environment:
-    name: Development
+    name: development
     url: {{ cookiecutter.project_url_dev }}
 
 .staging:
   environment:
-    name: Staging
+    name: staging
     url: {{ cookiecutter.project_url_stage }}
 
 .production:
   environment:
-    name: Production
+    name: production
     url:  {{ cookiecutter.project_url_prod }}
 
 .deploy:
@@ -405,7 +405,7 @@ sentry_success_development:
     - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop"
       when: on_success
       variables:
-        SENTRY_ENV: Development
+        SENTRY_ENV: development
 
 sentry_success_staging:
   extends: .sentry_deploy_success
@@ -414,7 +414,7 @@ sentry_success_staging:
     - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "main"
       when: on_success
       variables:
-        SENTRY_ENV: Staging
+        SENTRY_ENV: staging
 
 sentry_success_production:
   extends: .sentry_deploy_success
@@ -423,7 +423,7 @@ sentry_success_production:
     - if: $SENTRY_DSN && $CI_COMMIT_TAG
       when: on_success
       variables:
-        SENTRY_ENV: Production
+        SENTRY_ENV: production
 
 .sentry_deploy_failure:
   stage: Sentry
@@ -445,7 +445,7 @@ sentry_failure_development:
     - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "develop"
       when: on_failure
       variables:
-        SENTRY_ENV: Development
+        SENTRY_ENV: development
 
 sentry_failure_staging:
   extends: .sentry_deploy_failure
@@ -453,7 +453,7 @@ sentry_failure_staging:
     - if: $SENTRY_DSN && $CI_COMMIT_BRANCH == "main"
       when: on_failure
       variables:
-        SENTRY_ENV: Staging
+        SENTRY_ENV: staging
 
 sentry_failure_production:
   extends: .sentry_deploy_failure
@@ -461,4 +461,4 @@ sentry_failure_production:
     - if: $SENTRY_DSN && $CI_COMMIT_TAG
       when: on_failure
       variables:
-        SENTRY_ENV: Production
+        SENTRY_ENV: production

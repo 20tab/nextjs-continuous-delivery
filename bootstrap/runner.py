@@ -50,6 +50,8 @@ class Runner:
     project_url_stage: str = ""
     project_url_prod: str = ""
     sentry_dsn: str | None = None
+    sentry_org: str | None = None
+    sentry_url: str | None = None
     use_redis: bool = False
     gitlab_private_token: str | None = None
     gitlab_group_slug: str | None = None
@@ -72,15 +74,15 @@ class Runner:
     def set_stacks_environments(self):
         """Return a dict with the environments distribution per stack."""
         dev_env = {
-            "name": "Development",
+            "name": "development",
             "url": self.project_url_dev,
         }
         stage_env = {
-            "name": "Staging",
+            "name": "staging",
             "url": self.project_url_stage,
         }
         prod_env = {
-            "name": "Production",
+            "name": "production",
             "url": self.project_url_prod,
         }
         if self.environment_distribution == "1":
@@ -179,7 +181,9 @@ class Runner:
         gitlab_group_variables = {}
         gitlab_project_variables = {}
         self.sentry_dsn and gitlab_project_variables.update(
-            SENTRY_DSN='{value = "%s", masked = true}' % self.sentry_dsn
+            SENTRY_DSN='{value = "%s", masked = true}' % self.sentry_dsn,
+            SENTRY_ORG='{value = "%s"}' % self.sentry_org,
+            SENTRY_URL='{value = "%s"}' % self.sentry_url,
         )
         return gitlab_group_variables, gitlab_project_variables
 

@@ -46,6 +46,8 @@ def collect(
     project_url_stage,
     project_url_prod,
     sentry_dsn,
+    sentry_org,
+    sentry_url,
     use_redis,
     gitlab_private_token,
     gitlab_group_slug,
@@ -103,8 +105,8 @@ def collect(
         quiet,
     )
     if gitlab_group_slug:
-        sentry_dsn = validate_or_prompt_url(
-            "Sentry DSN (leave blank if unused)", sentry_dsn, default="", required=False
+        (sentry_org, sentry_url, sentry_dsn) = clean_sentry_data(
+            sentry_org, sentry_url, sentry_dsn
         )
     return {
         "uid": uid,
@@ -129,6 +131,8 @@ def collect(
         "project_url_stage": project_url_stage,
         "project_url_prod": project_url_prod,
         "sentry_dsn": sentry_dsn,
+        "sentry_org": sentry_org,
+        "sentry_url": sentry_url,
         "use_redis": use_redis,
         "gitlab_private_token": gitlab_private_token,
         "gitlab_group_slug": gitlab_group_slug,
@@ -312,6 +316,44 @@ def clean_environment_distribution(environment_distribution, deployment_type):
             default=ENVIRONMENT_DISTRIBUTION_DEFAULT,
             type=click.Choice(ENVIRONMENT_DISTRIBUTION_CHOICES),
         )
+    )
+
+
+def clean_sentry_data(
+    sentry_org,
+    sentry_url,
+    sentry_dsn,
+):
+    """Return the Sentry configuration data."""
+    if sentry_org or (
+        sentry_org is None
+        and click.confirm(warning("Do you want to use Sentry?"), default=False)
+    ):
+        sentry_org = clean_sentry_org(sentry_org)
+        sentry_url = validate_or_prompt_url(
+            "Sentry URL", sentry_url, default="https://sentry.io/"
+        )
+        sentry_dsn = clean_sentry_dsn(sentry_dsn)
+    else:
+        sentry_org = None
+        sentry_url = None
+        sentry_dsn = None
+    return (
+        sentry_org,
+        sentry_url,
+        sentry_dsn,
+    )
+
+
+def clean_sentry_org(sentry_org):
+    """Return the Sentry organization."""
+    return sentry_org if sentry_org is not None else click.prompt("Sentry organization")
+
+
+def clean_sentry_dsn(sentry_dsn):
+    """Return the Sentry DSN."""
+    return validate_or_prompt_url(
+        "Sentry DSN (leave blank if unused)", sentry_dsn, default="", required=False
     )
 
 
