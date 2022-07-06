@@ -32,8 +32,7 @@ resource "kubernetes_secret_v1" "main" {
   data = { for k, v in merge(
     var.extra_secret_values,
     {
-
-      SENTRY_DSN = var.sentry_dsn
+      NEXT_PUBLIC_SENTRY_DSN = var.sentry_dsn
     }
   ) : k => v if v != "" }
 }

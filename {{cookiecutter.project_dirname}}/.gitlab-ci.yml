@@ -167,11 +167,6 @@ can-i-deploy_production:
       --tag=$CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
       --file=docker/remote.Dockerfile
       --target=remote
-      --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
-      --build-arg SENTRY_DSN=$SENTRY_DSN
-      --build-arg SENTRY_ORG=$SENTRY_ORG
-      --build-arg SENTRY_URL=$SENTRY_URL
-      --build-arg SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME
       --pull .
     - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$VERSION_REF
   after_script:
@@ -232,28 +227,45 @@ build_production:
       docker run --rm
       -u `id -u`
       -v ${PWD}:${PWD}
-      -w ${PWD}
+      -w ${PWD}{% if cookiecutter.terraform_backend == "gitlab" %}
+      -e CI_API_V4_URL
+      -e CI_COMMIT_SHA
+      -e CI_JOB_ID{% if cookiecutter.vault_project_path %}
+      -e CI_JOB_JWT_V2{% endif %}
+      -e CI_JOB_STAGE
       -e CI_JOB_TOKEN
+      -e CI_PROJECT_ID
+      -e CI_PROJECT_NAME
+      -e CI_PROJECT_NAMESPACE
+      -e CI_PROJECT_PATH
+      -e CI_PROJECT_URL{% elif cookiecutter.vault_project_path %}
+      -e CI_JOB_JWT_V2{% endif %}
+      -e ENV_SLUG
+      -e PROJECT_DIR=${CI_PROJECT_DIR}
+      -e PROJECT_SLUG={{ cookiecutter.project_slug }}
       -e TERRAFORM_BACKEND={{ cookiecutter.terraform_backend }}
-      -e TERRAFORM_CMD=${CI_PROJECT_DIR}/scripts/terraform.sh
       -e TERRAFORM_EXTRA_VAR_FILE=${ENVIRONMENT_SLUG}.tfvars
       -e TERRAFORM_VARS_DIR=${CI_PROJECT_DIR}/terraform/vars{% if cookiecutter.terraform_backend == "gitlab" %}
+      -e TF_ROOT=${CI_PROJECT_DIR}/terraform/{{ cookiecutter.deployment_type }}{% if cookiecutter.terraform_backend == "gitlab" %}
       -e TF_STATE_NAME=env_${ENVIRONMENT_SLUG}{% endif %}
-      -e TF_ROOT=${CI_PROJECT_DIR}/terraform/{{ cookiecutter.deployment_type }}{% if cookiecutter.deployment_type == "digitalocean-k8s" %}
+      {% if cookiecutter.deployment_type == "digitalocean-k8s" %}
       -e TF_VAR_digitalocean_token="${DIGITALOCEAN_TOKEN}"{% endif %}
-      -e TF_VAR_environment="${CI_ENVIRONMENT_NAME}"
       -e TF_VAR_internal_backend_url="${INTERNAL_BACKEND_URL}"
       -e TF_VAR_internal_service_port="${FRONTEND_SERVICE_PORT}"{% if cookiecutter.deployment_type == "other-k8s" %}
       -e TF_VAR_kubernetes_cluster_ca_certificate="${KUBERNETES_CLUSTER_CA_CERTIFICATE}"
       -e TF_VAR_kubernetes_host="${KUBERNETES_HOST}"
       -e TF_VAR_kubernetes_token="${KUBERNETES_TOKEN}"{% endif %}
-      -e TF_VAR_project_slug="{{ cookiecutter.project_slug }}"
       -e TF_VAR_project_url="${CI_ENVIRONMENT_URL}"
+      -e TF_VAR_sentry_dsn="${SENTRY_DSN}"
       -e TF_VAR_service_container_image
-      -e TF_VAR_service_slug="{{ cookiecutter.service_slug }}"
-      -e TF_VAR_stack_slug="${STACK_SLUG}"{% if cookiecutter.terraform_backend != "gitlab" %}
-      -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_frontend_environment_${ENVIRONMENT_SLUG}"{% endif %}
-      -e TFC_TOKEN
+      -e TF_VAR_service_slug="{{ cookiecutter.service_slug }}"{% if cookiecutter.terraform_backend != "gitlab" %}
+      -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_frontend_environment_${ENVIRONMENT_SLUG}"{% endif %}{% if cookiecutter.terraform_backend == "terraform-cloud" and not cookiecutter.vault_project_path %}
+      -e TFC_TOKEN{% endif %}{% if cookiecutter.vault_project_path %}
+      -e VAULT_ADDR
+      -e VAULT_ENV_SECRETS="sentry"
+      -e VAULT_PROJECT_PATH="{{ cookiecutter.vault_project_path }}"
+      -e VAULT_STACK_SECRETS="digitalocean k8s"
+      -e VAULT_VERSION{% endif %}
       registry.gitlab.com/gitlab-org/terraform-images/stable:latest ./scripts/deploy.sh
   artifacts:
     name: plan
