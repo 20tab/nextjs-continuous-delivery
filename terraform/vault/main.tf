@@ -2,7 +2,7 @@ terraform {
   required_providers {
     vault = {
       source  = "hashicorp/vault"
-      version = "3.6.0"
+      version = "3.7.0"
     }
   }
 }
@@ -14,7 +14,7 @@ provider "vault" {}
 resource "vault_generic_secret" "main" {
   for_each = var.secrets
 
-  path = "${var.project_slug}/${var.service_slug}/${each.key}"
+  path = "${var.project_pact}/${each.key}"
 
   data_json = jsonencode(each.value)
 }

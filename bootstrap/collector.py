@@ -42,7 +42,7 @@ def collect(
     terraform_cloud_organization_create,
     terraform_cloud_admin_email,
     vault_token,
-    vault_address,
+    vault_url,
     environment_distribution,
     project_url_dev,
     project_url_stage,
@@ -78,7 +78,7 @@ def collect(
         terraform_cloud_organization_create,
         terraform_cloud_admin_email,
     )
-    vault_token, vault_address = clean_vault_data(vault_token, vault_address, quiet)
+    vault_token, vault_url = clean_vault_data(vault_token, vault_url, quiet)
     environment_distribution = clean_environment_distribution(
         environment_distribution, deployment_type
     )
@@ -130,7 +130,7 @@ def collect(
         "terraform_cloud_organization_create": terraform_cloud_organization_create,
         "terraform_cloud_admin_email": terraform_cloud_admin_email,
         "vault_token": vault_token,
-        "vault_address": vault_address,
+        "vault_url": vault_url,
         "environment_distribution": environment_distribution,
         "project_url_dev": project_url_dev,
         "project_url_stage": project_url_stage,
@@ -309,7 +309,7 @@ def clean_terraform_backend(
     )
 
 
-def clean_vault_data(vault_token, vault_address, quiet=False):
+def clean_vault_data(vault_token, vault_url, quiet=False):
     """Return the Vault data, if applicable."""
     if vault_token or (
         vault_token is None
@@ -325,11 +325,11 @@ def clean_vault_data(vault_token, vault_address, quiet=False):
             ),
             abort=True,
         )
-        vault_address = validate_or_prompt_url("Vault address", vault_address)
+        vault_url = validate_or_prompt_url("Vault address", vault_url)
     else:
         vault_token = None
-        vault_address = None
-    return vault_token, vault_address
+        vault_url = None
+    return vault_token, vault_url
 
 
 def clean_environment_distribution(environment_distribution, deployment_type):
