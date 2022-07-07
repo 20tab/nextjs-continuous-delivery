@@ -231,7 +231,7 @@ class Runner:
         """Collect Vault secrets."""
         [
             self.collect_vault_environment_secrets(env_slug)
-            for stack_envs in self.stacks_environments.vaules()
+            for stack_envs in self.stacks_environments.values()
             for env_slug in stack_envs
         ]
 
