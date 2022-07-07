@@ -30,7 +30,7 @@ cache:
       if: $CI_COMMIT_BRANCH == "develop"
       variables:
         ENV_SLUG: dev
-        STACK_SLUG: "{{ cookiecutter.environments_stacks.dev }}"
+        STACK_SLUG: {{ cookiecutter.environments_stacks.dev }}
   environment:
     name: Development
     url: {{ cookiecutter.project_url_dev }}
@@ -42,7 +42,7 @@ cache:
       if: $CI_COMMIT_BRANCH == "main"
       variables:
         ENV_SLUG: stage
-        STACK_SLUG: "{{ cookiecutter.environments_stacks.stage }}"
+        STACK_SLUG: {{ cookiecutter.environments_stacks.stage }}
   environment:
     name: Staging
     url: {{ cookiecutter.project_url_stage }}
@@ -54,7 +54,7 @@ cache:
       if: $CI_COMMIT_TAG
       variables:
         ENV_SLUG: prod
-        STACK_SLUG: "{{ cookiecutter.environments_stacks.prod }}"
+        STACK_SLUG: {{ cookiecutter.environments_stacks.prod }}
   environment:
     name: Production
     url:  {{ cookiecutter.project_url_prod }}
@@ -265,7 +265,7 @@ can-i-deploy_production:
     - .production
     - .can-i-deploy
   needs: ["publish_production"]
-    rules:
+  rules:
     - <<: *skip-pact-rule
     - <<: *skip-merge-request-event
     - *production-rules
@@ -347,11 +347,10 @@ build_production:
       -e PROJECT_SLUG={{ cookiecutter.project_slug }}
       -e STACK_SLUG
       -e TERRAFORM_BACKEND={{ cookiecutter.terraform_backend }}
-      -e TERRAFORM_EXTRA_VAR_FILE=${ENVIRONMENT_SLUG}.tfvars
-      -e TERRAFORM_VARS_DIR=${CI_PROJECT_DIR}/terraform/vars{% if cookiecutter.terraform_backend == "gitlab" %}
+      -e TERRAFORM_EXTRA_VAR_FILE=${ENV_SLUG}.tfvars
+      -e TERRAFORM_VARS_DIR=${CI_PROJECT_DIR}/terraform/vars
       -e TF_ROOT=${CI_PROJECT_DIR}/terraform/{{ cookiecutter.deployment_type }}{% if cookiecutter.terraform_backend == "gitlab" %}
-      -e TF_STATE_NAME=env_${ENVIRONMENT_SLUG}{% endif %}
-      {% if cookiecutter.deployment_type == "digitalocean-k8s" %}
+      -e TF_STATE_NAME="env_${ENV_SLUG}"{% endif %}{% if not cookiecutter.vault_project_path %}{% if cookiecutter.deployment_type == "digitalocean-k8s" %}
       -e TF_VAR_digitalocean_token="${DIGITALOCEAN_TOKEN}"{% endif %}
       -e TF_VAR_internal_backend_url="${INTERNAL_BACKEND_URL}"
       -e TF_VAR_internal_service_port="${FRONTEND_SERVICE_PORT}"{% if cookiecutter.deployment_type == "other-k8s" %}
@@ -361,8 +360,8 @@ build_production:
       -e TF_VAR_project_url="${CI_ENVIRONMENT_URL}"
       -e TF_VAR_sentry_dsn="${SENTRY_DSN}"
       -e TF_VAR_service_container_image
-      -e TF_VAR_service_slug="{{ cookiecutter.service_slug }}"{% if cookiecutter.terraform_backend != "gitlab" %}
-      -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_frontend_environment_${ENVIRONMENT_SLUG}"{% endif %}{% if cookiecutter.terraform_backend == "terraform-cloud" and not cookiecutter.vault_project_path %}
+      -e TF_VAR_service_slug="{{ cookiecutter.service_slug }}"{% endif %}{% if cookiecutter.terraform_backend != "gitlab" %}
+      -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_frontend_environment_${ENV_SLUG}"{% endif %}{% if cookiecutter.terraform_backend == "terraform-cloud" and not cookiecutter.vault_project_path %}
       -e TFC_TOKEN{% endif %}{% if cookiecutter.vault_project_path %}
       -e VAULT_ADDR
       -e VAULT_ENV_SECRETS="sentry"
@@ -467,14 +466,6 @@ create-version-tag_production:
     - <<: *skip-merge-request-event
     - *production-rules
 
-.sentry_deploy_success:
-  extends:
-    - .sentry
-  variables:
-    SENTRY_CMD: success
-  stage: Sentry
-  before_script:
-    - RELEASE_END=$(date +%s)
 .sentry_deploy_success:
   extends:
     - .sentry
