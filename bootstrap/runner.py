@@ -368,7 +368,7 @@ class Runner:
             apply_stderr_path.write_text(apply_process.stderr)
             click.echo(
                 error(
-                    "Terraform apply failed ",
+                    "Terraform apply failed "
                     f"(check {apply_stderr_path} and {apply_log_path})",
                 )
             )
