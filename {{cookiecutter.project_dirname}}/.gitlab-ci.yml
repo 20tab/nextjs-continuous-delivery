@@ -359,9 +359,9 @@ build_production:
       -e TF_VAR_kubernetes_host="${KUBERNETES_HOST}"
       -e TF_VAR_kubernetes_token="${KUBERNETES_TOKEN}"{% endif %}
       -e TF_VAR_project_url="${CI_ENVIRONMENT_URL}"
-      -e TF_VAR_sentry_dsn="${SENTRY_DSN}"
+      -e TF_VAR_sentry_dsn="${SENTRY_DSN}"{% endif %}
       -e TF_VAR_service_container_image
-      -e TF_VAR_service_slug="{{ cookiecutter.service_slug }}"{% endif %}{% if cookiecutter.terraform_backend != "gitlab" %}
+      -e TF_VAR_service_slug="{{ cookiecutter.service_slug }}"{% if cookiecutter.terraform_backend != "gitlab" %}
       -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_frontend_environment_${ENV_SLUG}"{% endif %}{% if cookiecutter.terraform_backend == "terraform-cloud" and not cookiecutter.vault_project_path %}
       -e TFC_TOKEN{% endif %}{% if cookiecutter.vault_project_path %}
       -e VAULT_ADDR
