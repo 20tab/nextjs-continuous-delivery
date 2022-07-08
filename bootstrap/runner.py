@@ -210,7 +210,8 @@ class Runner:
     def collect_tfvars(self):
         """Collect Terraform variables."""
         self.register_environment_tfvars(
-            ("internal_backend_url", self.internal_backend_url)
+            ("internal_backend_url", self.internal_backend_url),
+            ("service_slug", self.service_slug),
         )
         for stack_slug, stack_envs in self.stacks_environments.items():
             for env_slug, env_data in stack_envs.items():
