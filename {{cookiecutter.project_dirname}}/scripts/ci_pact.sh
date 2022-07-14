@@ -1,9 +1,9 @@
 #!/bin/sh -e
 
 if [ "${VAULT_ADDR}" != "" ]; then
-  apk update 1> /dev/null
+  apk update
 
-  apk add curl jq 1> /dev/null
+  apk add curl jq
 
   curl https://releases.hashicorp.com/vault/${VAULT_VERSION:=1.11.0}/vault_${VAULT_VERSION}_linux_386.zip --output vault.zip
   unzip vault.zip
