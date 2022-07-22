@@ -41,11 +41,15 @@ def collect(
     terraform_cloud_organization,
     terraform_cloud_organization_create,
     terraform_cloud_admin_email,
+    vault_token,
+    vault_url,
     environment_distribution,
     project_url_dev,
     project_url_stage,
     project_url_prod,
     sentry_dsn,
+    sentry_org,
+    sentry_url,
     use_redis,
     gitlab_private_token,
     gitlab_group_slug,
@@ -74,6 +78,7 @@ def collect(
         terraform_cloud_organization_create,
         terraform_cloud_admin_email,
     )
+    vault_token, vault_url = clean_vault_data(vault_token, vault_url, quiet)
     environment_distribution = clean_environment_distribution(
         environment_distribution, deployment_type
     )
@@ -103,8 +108,8 @@ def collect(
         quiet,
     )
     if gitlab_group_slug:
-        sentry_dsn = validate_or_prompt_url(
-            "Sentry DSN (leave blank if unused)", sentry_dsn, default="", required=False
+        (sentry_org, sentry_url, sentry_dsn) = clean_sentry_data(
+            sentry_org, sentry_url, sentry_dsn
         )
     return {
         "uid": uid,
@@ -124,11 +129,15 @@ def collect(
         "terraform_cloud_organization": terraform_cloud_organization,
         "terraform_cloud_organization_create": terraform_cloud_organization_create,
         "terraform_cloud_admin_email": terraform_cloud_admin_email,
+        "vault_token": vault_token,
+        "vault_url": vault_url,
         "environment_distribution": environment_distribution,
         "project_url_dev": project_url_dev,
         "project_url_stage": project_url_stage,
         "project_url_prod": project_url_prod,
         "sentry_dsn": sentry_dsn,
+        "sentry_org": sentry_org,
+        "sentry_url": sentry_url,
         "use_redis": use_redis,
         "gitlab_private_token": gitlab_private_token,
         "gitlab_group_slug": gitlab_group_slug,
@@ -300,6 +309,29 @@ def clean_terraform_backend(
     )
 
 
+def clean_vault_data(vault_token, vault_url, quiet=False):
+    """Return the Vault data, if applicable."""
+    if vault_token or (
+        vault_token is None
+        and click.confirm(
+            "Do you want to use Vault for secrets management?",
+        )
+    ):
+        vault_token = validate_or_prompt_password("Vault token", vault_token)
+        quiet or click.confirm(
+            warning(
+                "Make sure the Vault token has enough permissions to enable the "
+                "project secrets backends and manage the project secrets. Continue?"
+            ),
+            abort=True,
+        )
+        vault_url = validate_or_prompt_url("Vault address", vault_url)
+    else:
+        vault_token = None
+        vault_url = None
+    return vault_token, vault_url
+
+
 def clean_environment_distribution(environment_distribution, deployment_type):
     """Return the environment distribution."""
     if deployment_type == DEPLOYMENT_TYPE_OTHER:
@@ -312,6 +344,44 @@ def clean_environment_distribution(environment_distribution, deployment_type):
             default=ENVIRONMENT_DISTRIBUTION_DEFAULT,
             type=click.Choice(ENVIRONMENT_DISTRIBUTION_CHOICES),
         )
+    )
+
+
+def clean_sentry_data(
+    sentry_org,
+    sentry_url,
+    sentry_dsn,
+):
+    """Return the Sentry configuration data."""
+    if sentry_org or (
+        sentry_org is None
+        and click.confirm(warning("Do you want to use Sentry?"), default=False)
+    ):
+        sentry_org = clean_sentry_org(sentry_org)
+        sentry_url = validate_or_prompt_url(
+            "Sentry URL", sentry_url, default="https://sentry.io/"
+        )
+        sentry_dsn = clean_sentry_dsn(sentry_dsn)
+    else:
+        sentry_org = None
+        sentry_url = None
+        sentry_dsn = None
+    return (
+        sentry_org,
+        sentry_url,
+        sentry_dsn,
+    )
+
+
+def clean_sentry_org(sentry_org):
+    """Return the Sentry organization."""
+    return sentry_org if sentry_org is not None else click.prompt("Sentry organization")
+
+
+def clean_sentry_dsn(sentry_dsn):
+    """Return the Sentry DSN."""
+    return validate_or_prompt_url(
+        "Sentry DSN (leave blank if unused)", sentry_dsn, default="", required=False
     )
 
 
