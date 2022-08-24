@@ -9,6 +9,7 @@
     "project_url_dev": null,
     "project_url_stage": null,
     "project_url_prod": null,
+    "gitlab_group_slug": null,
     "terraform_backend": "gitlab",
     "terraform_cloud_organization": null,
     "use_redis": false,

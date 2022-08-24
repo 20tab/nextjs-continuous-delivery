@@ -1,4 +1,5 @@
 FROM python:3.10-slim-bullseye
+
 ARG DEBIAN_FRONTEND=noninteractive
 ARG OUTPUT_BASE_DIR=/data
 ENV OUTPUT_BASE_DIR=${OUTPUT_BASE_DIR}
@@ -8,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         git \
         gnupg \
+        libpq-dev \
         software-properties-common \
     && curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - \
     && apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main" \

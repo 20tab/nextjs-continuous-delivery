@@ -11,21 +11,21 @@ To get the existing project, change directory, clone the project repository and 
 
 *Full services version*
 ```bash
-git clone git@gitlab.com:{{ cookiecutter.project_slug }}/orchestrator.git {{ cookiecutter.project_slug }} && \
+git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/orchestrator.git {{ cookiecutter.project_slug }} && \
 cd {{ cookiecutter.project_slug }}  && \
 git checkout main  && \
-git clone git@gitlab.com:{{ cookiecutter.project_slug }}/backend.git  && \
+git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/backend.git  && \
 cd backend  && \
 git checkout develop  && \
 cd ..  && \
-git clone git@gitlab.com:{{ cookiecutter.project_slug }}/{{ cookiecutter.service_slug }}.git  && \
+git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/{{ cookiecutter.service_slug }}.git  && \
 cd {{ cookiecutter.service_slug }}  && \
 git checkout develop
 ```
 
 *Frontend service only*
 ```bash
-git clone git@gitlab.com:{{ cookiecutter.project_slug }}/{{ cookiecutter.service_slug }}.git {{ cookiecutter.project_slug }} && \
+git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/{{ cookiecutter.service_slug }}.git {{ cookiecutter.project_slug }} && \
 git checkout develop && \
 cd {{ cookiecutter.project_slug }}
 ```

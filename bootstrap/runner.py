@@ -257,6 +257,7 @@ class Runner:
                 "project_url_prod": self.project_url_prod,
                 "project_url_stage": self.project_url_stage,
                 "service_slug": self.service_slug,
+                "gitlab_group_slug": self.gitlab_group_slug,
                 "terraform_backend": self.terraform_backend,
                 "terraform_cloud_organization": self.terraform_cloud_organization,
                 "tfvars": self.tfvars,
