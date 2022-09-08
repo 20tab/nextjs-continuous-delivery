@@ -66,8 +66,9 @@ class Runner:
     sentry_org: str | None = None
     sentry_url: str | None = None
     use_redis: bool = False
-    gitlab_private_token: str | None = None
+    gitlab_url: str | None = None
     gitlab_group_slug: str | None = None
+    gitlab_private_token: str | None = None
     uid: int | None = None
     gid: int | None = None
     terraform_dir: Path | None = None
@@ -298,6 +299,7 @@ class Runner:
         click.echo(info("...creating the GitLab repository and associated resources"))
         env = dict(
             TF_VAR_gitlab_token=self.gitlab_private_token,
+            TF_VAR_gitlab_url=self.gitlab_url,
             TF_VAR_group_slug=self.gitlab_group_slug,
             TF_VAR_group_variables=self.render_gitlab_variables_to_string("group"),
             TF_VAR_project_name=self.project_name,

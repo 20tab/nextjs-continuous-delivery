@@ -15,6 +15,7 @@ from bootstrap.constants import (
     ENVIRONMENT_DISTRIBUTION_CHOICES,
     ENVIRONMENT_DISTRIBUTION_DEFAULT,
     ENVIRONMENT_DISTRIBUTION_PROMPT,
+    GITLAB_URL_DEFAULT,
     TERRAFORM_BACKEND_CHOICES,
     TERRAFORM_BACKEND_TFC,
 )
@@ -51,6 +52,7 @@ def collect(
     sentry_org,
     sentry_url,
     use_redis,
+    gitlab_url,
     gitlab_private_token,
     gitlab_group_slug,
     terraform_dir,
@@ -101,8 +103,9 @@ def collect(
         required=False,
     )
     use_redis = clean_use_redis(use_redis)
-    gitlab_group_slug, gitlab_private_token = clean_gitlab_group_data(
+    gitlab_url, gitlab_group_slug, gitlab_private_token = clean_gitlab_group_data(
         project_slug,
+        gitlab_url,
         gitlab_group_slug,
         gitlab_private_token,
         quiet,
@@ -139,6 +142,7 @@ def collect(
         "sentry_org": sentry_org,
         "sentry_url": sentry_url,
         "use_redis": use_redis,
+        "gitlab_url": gitlab_url,
         "gitlab_private_token": gitlab_private_token,
         "gitlab_group_slug": gitlab_group_slug,
         "terraform_dir": terraform_dir,
@@ -394,6 +398,7 @@ def clean_use_redis(use_redis):
 
 def clean_gitlab_group_data(
     project_slug,
+    gitlab_url,
     gitlab_group_slug,
     gitlab_private_token,
     quiet=False,
@@ -403,6 +408,9 @@ def clean_gitlab_group_data(
         gitlab_group_slug is None
         and click.confirm(warning("Do you want to use GitLab?"), default=True)
     ):
+        gitlab_url = validate_or_prompt_url(
+            "GitLab URL", gitlab_url, default=GITLAB_URL_DEFAULT
+        )
         gitlab_group_slug = slugify(
             gitlab_group_slug or click.prompt("GitLab group slug", default=project_slug)
         )
@@ -417,6 +425,7 @@ def clean_gitlab_group_data(
             "GitLab private token (with API scope enabled)", hide_input=True
         )
     else:
+        gitlab_url = None
         gitlab_group_slug = None
         gitlab_private_token = None
-    return (gitlab_group_slug, gitlab_private_token)
+    return (gitlab_url, gitlab_group_slug, gitlab_private_token)
