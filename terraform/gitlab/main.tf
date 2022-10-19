@@ -1,7 +1,9 @@
 locals {
-  user_data = jsondecode(data.http.user_info.body)
+  user_data = jsondecode(data.http.user_info.response_body)
 
-  git_config = "-c user.email=${local.user_data.email} -c user.name=\"${local.user_data.name}\""
+  git_config_args = "-c user.email=${local.user_data.email} -c user.name=\"${local.user_data.name}\""
+
+  is_main_group_root = data.gitlab_group.main.parent_id == 0
 }
 
 terraform {
@@ -22,11 +24,7 @@ provider "gitlab" {
   token = var.gitlab_token
 }
 
-/* Data Sources */
-
-data "gitlab_group" "group" {
-  full_path = var.group_slug
-}
+/* User Info */
 
 data "http" "user_info" {
   url = "${var.gitlab_url}/api/v4/user"
@@ -37,13 +35,25 @@ data "http" "user_info" {
   }
 }
 
+/* Group */
+
+data "gitlab_group" "main" {
+  full_path = var.group_path
+}
+
+data "gitlab_group" "main_parent" {
+  count = local.is_main_group_root ? 0 : 1
+
+  group_id = data.gitlab_group.main.parent_id
+}
+
 /* Project */
 
 resource "gitlab_project" "main" {
   name                   = title(var.service_slug)
   path                   = var.service_slug
   description            = "The \"${var.project_name}\" project ${var.service_slug} service."
-  namespace_id           = data.gitlab_group.group.id
+  namespace_id           = data.gitlab_group.main.id
   initialize_with_readme = false
   shared_runners_enabled = true
 }
@@ -63,7 +73,7 @@ resource "null_resource" "init_repo" {
           "git init --initial-branch=develop",
           "git remote add origin %s",
           "git add .",
-          "git ${local.git_config} commit -m 'Initial commit'",
+          "git ${local.git_config_args} commit -m 'Initial commit'",
           "git push -u origin develop -o ci.skip",
           "git checkout -b main",
           "git push -u origin main -o ci.skip",
@@ -76,7 +86,6 @@ resource "null_resource" "init_repo" {
           "https://oauth2:${var.gitlab_token}@$1"
         ),
         gitlab_project.main.ssh_url_to_repo,
-
       )
     ])
   }
@@ -108,18 +117,29 @@ resource "gitlab_tag_protection" "tags" {
 
 /* Badges */
 
-resource "gitlab_project_badge" "coverage" {
+resource "gitlab_project_badge" "root_group_coverage" {
+  count = local.is_main_group_root ? 1 : 0
+
   project   = gitlab_project.main.id
-  link_url  = "https://${var.project_slug}.gitlab.io/${var.service_slug}/"
+  link_url  = "https://${data.gitlab_group.main.path}.gitlab.io/${gitlab_project.main.path}/"
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/coverage.svg"
 }
+
+resource "gitlab_project_badge" "root_parent_group_coverage" {
+  for_each = data.gitlab_group.main_parent
+
+  project   = gitlab_project.main.id
+  link_url  = "https://${each.value.path}.gitlab.io/${data.gitlab_group.main.path}/${gitlab_project.main.path}/"
+  image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/coverage.svg"
+}
+
 
 /* Group Variables */
 
 resource "gitlab_group_variable" "vars" {
   for_each = var.group_variables
 
-  group     = data.gitlab_group.group.id
+  group     = data.gitlab_group.main.id
   key       = each.key
   value     = each.value.value
   protected = lookup(each.value, "protected", true)
