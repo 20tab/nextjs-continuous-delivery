@@ -5,7 +5,7 @@ if [ "${VAULT_ADDR}" != "" ]; then
   curl https://releases.hashicorp.com/vault/${VAULT_VERSION:=1.11.0}/vault_${VAULT_VERSION}_linux_386.zip --output vault.zip
   unzip vault.zip
 
-  export VAULT_TOKEN="$(./vault write -field=token auth/gitlab-jwt-${PROJECT_SLUG}/login role=envs-${ENV_SLUG} jwt=${CI_JOB_JWT_V2})"
+  export VAULT_TOKEN=`./vault write -field=token auth/gitlab-jwt-${PROJECT_SLUG}/login role=envs-${ENV_SLUG} jwt=${CI_JOB_JWT_V2}`
 
   export SENTRY_AUTH_TOKEN=`./vault kv get -format='json' -field=data ${PROJECT_SLUG}/envs/${ENV_SLUG}/sentry | jq -r .sentry_auth_token`
 

@@ -133,7 +133,6 @@ resource "gitlab_project_badge" "root_parent_group_coverage" {
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/coverage.svg"
 }
 
-
 /* Group Variables */
 
 resource "gitlab_group_variable" "vars" {

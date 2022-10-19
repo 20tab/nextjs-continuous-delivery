@@ -64,7 +64,6 @@ OUTPUT_DIR = os.getenv("OUTPUT_BASE_DIR") or "."
 @click.option("--gitlab-url")
 @click.option("--gitlab-private-token", envvar=GITLAB_TOKEN_ENV_VAR)
 @click.option("--gitlab-group-path")
-@click.option("--gitlab-group-slug")
 @click.option("--terraform-dir")
 @click.option("--logs-dir")
 @click.option("--quiet", is_flag=True)

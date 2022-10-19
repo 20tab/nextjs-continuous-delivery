@@ -1,13 +1,12 @@
 #!/bin/sh -e
 
 if [ "${VAULT_ADDR}" != "" ]; then
-  apk update
-  apk add curl jq
+  apk update && apk add curl jq
 
   curl https://releases.hashicorp.com/vault/${VAULT_VERSION:=1.11.0}/vault_${VAULT_VERSION}_linux_386.zip --output vault.zip
   unzip vault.zip
 
-  export VAULT_TOKEN=`./vault write -field=token auth/gitlab-jwt-${PROJECT_SLUG}/login role=pact jwt=${CI_JOB_JWT_V2})`
+  export VAULT_TOKEN=`./vault write -field=token auth/gitlab-jwt-${PROJECT_SLUG}/login role=pact jwt=${CI_JOB_JWT_V2}`
 
   pact_secrets=`./vault kv get -format='json' -field=data ${PROJECT_SLUG}/pact`
 

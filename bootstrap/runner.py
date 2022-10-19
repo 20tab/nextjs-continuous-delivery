@@ -78,7 +78,6 @@ class Runner:
     environments_stacks: dict = field(init=False, default_factory=dict)
     gitlab_variables: dict = field(init=False, default_factory=dict)
     tfvars: dict = field(init=False, default_factory=dict)
-    vault_project_path: str = field(init=False, default="")
     vault_secrets: dict = field(init=False, default_factory=dict)
     terraform_run_modules: list = field(init=False, default_factory=list)
     terraform_outputs: dict = field(init=False, default_factory=dict)
@@ -256,7 +255,7 @@ class Runner:
                 "terraform_cloud_organization": self.terraform_cloud_organization,
                 "tfvars": self.tfvars,
                 "use_redis": self.use_redis,
-                "vault_project_path": self.vault_project_path,
+                "use_vault": bool(self.vault_url),
             },
             output_dir=self.output_dir,
             no_input=True,
@@ -308,7 +307,7 @@ class Runner:
         click.echo(info("...creating the Vault resources with Terraform"))
         self.collect_vault_secrets()
         env = dict(
-            TF_VAR_project_path=self.vault_project_path,
+            TF_VAR_project_slug=self.project_slug,
             TF_VAR_secrets=json.dumps(self.vault_secrets),
             VAULT_ADDR=self.vault_url,
             VAULT_TOKEN=self.vault_token,
