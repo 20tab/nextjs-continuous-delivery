@@ -4,6 +4,8 @@ locals {
   git_config_args = "-c user.email=${local.user_data.email} -c user.name=\"${local.user_data.name}\""
 
   is_main_group_root = data.gitlab_group.main.parent_id == 0
+
+  pages_base_url = local.is_main_group_root ? "https://${data.gitlab_group.main.path}.gitlab.io" : data.gitlab_group.main_parent[0].parent_id == 0 ? "https://${data.gitlab_group.main_parent[0].path}.gitlab.io/${data.gitlab_group.main.path}" : ""
 }
 
 terraform {
@@ -117,19 +119,11 @@ resource "gitlab_tag_protection" "tags" {
 
 /* Badges */
 
-resource "gitlab_project_badge" "root_group_coverage" {
-  count = local.is_main_group_root ? 1 : 0
+resource "gitlab_project_badge" "coverage" {
+  count = local.pages_base_url != "" ? 1 : 0
 
   project   = gitlab_project.main.id
-  link_url  = "https://${data.gitlab_group.main.path}.gitlab.io/${gitlab_project.main.path}/"
-  image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/coverage.svg"
-}
-
-resource "gitlab_project_badge" "root_parent_group_coverage" {
-  for_each = data.gitlab_group.main_parent
-
-  project   = gitlab_project.main.id
-  link_url  = "https://${each.value.path}.gitlab.io/${data.gitlab_group.main.path}/${gitlab_project.main.path}/"
+  link_url  = "${local.pages_base_url}/${gitlab_project.main.path}/htmlcov"
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/coverage.svg"
 }
 
