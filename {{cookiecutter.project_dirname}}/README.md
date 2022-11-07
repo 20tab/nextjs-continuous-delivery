@@ -7,28 +7,7 @@ This service is generated from [20tab standard project](https://github.com/20tab
 
 ## Git
 
-To get the existing project, change directory, clone the project repository and enter the newly created **{{ cookiecutter.project_slug }}** directory:
-
-*Full services version*
-```bash
-git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/orchestrator.git {{ cookiecutter.project_slug }} && \
-cd {{ cookiecutter.project_slug }}  && \
-git checkout main  && \
-git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/backend.git  && \
-cd backend  && \
-git checkout develop  && \
-cd ..  && \
-git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/{{ cookiecutter.service_slug }}.git  && \
-cd {{ cookiecutter.service_slug }}  && \
-git checkout develop
-```
-
-*Frontend service only*
-```bash
-git clone git@gitlab.com:{{ cookiecutter.gitlab_group_slug }}/{{ cookiecutter.service_slug }}.git {{ cookiecutter.project_slug }} && \
-git checkout develop && \
-cd {{ cookiecutter.project_slug }}
-```
+To get the existing project, change directory, clone the project repository and enter the newly created **{{ cookiecutter.project_slug }}** directory.
 
 ## Run local service
 
@@ -43,7 +22,6 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
 
 # Linting
 
