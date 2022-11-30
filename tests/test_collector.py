@@ -17,6 +17,7 @@ from bootstrap.collector import (
     clean_service_slug,
     clean_terraform_backend,
     clean_use_redis,
+    clean_vault_data,
 )
 
 
@@ -199,3 +200,17 @@ class TestBootstrapCollector(TestCase):
     def test_clean_use_redis(self):
         """Test cleaning the use Redis."""
         self.assertEqual(clean_use_redis("Y"), "Y")
+
+    def test_clean_vault_data(self):
+        """Test cleaning the Vault data ."""
+        self.assertEqual(
+            clean_vault_data("https://vault.test.com", True), "https://vault.test.com"
+        )
+        with input("y", "https://vault.test.com"):
+            self.assertEqual(clean_vault_data(None, True), "https://vault.test.com")
+        with input("y", "y", "https://vault.test.com"):
+            self.assertEqual(clean_vault_data(None, False), "https://vault.test.com")
+        with input("y", "y", "bad_address", "https://vault.test.com"):
+            self.assertEqual(clean_vault_data(None, False), "https://vault.test.com")
+        with input("n"):
+            self.assertEqual(clean_vault_data(None, True), None)
