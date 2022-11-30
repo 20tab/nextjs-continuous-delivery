@@ -107,7 +107,6 @@ class Runner:
             {
                 "basic_auth_enabled": True,
                 "name": DEV_ENV_NAME,
-                "prefix": self.subdomain_dev,
                 "slug": DEV_ENV_SLUG,
                 "stack_slug": DEV_ENV_STACK_CHOICES.get(
                     self.environment_distribution, DEV_STACK_SLUG
@@ -117,7 +116,6 @@ class Runner:
             {
                 "basic_auth_enabled": True,
                 "name": STAGE_ENV_NAME,
-                "prefix": self.subdomain_stage,
                 "slug": STAGE_ENV_SLUG,
                 "stack_slug": STAGE_ENV_STACK_CHOICES.get(
                     self.environment_distribution, STAGE_STACK_SLUG
@@ -127,7 +125,6 @@ class Runner:
             {
                 "basic_auth_enabled": False,
                 "name": PROD_ENV_NAME,
-                "prefix": self.subdomain_prod,
                 "slug": PROD_ENV_SLUG,
                 "stack_slug": PROD_ENV_STACK_CHOICES.get(
                     self.environment_distribution, MAIN_STACK_SLUG
