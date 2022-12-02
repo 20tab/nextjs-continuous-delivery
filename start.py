@@ -11,6 +11,7 @@ from bootstrap.constants import (
     DEPLOYMENT_TYPE_CHOICES,
     ENVIRONMENT_DISTRIBUTION_CHOICES,
     GITLAB_TOKEN_ENV_VAR,
+    VAULT_TOKEN_ENV_VAR,
 )
 from bootstrap.exceptions import BootstrapError
 from bootstrap.helpers import slugify_option
@@ -49,6 +50,7 @@ OUTPUT_DIR = os.getenv("OUTPUT_BASE_DIR") or "."
     default=None,
 )
 @click.option("--terraform-cloud-admin-email")
+@click.option("--vault-token", envvar=VAULT_TOKEN_ENV_VAR)
 @click.option("--vault-url")
 @click.option(
     "--environment-distribution", type=click.Choice(ENVIRONMENT_DISTRIBUTION_CHOICES)
