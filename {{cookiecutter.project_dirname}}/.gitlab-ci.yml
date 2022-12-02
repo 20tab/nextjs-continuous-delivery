@@ -32,6 +32,7 @@ cache:
       variables:
         ENV_SLUG: {{ env.slug }}
         STACK_SLUG: {{ env.stack_slug }}
+        VAULT_ROLE: {{ cookiecutter.service_slug }}-{{ env.slug }}
   environment:
     name: {{ env.name }}{% if env.url %}
     url: {{ env.url }}{% endif %}
@@ -44,6 +45,7 @@ cache:
       variables:
         ENV_SLUG: {{ env.slug }}
         STACK_SLUG: {{ env.stack_slug }}
+        VAULT_ROLE: {{ cookiecutter.service_slug }}-{{ env.slug }}
   environment:
     name: {{ env.name }}{% if env.url %}
     url: {{ env.url }}{% endif %}
@@ -56,6 +58,7 @@ cache:
       variables:
         ENV_SLUG: {{ env.slug }}
         STACK_SLUG: {{ env.stack_slug }}
+        VAULT_ROLE: {{ cookiecutter.service_slug }}-{{ env.slug }}
   environment:
     name: {{ env.name }}{% if env.url %}
     url: {{ env.url }}{% endif %}
@@ -84,7 +87,8 @@ cache:
       -e SENTRY_PROJECT_NAME
       -e SENTRY_URL{% if cookiecutter.use_vault == "true" %}
       -e SERVICE_SLUG={{ cookiecutter.service_slug }}
-      -e VAULT_ADDR{% endif %}
+      -e VAULT_ADDR
+      -e VAULT_ROLE{% endif %}
       -e VERSION_REF
       --entrypoint=""
       getsentry/sentry-cli:latest ./scripts/ci_sentry.sh ${SENTRY_CMD}
