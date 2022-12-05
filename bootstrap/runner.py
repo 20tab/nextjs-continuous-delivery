@@ -65,6 +65,7 @@ class Runner:
     terraform_cloud_organization: str | None = None
     terraform_cloud_organization_create: bool | None = None
     terraform_cloud_admin_email: str | None = None
+    vault_token: str | None = None
     vault_url: str | None = None
     sentry_dsn: str | None = None
     sentry_org: str | None = None
@@ -228,7 +229,6 @@ class Runner:
         """Collect Vault secrets."""
         [self.collect_vault_environment_secrets(env["name"]) for env in self.envs]
 
-
     def init_service(self):
         """Initialize the service."""
         click.echo(info("...cookiecutting the service"))
@@ -301,7 +301,7 @@ class Runner:
             TF_VAR_project_slug=self.project_slug,
             TF_VAR_secrets=json.dumps(self.vault_secrets),
             TF_VAR_vault_address=self.vault_url,
-            TF_VAR_vault_token=os.getenv("VAULT_TOKEN", ""),
+            TF_VAR_vault_token=self.vault_token,
         )
         self.run_terraform("vault", env)
 
