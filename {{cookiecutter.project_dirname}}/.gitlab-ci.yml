@@ -181,22 +181,11 @@ test:
       --entrypoint=""
       pactfoundation/pact-cli:latest-node14 ./scripts/ci_pact.sh ${PACT_CMD}
 
-.publish:
+publish:
   extends:
     - .pact
   stage: Pact-publish
   needs: ["test"]
-  before_script:
-    - if [ "${CI_COMMIT_BRANCH}" ]; then PACT_CONSUMER_TAG="branch:${CI_COMMIT_BRANCH}"; else PACT_CONSUMER_TAG="tag:${CI_COMMIT_TAG}"; fi
-    - >
-      export PACT_CMD="publish ./pacts
-      --consumer-app-version=${VERSION_REF}
-      --tag=${PACT_CONSUMER_TAG}"
-
-publish_development:
-  extends:
-    - .development
-    - .publish
   rules:
     - &skip-pact-rule
       if: $PACT_ENABLED != "true"
@@ -204,25 +193,13 @@ publish_development:
     - &skip-merge-request-event
       if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
-    - *development-rules
-
-publish_staging:
-  extends:
-    - .staging
-    - .publish
-  rules:
-    - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
-    - *staging-rules
-
-publish_production:
-  extends:
-    - .production
-    - .publish
-  rules:
-    - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
-    - *production-rules
+    - when: always
+  before_script:
+    - if [ "${CI_COMMIT_BRANCH}" ]; then PACT_CONSUMER_TAG="branch:${CI_COMMIT_BRANCH}"; else PACT_CONSUMER_TAG="tag:${CI_COMMIT_TAG}"; fi
+    - >
+      export PACT_CMD="publish ./pacts
+      --consumer-app-version=${VERSION_REF}
+      --tag=${PACT_CONSUMER_TAG}"
 
 pages:
   stage: Report
@@ -252,7 +229,7 @@ can-i-deploy_development:
   extends:
     - .development
     - .can-i-deploy
-  needs: ["publish_development"]
+  needs: ["publish"]
   rules:
     - <<: *skip-pact-rule
     - <<: *skip-merge-request-event
@@ -262,7 +239,7 @@ can-i-deploy_staging:
   extends:
     - .staging
     - .can-i-deploy
-  needs: ["publish_staging"]
+  needs: ["publish"]
   rules:
     - <<: *skip-pact-rule
     - <<: *skip-merge-request-event
@@ -272,7 +249,7 @@ can-i-deploy_production:
   extends:
     - .production
     - .can-i-deploy
-  needs: ["publish_production"]
+  needs: ["publish"]
   rules:
     - <<: *skip-pact-rule
     - <<: *skip-merge-request-event
