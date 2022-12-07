@@ -5,16 +5,44 @@
     "project_description": "",
     "project_dirname": "frontend",
     "internal_service_port": "3000",
-    "deployment_type": ["digitalocean-k8s", "other-k8s"],
-    "project_url_dev": null,
-    "project_url_stage": null,
-    "project_url_prod": null,
+    "deployment_type": [
+        "digitalocean-k8s",
+        "other-k8s"
+    ],
     "terraform_backend": "gitlab",
     "terraform_cloud_organization": null,
     "use_redis": "false",
     "use_vault": "false",
     "environment_distribution": "1",
-    "environments_stacks": {},
+    "resources": {
+        "stacks": [
+            [
+                {
+                    "name": "main",
+                    "slug": "main"
+                }
+            ]
+        ],
+        "envs": [
+            {
+                "name": "development",
+                "slug": "dev",
+                "stack_slug": "main"
+            },
+            {
+                "name": "staging",
+                "slug": "stage",
+                "stack_slug": "main"
+            },
+            {
+                "name": "production",
+                "slug": "prod",
+                "stack_slug": "main"
+            }
+        ]
+    },
     "tfvars": {},
-    "_extensions": ["cookiecutter.extensions.SlugifyExtension"]
+    "_extensions": [
+        "cookiecutter.extensions.SlugifyExtension"
+    ]
 }
