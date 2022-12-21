@@ -223,7 +223,7 @@ pages:
       export PACT_CMD="can-i-deploy
       --pacticipant ${PACT_CONSUMER_NAME}
       --version ${VERSION_REF}
-      --to \"env:${ENV_SLUG}\""
+      --to env:${ENV_SLUG}"
 
 can-i-deploy_development:
   extends:
