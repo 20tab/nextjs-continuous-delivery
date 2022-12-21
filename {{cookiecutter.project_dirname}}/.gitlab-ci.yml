@@ -426,7 +426,7 @@ rollback_production:
       export PACT_CMD="create-version-tag
       --pacticipant ${PACT_CONSUMER_NAME}
       --version ${VERSION_REF}
-      --tag \"env:${ENV_SLUG}\""
+      --tag env:${ENV_SLUG}"
 
 create-version-tag_development:
   extends: .create-version-tag
