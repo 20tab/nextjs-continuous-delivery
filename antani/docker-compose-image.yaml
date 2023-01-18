@@ -3,12 +3,10 @@ version: "3.4"
 services:
 
   consumer:
-    build:
-      context: .
-      dockerfile: ${SERVICE_DOCKER_FILE:-docker/test.Dockerfile}
+    image: ${CONSUMER_IMAGE}
     environment:
       - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-http://provider:8000}
       - NEXT_PUBLIC_PROJECT_URL=${NEXT_PUBLIC_PROJECT_URL:-https://proxy:8443}
-      - REACT_ENVIRONMENT=${REACT_ENVIRONMENT:-development}
+      - REACT_ENVIRONMENT=${REACT_ENVIRONMENT:-production}
     healthcheck:
       test: wget -O- -q http://localhost:3000/api/health/ || exit 1

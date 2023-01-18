@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 FROM node:16-bullseye-slim
-LABEL company="20tab" project="differenti" service="frontend" stage="local"
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="local"
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" WORKDIR=/app
@@ -11,7 +11,8 @@ RUN apt-get update \
         git \
         make \
         openssh-client \
-        python3
+        python3 \
+        wget
 WORKDIR /
 COPY --chown=node ./package.json ./
 COPY --chown=node ./yarn.lock ./

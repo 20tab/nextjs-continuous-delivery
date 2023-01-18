@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 FROM node:16-alpine AS build
-LABEL company="20tab" project="differenti" service="frontend" stage="build"
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="build"
 
 ENV PATH="$PATH:./node_modules/.bin"
 WORKDIR /app
@@ -37,7 +37,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
 RUN yarn build
 
 FROM node:16-alpine AS remote
-LABEL company="20tab" project="differenti" service="frontend" stage="remote"
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="remote"
 
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
