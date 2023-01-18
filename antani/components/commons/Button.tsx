@@ -9,7 +9,7 @@ export const Button = styled.button<Props>`
   background-color: ${({ theme, ui }) => theme.colors[ui]};
   border: 0;
   border-radius: 5px;
-  color: ${({ theme }) => theme.colors.header};
+  color: gray;
   cursor: pointer;
   display: flex;
   justify-content: center;

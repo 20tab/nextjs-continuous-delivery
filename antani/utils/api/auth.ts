@@ -1,5 +1,5 @@
 import { axios, withApiOptions } from '@/utils/api/axios'
-import * as T from '@/models/Api'
+import type * as T from '@/models/Api'
 
 export const login = withApiOptions<T.LoginResponse, [T.LoginRequest]>(
   ({ baseUrl }, body) => {

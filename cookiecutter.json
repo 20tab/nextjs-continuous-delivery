@@ -2,7 +2,6 @@
     "project_name": null,
     "project_slug": "{{ cookiecutter.project_name | slugify() }}",
     "service_slug": "frontend",
-    "project_description": "",
     "project_dirname": "frontend",
     "internal_service_port": "3000",
     "deployment_type": [

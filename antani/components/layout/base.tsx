@@ -5,8 +5,7 @@ import { Navbar } from '@/components/Navbar'
 type Props = {
   children: React.ReactNode
 }
-
-const WithNavbar = ({ children }: Props) => {
+const Layout = ({ children }: Props) => {
   return (
     <>
       <Navbar />
@@ -15,4 +14,4 @@ const WithNavbar = ({ children }: Props) => {
   )
 }
 
-export { WithNavbar }
+export default Layout

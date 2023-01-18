@@ -1,16 +1,19 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Logo } from '@/components/Logo'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
+import Image from 'next/image'
 
 const Navbar = () => {
   return (
     <Nav>
-      <StyledLogo />
-      <ThemeContainer>
-        <ThemeSwitch />
-      </ThemeContainer>
+      <Image
+        src={'/images/logo.svg'}
+        width='110'
+        height='48'
+        alt={'sito logo'}
+      />
+      <ThemeSwitch />
     </Nav>
   )
 }
@@ -21,14 +24,7 @@ const Nav = styled.nav`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-`
-
-const StyledLogo = styled(Logo)`
-  width: 150px;
-`
-
-const ThemeContainer = styled.div`
-  padding-right: 15px;
+  padding: 5px;
 `
 
 export { Navbar }

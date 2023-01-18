@@ -9,7 +9,7 @@ type BaseTextProps = {
 }
 
 export const MainTitle = styled.h1<BaseTextProps>`
-  color: ${({ color, theme }) => color || theme.colors.text};
+  color: ${({ color }) => color};
   font-size: 36px;
   font-weight: ${({ weight }) => weight || 'normal'};
   margin: ${({ margin }) => margin || 0};
@@ -18,7 +18,7 @@ export const MainTitle = styled.h1<BaseTextProps>`
 `
 
 export const Title = styled.h2<BaseTextProps>`
-  color: ${({ color, theme }) => color || theme.colors.text};
+  color: ${({ color }) => color};
   font-size: 24px;
   font-weight: ${({ weight }) => weight || 'normal'};
   margin: ${({ margin }) => margin || 0};
@@ -27,7 +27,7 @@ export const Title = styled.h2<BaseTextProps>`
 `
 
 export const SubTitle = styled.h3<BaseTextProps>`
-  color: ${({ color, theme }) => color || theme.colors.text};
+  color: ${({ color }) => color};
   font-size: 20px;
   font-weight: ${({ weight }) => weight || 'normal'};
   margin: ${({ margin }) => margin || 0};
@@ -36,7 +36,7 @@ export const SubTitle = styled.h3<BaseTextProps>`
 `
 
 export const Text = styled.p<BaseTextProps>`
-  color: ${({ color, theme }) => color || theme.colors.text};
+  color: ${({ color }) => color};
   font-size: 16px;
   font-weight: ${({ weight }) => weight || 'normal'};
   margin: ${({ margin }) => margin || 0};

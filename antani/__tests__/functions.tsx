@@ -1,17 +1,24 @@
 import { Provider } from 'react-redux'
 import { render } from '@testing-library/react'
 import { ThemeProvider } from 'styled-components'
-import React, { ReactElement } from 'react'
+import React from 'react'
 
 import themes from '@/styles/themes'
-import { makeStore } from '@/store'
+import store from '@/store'
 
-export const store = makeStore()
+import type { ReactElement } from 'react'
 
-export const renderWithReduxAndTheme = (element: ReactElement) => {
+const defaultStore = store
+
+import type { configureStore as configureStoreType } from '@reduxjs/toolkit'
+
+export const renderWithReduxAndTheme = (
+  element: ReactElement,
+  store?: ReturnType<typeof configureStoreType>
+) => {
   return render(
-    <ThemeProvider theme={themes[store.getState().utils.theme]}>
-      <Provider store={store}>{element}</Provider>
+    <ThemeProvider theme={themes.light}>
+      <Provider store={store || defaultStore}>{element}</Provider>
     </ThemeProvider>
   ).container
 }

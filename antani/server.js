@@ -2,8 +2,11 @@ const express = require('express')
 const next = require('next')
 const path = require('path')
 
-const port = parseInt(process.env.PORT, 10) || {{ cookiecutter.internal_service_port }}
-const app = next({ dev: process.env.NODE_ENV !== 'production' })
+const dev = process.env.NODE_ENV !== 'production'
+const hostname = 'localhost'
+const port = parseInt(process.env.PORT, 10) || 3000
+
+const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
@@ -23,6 +26,6 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err
-    console.info(`> Ready on http://localhost:${port}`)
+    console.info(`> Ready on http://${hostname}:${port}`)
   })
 })

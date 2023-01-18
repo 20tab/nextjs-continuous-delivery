@@ -4,9 +4,8 @@ import nookies from 'nookies'
 
 import { Theme } from '@/models/Utils'
 import { changeTheme } from '@/store/utilsSlice'
-import { useAppSelector } from '@/utils/hooks/useAppSelector'
+import { useAppDispatch, useAppSelector } from '@/store'
 
-import { useAppDispatch } from '@/utils/hooks/useAppDispatch'
 const ThemeSwitch = () => {
   const dispatch = useAppDispatch()
   const theme = useAppSelector(state => state.utils.theme)
@@ -15,7 +14,7 @@ const ThemeSwitch = () => {
   const handlePressTheme = () => {
     const newTheme = isDark ? Theme.light : Theme.dark
 
-    nookies.set(null, 'theme', newTheme, {
+    nookies.set(null, 'THEME', newTheme, {
       path: '/'
     })
 
@@ -44,7 +43,7 @@ const Input = styled.input`
   outline: none;
 
   &:checked + span {
-    background-color: ${({ theme }) => theme.colors.text};
+    background-color: black;
 
     &::before {
       transform: translateX(20px);
@@ -52,7 +51,7 @@ const Input = styled.input`
   }
 
   &:focus + span {
-    box-shadow: 0 0 1px ${({ theme }) => theme.colors.text};
+    box-shadow: 0 0 1px black;
   }
 `
 
@@ -63,7 +62,7 @@ const Slider = styled.span`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: ${({ theme }) => theme.colors.text};
+  background-color: black;
   transition: 0.4s;
   border-radius: 34px;
 
@@ -74,7 +73,7 @@ const Slider = styled.span`
     width: 20px;
     left: 2px;
     bottom: 2px;
-    background-color: ${({ theme }) => theme.colors.background};
+    background-color: white;
     border-radius: 50%;
     -webkit-transition: 0.4s;
     transition: 0.4s;
