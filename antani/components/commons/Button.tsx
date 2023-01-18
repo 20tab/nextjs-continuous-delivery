@@ -6,7 +6,7 @@ type Props = {
 
 export const Button = styled.button<Props>`
   align-items: center;
-  background-color: ${({ theme, ui }) => theme.colors[ui]};
+  background-color: ${({ theme, ui }) => theme.colors[ui]['0']};
   border: 0;
   border-radius: 5px;
   color: gray;
