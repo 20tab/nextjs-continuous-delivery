@@ -147,7 +147,7 @@ test:
     - docker cp ${SERVICE_CONTAINER_NAME}:/app/junit.xml ./junit.xml
     - if [ "${PACT_ENABLED}" == true ]; then docker cp ${SERVICE_CONTAINER_NAME}:/app/pacts .; fi
   after_script:
-    - docker-compose down -v
+    - docker-compose down --volumes --remove-orphans
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:
@@ -314,14 +314,8 @@ build_production:
     - docker-compose build
     - docker-compose up -d proxy
     - docker-compose run --name ${SERVICE_CONTAINER_NAME} cypress
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/cypress-screenshots ./screenshots
   after_script:
-    - docker-compose down -v
-  artifacts:
-    paths:
-      - screenshots
-    expire_in: 1 day
-    when: always
+    - docker-compose down --volumes --remove-orphans
 
 e2e_development:
   extends:
@@ -340,6 +334,20 @@ e2e_production:
     - .production
     - .e2e
   needs: ["build_production"]
+
+e2e_branch:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_TAG
+      when: never
+    - when: always
+  extends:
+    - .e2e
+  variables:
+    SERVICE_DOCKER_FILE: "docker/remote.Dockerfile"
+    REACT_ENVIRONMENT: 'production'
+  needs: ["test"]
+  before_script:
+    - export COMPOSE_FILE=docker-compose.yaml:docker-compose-services.yaml
 
 .deploy:
   stage: Deploy
