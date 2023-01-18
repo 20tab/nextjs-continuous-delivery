@@ -1,25 +1,15 @@
-import { InteractionObject } from '@pact-foundation/pact/src/dsl/interaction'
+import type { InteractionObject } from '@pact-foundation/pact'
 
-export const likeToContent = pactBody => {
-  if (typeof pactBody === 'object' && !Array.isArray(pactBody)) {
-    for (const key in pactBody) {
-      if (
-        Boolean(pactBody[key]) &&
-        Object.prototype.hasOwnProperty.call(pactBody[key], 'contents') &&
-        Object.prototype.hasOwnProperty.call(pactBody[key], 'getValue')
-      ) {
-        pactBody[key] = pactBody[key].contents
-      } else likeToContent(pactBody[key])
-    }
-  } else if (Array.isArray(pactBody)) {
-    return pactBody.map(el => likeToContent(el))
-  }
-
-  return pactBody
-}
-
-export const composePactState = (...args: PactState): string => {
-  return args.join(' / ')
+export enum HTTPMethod {
+  'CONNECT' = 'CONNECT',
+  'DELETE' = 'DELETE',
+  'GET' = 'GET',
+  'HEAD' = 'HEAD',
+  'OPTIONS' = 'OPTIONS',
+  'PATCH' = 'PATCH',
+  'POST' = 'POST',
+  'PUT' = 'PUT',
+  'TRACE' = 'TRACE'
 }
 
 export type PactInteraction = {
@@ -27,8 +17,3 @@ export type PactInteraction = {
     [status: string]: InteractionObject
   }
 }
-
-type PactState = (
-  | 'A logged-in user testuser session exists'
-  | 'A user testuser exists'
-)[]

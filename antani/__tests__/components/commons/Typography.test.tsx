@@ -2,17 +2,17 @@ import { expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import React from 'react'
 
-import { renderWithReduxAndTheme } from '@/__tests__/functions'
+import { renderWithWrappers } from '@/__tests__/functions'
 import { H1, H2, H3, H4, Text } from '@/components/commons/Typography'
 
 describe('Titles', () => {
   describe('H1', () => {
     it('Normal H1 renders correctly', () => {
-      renderWithReduxAndTheme(<H1.Normal>MainTitle</H1.Normal>)
+      renderWithWrappers(<H1.Normal>MainTitle</H1.Normal>)
       screen.getByText('MainTitle')
     })
     it('Normal H1 renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <H1.Normal uppercase italic color='red'>
           MainTitle
         </H1.Normal>
@@ -27,11 +27,11 @@ describe('Titles', () => {
       expect(compiledMainTitle.fontSize).toBe('40px')
     })
     it('Big H1 renders correctly', () => {
-      renderWithReduxAndTheme(<H1.Big>MainTitle</H1.Big>)
+      renderWithWrappers(<H1.Big>MainTitle</H1.Big>)
       screen.getByText('MainTitle')
     })
     it('Big H1 renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <H1.Big uppercase italic color='red'>
           MainTitle
         </H1.Big>
@@ -46,11 +46,11 @@ describe('Titles', () => {
       expect(compiledMainTitle.fontSize).toBe('50px')
     })
     it('Medium H1 renders correctly', () => {
-      renderWithReduxAndTheme(<H1.Medium>MainTitle</H1.Medium>)
+      renderWithWrappers(<H1.Medium>MainTitle</H1.Medium>)
       screen.getByText('MainTitle')
     })
     it('Medium H1 renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <H1.Medium uppercase italic color='red'>
           MainTitle
         </H1.Medium>
@@ -67,11 +67,11 @@ describe('Titles', () => {
   })
   describe('H2', () => {
     it('Normal H2 renders correctly', () => {
-      renderWithReduxAndTheme(<H2.Normal>MainTitle</H2.Normal>)
+      renderWithWrappers(<H2.Normal>MainTitle</H2.Normal>)
       screen.getByText('MainTitle')
     })
     it('Normal H2 renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <H2.Normal uppercase italic color='red'>
           MainTitle
         </H2.Normal>
@@ -88,11 +88,11 @@ describe('Titles', () => {
   })
   describe('H3', () => {
     it('H3 renders correctly', () => {
-      renderWithReduxAndTheme(<H3.Normal>MainTitle</H3.Normal>)
+      renderWithWrappers(<H3.Normal>MainTitle</H3.Normal>)
       screen.getByText('MainTitle')
     })
     it('H3 renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <H3.Normal uppercase italic color='red'>
           MainTitle
         </H3.Normal>
@@ -109,11 +109,11 @@ describe('Titles', () => {
   })
   describe('H4', () => {
     it('H4 renders correctly', () => {
-      renderWithReduxAndTheme(<H4.Normal>MainTitle</H4.Normal>)
+      renderWithWrappers(<H4.Normal>MainTitle</H4.Normal>)
       screen.getByText('MainTitle')
     })
     it('H4 renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <H4.Normal uppercase italic color='red'>
           MainTitle
         </H4.Normal>
@@ -133,11 +133,11 @@ describe('Titles', () => {
 describe('Text', () => {
   describe('Normal', () => {
     it('Normal Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.Normal>MainParagraph</Text.Normal>)
+      renderWithWrappers(<Text.Normal>MainParagraph</Text.Normal>)
       screen.getByText('MainParagraph')
     })
     it('Normal Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.Normal uppercase italic color='red'>
           MainParagraph
         </Text.Normal>
@@ -154,11 +154,11 @@ describe('Text', () => {
       expect(compiledMainTitle.fontSize).toBe('16px')
     })
     it('NormalBold Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.NormalBold>MainParagraph</Text.NormalBold>)
+      renderWithWrappers(<Text.NormalBold>MainParagraph</Text.NormalBold>)
       screen.getByText('MainParagraph')
     })
     it('NormalBold Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.NormalBold uppercase italic color='red'>
           MainParagraph
         </Text.NormalBold>
@@ -175,11 +175,11 @@ describe('Text', () => {
   })
   describe('Small', () => {
     it('Small Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.Small>MainParagraph</Text.Small>)
+      renderWithWrappers(<Text.Small>MainParagraph</Text.Small>)
       screen.getByText('MainParagraph')
     })
     it('Small Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.Small uppercase italic color='red'>
           MainParagraph
         </Text.Small>
@@ -194,11 +194,11 @@ describe('Text', () => {
       expect(compiledMainTitle.fontSize).toBe('10px')
     })
     it('SmallBold Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.SmallBold>MainParagraph</Text.SmallBold>)
+      renderWithWrappers(<Text.SmallBold>MainParagraph</Text.SmallBold>)
       screen.getByText('MainParagraph')
     })
     it('SmallBold Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.SmallBold uppercase italic color='red'>
           MainParagraph
         </Text.SmallBold>
@@ -215,11 +215,11 @@ describe('Text', () => {
   })
   describe('Medium', () => {
     it('Medium Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.Medium>MainParagraph</Text.Medium>)
+      renderWithWrappers(<Text.Medium>MainParagraph</Text.Medium>)
       screen.getByText('MainParagraph')
     })
     it('Medium Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.Medium uppercase italic color='red'>
           MainParagraph
         </Text.Medium>
@@ -234,11 +234,11 @@ describe('Text', () => {
       expect(compiledMainTitle.fontSize).toBe('12px')
     })
     it('MediumBold Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.MediumBold>MainParagraph</Text.MediumBold>)
+      renderWithWrappers(<Text.MediumBold>MainParagraph</Text.MediumBold>)
       screen.getByText('MainParagraph')
     })
     it('MediumBold Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.MediumBold uppercase italic color='red'>
           MainParagraph
         </Text.MediumBold>
@@ -255,11 +255,11 @@ describe('Text', () => {
   })
   describe('Big', () => {
     it('Big Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.Big>MainParagraph</Text.Big>)
+      renderWithWrappers(<Text.Big>MainParagraph</Text.Big>)
       screen.getByText('MainParagraph')
     })
     it('Big Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.Big uppercase italic color='red'>
           MainParagraph
         </Text.Big>
@@ -274,11 +274,11 @@ describe('Text', () => {
       expect(compiledMainTitle.fontSize).toBe('18px')
     })
     it('BigBold Text renders correctly', () => {
-      renderWithReduxAndTheme(<Text.BigBold>MainParagraph</Text.BigBold>)
+      renderWithWrappers(<Text.BigBold>MainParagraph</Text.BigBold>)
       screen.getByText('MainParagraph')
     })
     it('BigBold Text renders correctly with style props', () => {
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <Text.BigBold uppercase italic color='red'>
           MainParagraph
         </Text.BigBold>

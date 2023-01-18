@@ -3,11 +3,12 @@ import axios from 'axios'
 import { parseCookies } from 'nookies'
 
 export interface ApiOptions {
-  serverSide?: boolean
-  csrfToken?: string
-  sessionId?: string
+  baseUrl?: string
   csrfCookie?: boolean
+  csrfToken?: string
   locale?: string
+  serverSide?: boolean
+  sessionId?: string
 }
 
 export type ApiConfig = {
@@ -73,9 +74,12 @@ const withApiOptions = <Response, Args extends unknown[] = []>(
   return (options: ApiOptions, ...args: Args) => {
     const serverSide = options && options.serverSide
     const headers = composeHeaders(options)
-    const baseUrl = serverSide
-      ? process?.env?.INTERNAL_BACKEND_URL || ''
-      : process?.env?.NEXT_PUBLIC_PROJECT_URL || ''
+    const baseUrl =
+      options && options.baseUrl
+        ? options.baseUrl
+        : serverSide
+        ? process?.env?.INTERNAL_BACKEND_URL || ''
+        : process?.env?.NEXT_PUBLIC_PROJECT_URL || ''
     const config = {
       baseUrl: baseUrl,
       headers

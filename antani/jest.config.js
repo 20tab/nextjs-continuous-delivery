@@ -7,7 +7,7 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   collectCoverageFrom: [
     'components/**/*.{ts,tsx}',
-    '!components/charts/*.{ts,tsx}',
+    '!components/layout/*.{ts,tsx}',
     'utils/functions.ts'
   ],
   moduleNameMapper: {

@@ -12,7 +12,7 @@ const defaultStore = store
 
 import type { configureStore as configureStoreType } from '@reduxjs/toolkit'
 
-export const renderWithReduxAndTheme = (
+export const renderWithWrappers = (
   element: ReactElement,
   store?: ReturnType<typeof configureStoreType>
 ) => {

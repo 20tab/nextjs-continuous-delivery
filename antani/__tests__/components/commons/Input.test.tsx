@@ -1,13 +1,14 @@
+import { expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import React from 'react'
 
-import { InputWithErrors } from '@/components/commons/Input'
-import { renderWithReduxAndTheme } from '@/__tests__/functions'
+import { Input, InputWithErrors } from '@/components/commons/Input'
+import { renderWithWrappers } from '@/__tests__/functions'
 
 describe('Input components', () => {
   describe('<InputWithErrors />', () => {
     const setup = () =>
-      renderWithReduxAndTheme(
+      renderWithWrappers(
         <InputWithErrors
           placeholder='some-placeholder'
           errors={['This field may not be blank.']}
@@ -15,9 +16,7 @@ describe('Input components', () => {
       )
 
     const setupWithNoErrors = () =>
-      renderWithReduxAndTheme(
-        <InputWithErrors placeholder='some-placeholder' />
-      )
+      renderWithWrappers(<Input placeholder='some-placeholder' />)
 
     test('should render input', () => {
       setup()
@@ -27,8 +26,9 @@ describe('Input components', () => {
 
     test('should render input without error', () => {
       setupWithNoErrors()
-      const input = screen.getByPlaceholderText(/some-placeholder/i)
-      expect(input).toHaveValue('')
+      const input: HTMLInputElement =
+        screen.getByPlaceholderText(/some-placeholder/i)
+      expect(input.value).toBe('')
     })
   })
 })
