@@ -47,33 +47,33 @@ const theme: DefaultTheme = {
     h1: {
       normal: {
         fontSize: '40px',
-        fontWeight: 600
+        fontWeight: 500
       },
       big: {
         fontSize: '50px',
-        fontWeight: 600
+        fontWeight: 500
       },
       medium: {
         fontSize: '45px',
-        fontWeight: 600
+        fontWeight: 500
       }
     },
     h2: {
       normal: {
         fontSize: '32px',
-        fontWeight: 600
+        fontWeight: 500
       }
     },
     h3: {
       normal: {
         fontSize: '24px',
-        fontWeight: 600
+        fontWeight: 500
       }
     },
     h4: {
       normal: {
         fontSize: '20px',
-        fontWeight: 600
+        fontWeight: 500
       }
     }
   },
@@ -108,7 +108,7 @@ const theme: DefaultTheme = {
     },
     smallBold: {
       fontSize: '10px',
-      fontWeight: 600
+      fontWeight: 500
     }
   }
 }
