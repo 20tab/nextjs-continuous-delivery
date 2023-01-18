@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import nookies from 'nookies'
 
@@ -9,8 +9,8 @@ import { useAppDispatch, useAppSelector } from '@/store'
 const ThemeSwitch = () => {
   const dispatch = useAppDispatch()
   const theme = useAppSelector(state => state.utils.theme)
-  const isDark = theme === Theme.dark
 
+  const isDark = useMemo(() => theme === Theme.dark, [theme])
   const handlePressTheme = () => {
     const newTheme = isDark ? Theme.light : Theme.dark
 
