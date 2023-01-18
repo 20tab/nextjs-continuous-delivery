@@ -1,14 +1,14 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { MainTitle } from '@/components/commons/Typography'
+import { H1 } from '@/components/commons/Typography'
 
 import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
   return (
     <Container>
-      <MainTitle>Hello World!</MainTitle>
+      <H1.Normal>Hello World!</H1.Normal>
     </Container>
   )
 }
