@@ -11,7 +11,8 @@ import { changeTheme } from '@/store/utilsSlice'
 type Props = {
   children: React.ReactNode
 }
-const ThemeWrapper = ({ children }: Props) => {
+
+const Layout = ({ children }: Props) => {
   const dispatch = useAppDispatch()
   const { theme } = useAppSelector(state => state.utils)
 
@@ -31,4 +32,4 @@ const ThemeWrapper = ({ children }: Props) => {
   )
 }
 
-export default ThemeWrapper
+export default Layout
