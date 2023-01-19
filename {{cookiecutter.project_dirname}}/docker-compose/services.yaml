@@ -2,23 +2,10 @@ version: "3.4"
 
 services:
 
-  provider:
-    image: pactfoundation/pact-stub-server
-    entrypoint: ./pact_stub_server.sh
-    command: -p 8000 -d pacts -o --insecure-tls
-    working_dir: /app
-    volumes:
-      - ./scripts/pact_stub_server.sh:/app/pact_stub_server.sh
-      - ./pacts:/app/pacts:ro
-    healthcheck:
-      test: wget -O- -q http://localhost:8000/api/health/ || exit 1
-
   proxy:
     image: traefik:v2.6
     depends_on:
       consumer:
-        condition: service_healthy
-      provider:
         condition: service_healthy
     volumes:
       - ./proxy:/traefik:ro
