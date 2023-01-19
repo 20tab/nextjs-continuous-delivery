@@ -3,9 +3,10 @@ stages:
   - Pact-publish
   - Pact-check
   - Build
-  - Report
+  - Deploy-check
   - Deploy
   - Pact-tag
+  - Report
   - Sentry
 
 variables:
@@ -204,11 +205,14 @@ publish:
 pages:
   stage: Report
   image: busybox
-  needs: ["test"]
+  needs: 
+    - "test"
+    - "trivy_development"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - mv coverage/tests/lcov-report/* public
+    - mv trivy public/trivy
   artifacts:
     paths:
       - public
@@ -301,6 +305,44 @@ build_production:
       optional: true
     - job: test
 
+.trivy:
+  stage: Deploy-check
+  image:
+    name: docker:20
+  services:
+    - docker:20-dind
+  script:
+    - mkdir trivy
+    - >
+       docker run
+      --entrypoint=""
+      --env GIT_STRATEGY=none
+      --env TARGET_IMAGE=${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
+      --env TRIVY_AUTH_URL="${CI_REGISTRY}"
+      --env TRIVY_CACHE_DIR=.trivycache/
+      --env TRIVY_NO_PROGRESS=true
+      --env TRIVY_PASSWORD="${CI_REGISTRY_PASSWORD}"
+      --env TRIVY_USERNAME="${CI_REGISTRY_USER}"
+      --name trivy-{{ cookiecutter.project_slug }}-{{ cookiecutter.service_slug }}-${CI_JOB_ID}
+      --volume ${PWD}/scripts/trivy.sh:/app/trivy.sh
+      aquasec/trivy /app/trivy.sh
+  after_script:
+    - docker cp trivy-{{ cookiecutter.project_slug }}-{{ cookiecutter.service_slug }}-${CI_JOB_ID}:/tmp/report.html trivy/report.html || true
+    - docker rm trivy-{{ cookiecutter.project_slug }}-{{ cookiecutter.service_slug }}-${CI_JOB_ID}
+  artifacts:
+    paths:
+      - trivy
+    when: always
+  allow_failure: true
+
+trivy_development:
+  extends:
+    - .development
+    - .trivy
+  variables:
+    ENV_SLUG: dev
+  needs: ["build_development"]
+
 .deploy:
   stage: Deploy
   image:
@@ -364,7 +406,9 @@ deploy_development:
   extends:
     - .development
     - .deploy
-  needs: ["build_development"]
+  needs: 
+    - "build_development"
+    - "trivy_development"
 
 deploy_staging:
   extends:
