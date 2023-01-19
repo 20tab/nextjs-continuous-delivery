@@ -7,10 +7,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG USER=appuser
 ENV APPUSER=$USER LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" TZ='Europe/Rome' WORKDIR=/app
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        g++ \
+    && apt-get install --assume-yes --no-install-recommends \
+        gcc \
         make \
-        python3
+        python3.9-minimal \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR $WORKDIR
 RUN addgroup --system --gid 997 $APPUSER
 RUN adduser --system --uid 997 $APPUSER

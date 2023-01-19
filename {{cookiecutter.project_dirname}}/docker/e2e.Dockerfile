@@ -2,7 +2,7 @@ FROM node:16-bullseye-slim
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USER=appuser
 ENV APPUSER=$USER PATH="$PATH:./node_modules/.bin"
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install --assume-yes --no-install-recommends \
   libgtk2.0-0 \
   libgtk-3-0 \
   libgbm-dev \
