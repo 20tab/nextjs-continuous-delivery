@@ -1,5 +1,5 @@
 {
-  "name": "antani",
+  "name": "{{ cookiecutter.project_slug }}",
   "version": "1.0.0",
   "private": true,
   "scripts": {
