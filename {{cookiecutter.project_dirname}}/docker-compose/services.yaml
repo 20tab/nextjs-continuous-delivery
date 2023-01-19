@@ -1,0 +1,31 @@
+version: "3.4"
+
+services:
+
+  proxy:
+    image: traefik:v2.6
+    depends_on:
+      consumer:
+        condition: service_healthy
+    volumes:
+      - ./proxy:/traefik:ro
+    command:
+      - "--configFile=/traefik/conf/static.yaml"
+    ports:
+      - "${LOCAL_HTTPS_PORT:-8443}:8443"
+
+  cypress:
+    build:
+      context: .
+      dockerfile: docker/e2e.Dockerfile
+      args:
+        USER: ${USER:-appuser}
+    container_name: cypress
+    depends_on:
+      - proxy
+    environment:
+      - CYPRESS_BASE_URL=https://proxy:8443
+    user: ${USER:-appuser}
+    volumes:
+      - ./cypress:/app/cypress
+      - ./cypress.config.ts:/app/cypress.config.ts

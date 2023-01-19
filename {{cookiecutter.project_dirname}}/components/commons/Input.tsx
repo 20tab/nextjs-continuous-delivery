@@ -36,9 +36,7 @@ const InputWithErrors = ({
 }
 
 const Input = styled.input<{ errors?: boolean }>`
-  border: 1px solid
-    ${({ errors, theme }) =>
-      errors ? theme.colors.status.error : theme.colors.label};
+  border: 1px solid black;
   box-sizing: border-box;
   border-radius: 6px;
   padding: 10px 20px;
@@ -47,7 +45,6 @@ const Input = styled.input<{ errors?: boolean }>`
   line-height: 19px;
   ::placeholder {
     font-style: italic;
-    color: ${({ theme }) => theme.colors.label};
   }
 `
 

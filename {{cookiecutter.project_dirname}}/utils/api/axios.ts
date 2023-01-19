@@ -1,12 +1,14 @@
-import axios, { AxiosPromise } from 'axios'
+import type { AxiosPromise } from 'axios'
+import axios from 'axios'
 import { parseCookies } from 'nookies'
 
 export interface ApiOptions {
-  serverSide?: boolean
-  csrfToken?: string
-  sessionId?: string
+  baseUrl?: string
   csrfCookie?: boolean
+  csrfToken?: string
   locale?: string
+  serverSide?: boolean
+  sessionId?: string
 }
 
 export type ApiConfig = {
@@ -14,8 +16,16 @@ export type ApiConfig = {
   headers: Record<string, string>
 }
 
+type AxiosHeaders = {
+  'Accept-Language'?: string
+  'Content-Type'?: string
+  'X-CSRFToken'?: string
+  Authorization?: string
+  Cookie?: string
+}
+
 const composeHeaders = (options?: ApiOptions) => {
-  const headers = {}
+  const headers: AxiosHeaders = {}
   if (options?.csrfToken) {
     headers['X-CSRFToken'] = options.csrfToken
     headers['Cookie'] = `csrftoken=${options.csrfToken}`
@@ -36,9 +46,12 @@ const languages = {
 
 // Request interceptor
 axios.interceptors.request.use(config => {
-  if (typeof window !== 'undefined')
-    config.headers['Accept-Language'] = languages[window?.__NEXT_DATA__?.locale]
-
+  ;(config.headers as AxiosHeaders)['Content-Type'] =
+    'application/json; charset=utf-8'
+  if (parseCookies()?.NEXT_LOCALE) {
+    const lang = parseCookies().NEXT_LOCALE as 'it' | 'en'
+    ;(config.headers as AxiosHeaders)['Accept-Language'] = languages[lang]
+  }
   config.headers['Content-Type'] = 'application/json; charset=utf-8'
   if (config.method !== 'get') {
     if (parseCookies()?.csrftoken) {
@@ -54,17 +67,6 @@ axios.interceptors.response.use(
   err => Promise.reject(err)
 )
 
-const getPublicApiURL = () => {
-  const isServer = typeof window === 'undefined'
-
-  if (isServer) {
-    return process.env.NEXT_PUBLIC_PROJECT_URL
-  } else {
-    const state = window.__NEXT_DATA__?.props?.initialState
-    return state?.utils?.envs?.NEXT_PUBLIC_PROJECT_URL || ''
-  }
-}
-
 // Attach options (ApiOptions) to and api function
 const withApiOptions = <Response, Args extends unknown[] = []>(
   apiFunction: (config: ApiConfig, ...args: Args) => AxiosPromise<Response>
@@ -72,10 +74,14 @@ const withApiOptions = <Response, Args extends unknown[] = []>(
   return (options: ApiOptions, ...args: Args) => {
     const serverSide = options && options.serverSide
     const headers = composeHeaders(options)
+    const baseUrl =
+      options && options.baseUrl
+        ? options.baseUrl
+        : serverSide
+        ? process?.env?.INTERNAL_BACKEND_URL || ''
+        : process?.env?.NEXT_PUBLIC_PROJECT_URL || ''
     const config = {
-      baseUrl: serverSide
-        ? /* istanbul ignore next */ process?.env?.INTERNAL_BACKEND_URL
-        : getPublicApiURL(),
+      baseUrl: baseUrl,
       headers
     }
 

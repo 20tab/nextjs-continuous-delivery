@@ -1,0 +1,41 @@
+{
+  "ignorePatterns": "*.js",
+  "parser": "@typescript-eslint/parser",
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "parserOptions": {
+    "project": [
+      "./tsconfig.json",
+      "./cypress/tsconfig.json"
+    ],
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "next/core-web-vitals",
+    "next",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "plugin:security/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/consistent-type-imports": "warn",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", {"argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "camelcase": [2, {"properties": "always"}],
+    "prettier/prettier": "error",
+    "react/no-unescaped-entities": 0,
+    "react/prop-types": 0,
+    "security/detect-object-injection": 0
+  }
+}

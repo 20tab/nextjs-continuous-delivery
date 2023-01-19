@@ -1,17 +1,15 @@
-import '@testing-library/jest-dom/extend-expect'
+import { expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import React from 'react'
 
 import { Button } from '@/components/commons/Button'
-import { renderWithReduxAndTheme } from '@/__tests__/functions'
-import theme from '@/styles/themes/'
+import { renderWithWrappers } from '@/__tests__/functions'
 
-const solidSetup = () => renderWithReduxAndTheme(<Button ui='primary' />)
+const solidSetup = () => renderWithWrappers(<Button />)
 
 test('Solid button renders correctly', () => {
   solidSetup()
-  const Button = screen.getByRole('button')
-  expect(Button).toBeTruthy()
-  expect(Button).toHaveStyle(`background-color: ${theme.light.colors.primary}`)
-  expect(Button).toHaveStyle(`color: ${theme.light.colors.header}`)
+  const button = window.getComputedStyle(screen.getByRole('button'))
+  expect(button.backgroundColor).toBe('rgb(49, 108, 244)')
+  expect(button.color).toBe('rgb(241, 249, 255)')
 })

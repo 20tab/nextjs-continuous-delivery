@@ -4,6 +4,7 @@ stages:
   - Pact-check
   - Build
   - Report
+  - E2E
   - Deploy
   - Pact-tag
   - Sentry
@@ -129,27 +130,24 @@ sentry_release_production:
 
 test:
   stage: Test
-  image: docker:20
+  image: docker/compose:debian-1.29.2
   services:
     - docker:20-dind
   needs: []
   variables:
+    COMPOSE_PROJECT_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}"
+    SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_frontend"
+    SERVICE_DOCKER_FILE: "docker/test.Dockerfile"
     SERVICE_IMAGE_NAME: "gitlabci_{{ cookiecutter.project_slug }}_{{ cookiecutter.service_slug }}"
     SERVICE_IMAGE_TAG: "${CI_JOB_NAME}-${CI_JOB_ID}"
-    SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_{{ cookiecutter.service_slug }}"
+  before_script:
+    - export COMPOSE_FILE=docker-compose.yaml:docker-compose/volumes.yaml
+    - mkdir pacts
   script:
-    - >
-      docker build
-      --tag=${SERVICE_IMAGE_NAME}:${SERVICE_IMAGE_TAG}
-      --file=docker/remote.Dockerfile
-      --target=test .
-    - docker run --name=$SERVICE_CONTAINER_NAME ${SERVICE_IMAGE_NAME}:${SERVICE_IMAGE_TAG}
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/coverage .
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/junit.xml ./junit.xml
-    - if [ "${PACT_ENABLED}" == true ]; then docker cp ${SERVICE_CONTAINER_NAME}:/app/pacts .; fi
+    - docker-compose build --quiet consumer
+    - docker-compose run --name ${SERVICE_CONTAINER_NAME} consumer
   after_script:
-    - docker stop ${SERVICE_CONTAINER_NAME}
-    - docker container rm ${SERVICE_CONTAINER_NAME}
+    - docker-compose down --volumes --remove-orphans
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:
@@ -159,7 +157,6 @@ test:
       junit:
       - junit.xml
     expire_in: 1 day
-    when: always
 
 .pact:
   image:
@@ -301,6 +298,92 @@ build_production:
       optional: true
     - job: test
 
+.e2e:
+  stage: E2E
+  image: docker/compose:debian-1.29.2
+  services:
+    - docker:20-dind
+  variables:
+    COMPOSE_PROJECT_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}"
+    SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_e2e"
+  before_script:
+    - >
+      if [ "${PACT_ENABLED}" == "true" ];
+      then
+        export COMPOSE_FILE=docker-compose/consumer-image.yaml:docker-compose/services.yaml:docker-compose/provider.yaml;
+      else
+        export COMPOSE_FILE=docker-compose/consumer-image.yaml:docker-compose/services.yaml;
+      fi
+    - export CONSUMER_IMAGE=${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  script:
+    - docker-compose build --quiet consumer
+    - docker-compose up -d proxy
+    - docker-compose run --name ${SERVICE_CONTAINER_NAME} cypress
+  after_script:
+    - docker cp ${SERVICE_CONTAINER_NAME}:/app/cypress-screenshots ./screenshots
+    - docker-compose down --volumes --remove-orphans
+    - docker logout ${CI_REGISTRY}
+  artifacts:
+    paths:
+      - screenshots
+    expire_in: 1 day
+
+e2e_development:
+  extends:
+    - .development
+    - .e2e
+  needs: ["test", "build_development"]
+  rules:
+    - &skip-e2e-rule
+      if: $SKIP_E2E == "true"
+      when: never
+    - <<: *push-only
+    - *development-rules
+
+e2e_staging:
+  extends:
+    - .staging
+    - .e2e
+  needs: ["test", "build_staging"]
+  rules:
+    - <<: *skip-e2e-rule
+    - <<: *push-only
+    - *staging-rules
+
+e2e_production:
+  extends:
+    - .production
+    - .e2e
+  needs: ["test", "build_production"]
+  rules:
+    - <<: *skip-e2e-rule
+    - <<: *push-only
+    - *production-rules
+
+e2e_manual:
+  rules:
+    - <<: *skip-e2e-rule
+    - <<: *push-only
+    - if: $CI_COMMIT_REF_PROTECTED == "true"
+      when: never
+    - when: manual
+  extends:
+    - .e2e
+  variables:
+    NEXT_PUBLIC_PROJECT_URL: 'https://proxy:8443'
+    REACT_ENVIRONMENT: 'production'
+    SERVICE_DOCKER_FILE: "docker/remote.Dockerfile"
+  needs: ["test"]
+  before_script:
+    - >
+      if [ "${PACT_ENABLED}" == "true" ];
+      then
+        export COMPOSE_FILE=docker-compose.yaml:docker-compose/services.yaml:docker-compose/provider.yaml;
+      else
+        export COMPOSE_FILE=docker-compose.yaml:docker-compose/services.yaml;
+      fi
+
 .deploy:
   stage: Deploy
   image:
@@ -364,19 +447,29 @@ deploy_development:
   extends:
     - .development
     - .deploy
-  needs: ["build_development"]
+  needs:
+  - job: e2e_development
+    optional: true
+  - job: build_development
 
 deploy_staging:
   extends:
     - .staging
     - .deploy
-  needs: ["build_staging"]
+  needs:
+  - job: e2e_staging
+    optional: true
+  - job: build_staging
+
 
 deploy_production:
   extends:
     - .production
     - .deploy
-  needs: ["build_production"]
+  needs:
+  - job: e2e_production
+    optional: true
+  - job: build_production
 
 .rollback:
   extends:

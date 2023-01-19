@@ -1,11 +1,11 @@
-import React from 'react'
+import { expect } from '@jest/globals'
 import { screen, fireEvent } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
+import React from 'react'
 
+import { renderWithWrappers } from '@/__tests__/functions'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
-import { renderWithReduxAndTheme } from '@/__tests__/functions'
 
-const setup = () => renderWithReduxAndTheme(<ThemeSwitch />)
+const setup = () => renderWithWrappers(<ThemeSwitch />)
 
 test('ThemeSwitch renders correctly', () => {
   setup()

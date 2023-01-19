@@ -1,15 +1,11 @@
 import styled from 'styled-components'
 
-type Props = {
-  ui: 'primary' | 'secondary'
-}
-
-export const Button = styled.button<Props>`
+export const Button = styled.button`
   align-items: center;
-  background-color: ${({ theme, ui }) => theme.colors[ui]};
+  background-color: ${({ theme }) => theme.colors.link};
   border: 0;
   border-radius: 5px;
-  color: ${({ theme }) => theme.colors.header};
+  color: ${({ theme }) => theme.colors.ui1};
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -23,5 +19,6 @@ export const Button = styled.button<Props>`
     opacity: 0.4;
   }
   &:hover {
+    background-color: ${({ theme }) => theme.colors.activeLink};
   }
 `

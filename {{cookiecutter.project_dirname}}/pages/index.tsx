@@ -1,18 +1,15 @@
-import { NextPage } from 'next'
 import React from 'react'
 import styled from 'styled-components'
 
-import { MainTitle } from '@/components/commons/Typography'
-import { WithNavbar } from '@/components/templates/WithNavbar'
-import { wrapper } from '@/store'
+import { H1 } from '@/components/commons/Typography'
+
+import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
   return (
-    <WithNavbar>
-      <Container>
-        <MainTitle>Hello World!</MainTitle>
-      </Container>
-    </WithNavbar>
+    <Container>
+      <H1.Normal>Hello World!</H1.Normal>
+    </Container>
   )
 }
 
@@ -27,11 +24,5 @@ const Container = styled.div`
     margin-top: 30px;
   }
 `
-
-export const getServerSideProps = wrapper.getServerSideProps(() => async () => {
-  return {
-    props: {}
-  }
-})
 
 export default Home
