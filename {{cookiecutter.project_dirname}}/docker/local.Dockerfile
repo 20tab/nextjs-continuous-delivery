@@ -13,7 +13,7 @@ RUN apt-get update \
         openssh-client \
         python3.9-minimal \
         wget \
-    && rm -rf /var/lib/apt/lists/*
+        && rm -rf /var/lib/apt/lists/*
 WORKDIR /
 COPY --chown=node ./package.json ./
 COPY --chown=node ./yarn.lock ./

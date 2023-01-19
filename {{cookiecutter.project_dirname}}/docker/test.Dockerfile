@@ -11,7 +11,7 @@ RUN apt-get update \
         gcc \
         make \
         python3.9-minimal \
-    && rm -rf /var/lib/apt/lists/*
+        && rm -rf /var/lib/apt/lists/*
 WORKDIR $WORKDIR
 RUN addgroup --system --gid 997 $APPUSER
 RUN adduser --system --uid 997 $APPUSER

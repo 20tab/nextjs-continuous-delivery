@@ -1,20 +1,6 @@
-FROM node:16-bullseye-slim
-ARG DEBIAN_FRONTEND=noninteractive
+FROM cypress/base:16.18.1
 ARG USER=appuser
 ENV APPUSER=$USER PATH="$PATH:./node_modules/.bin"
-RUN apt-get update && apt-get install --assume-yes --no-install-recommends \
-  libgtk2.0-0 \
-  libgtk-3-0 \
-  libgbm-dev \
-  libnotify-dev \
-  libgconf-2-4 \
-  libnss3 \
-  libxss1 \
-  libasound2 \
-  libxtst6 \
-  xauth \
-  xvfb \
-  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN useradd --skel /dev/null --create-home $APPUSER
 RUN chown $APPUSER:$APPUSER /app
