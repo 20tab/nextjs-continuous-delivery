@@ -1,0 +1,25 @@
+http:
+  routers:
+    provider:
+      rule: "PathPrefix(`/api`)"
+      service: provider
+    consumer:
+      rule: "PathPrefix(`/`)"
+      service: consumer
+    consumer-sockjs-node:
+      rule: "PathPrefix(`/sockjs-node`)"
+      service: consumer
+  services:
+    provider:
+      loadBalancer:
+        servers:
+        - url: "http://provider:8000/"
+    consumer:
+      loadBalancer:
+        servers:
+        - url: "http://consumer:3000/"
+
+tls:
+  certificates:
+    - certFile: /traefik/localhost/cert.pem
+      keyFile: /traefik/localhost/key.pem

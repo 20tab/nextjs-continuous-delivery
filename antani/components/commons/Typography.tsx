@@ -9,7 +9,7 @@ type BaseTextProps = {
 }
 
 const GenericTitle = styled.h1<BaseTextProps>`
-  color: ${({ color, theme }) => color || theme.colors.primary[500]};
+  color: ${({ color }) => color};
   margin: ${({ margin }) => margin || 0};
   text-transform: ${({ uppercase }) => (uppercase ? 'uppercase' : 'none')};
   ${({ italic }) => italic && 'font-style: italic;'};

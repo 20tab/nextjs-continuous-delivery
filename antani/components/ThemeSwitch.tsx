@@ -62,7 +62,7 @@ const Slider = styled.span`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: black;
+  background-color: ${({ theme }) => theme.colors.neutrals[0]};
   transition: 0.4s;
   border-radius: 34px;
 
@@ -73,7 +73,7 @@ const Slider = styled.span`
     width: 20px;
     left: 2px;
     bottom: 2px;
-    background-color: white;
+    background-color: ${({ theme }) => theme.colors.ui8};
     border-radius: 50%;
     -webkit-transition: 0.4s;
     transition: 0.4s;
