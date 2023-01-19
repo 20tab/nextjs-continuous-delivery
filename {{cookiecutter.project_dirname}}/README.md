@@ -1,9 +1,22 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-# Getting Started
+# Getting started
 
 This service is generated from [20tab standard project](https://github.com/20tab/20tab-standard-project) template or
 [20tab nextjs template](https://github.com/20tab/nextjs-continuous-delivery)
+
+## The Kubernetes resource limits
+
+The Kubernetes deployment service limits should be adapted to the expected load of the other services and to the size of the available nodes.
+By default, the `s-1vcpu-1gb-amd` DigitalOcean droplet is used (https://slugs.do-api.dev/), which allocates 900.00m of CPU capacity and 1.54Gi of memory capacity.
+The following default values are calculated assuming 2 deployments and 2 stacks on a single node.
+
+| tfvars name | default value |
+|--|--|
+| service_limits_cpu | 225m |
+| service_limits_memory | 256Mi |
+| service_requests_cpu | 25m |
+| service_requests_memory | 115Mi |
 
 ## Git
 
@@ -28,11 +41,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 To check all file linting, execute:
 
 ```bash
-npm run eslint
+npm run lint
 ```
 or
 ```bash
-yarn eslint
+yarn lint
 ```
 
 # Update package
@@ -99,9 +112,11 @@ docker-compose up
 :warning: **env variable** in custom mode you must be sure to have env, set in the system or in `.env` file.
 
 ```bash
-  INTERNAL_BACKEND_URL=http://localhost:8080
-  NEXT_PUBLIC_PROJECT_URL=http://localhost:8080
+  COMPOSE_FILE=docker-compose.yaml:docker-compose/volumes.yaml:docker-compose/services.yaml:docker-compose/provider.yaml
+  INTERNAL_BACKEND_URL=http://provider:8000
+  NEXT_PUBLIC_PROJECT_URL=http://localhost:8443
   REACT_ENVIRONMENT=Development
+  SERVICE_DOCKER_FILE=docker/local.Dockerfile
 ```
 
 After env check you can run the following commands:
@@ -121,6 +136,13 @@ yarn dev
 # GitLab pipeline - CI/CD
 
 :warning: **develop, main and tags**: should be protected!
+
+## E2E Integration
+The E2E integration, can be skip using following variable that should be set in the GitLab respository:
+```git
+  SKIP_E2E = true
+```
+
 ## Pact broker Integration
 To enable the Pact broker integration, the following variables should be set in the GitLab respository:
 ```git
@@ -129,6 +151,7 @@ To enable the Pact broker integration, the following variables should be set in 
   PACT_BROKER_PASSWORD (protected)
   PACT_BROKER_USERNAME (protected)
 ```
+
 ## Monitoring
 ### Sentry integration
 
