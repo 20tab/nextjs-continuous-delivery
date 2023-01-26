@@ -1,12 +1,12 @@
-import { useAppDispatch, useAppSelector } from '@/store'
-import themes from '@/styles/themes'
+import { parseCookies } from 'nookies'
+import { ThemeProvider } from 'styled-components'
 import React, { useEffect } from 'react'
 
-import { GlobalStyle } from '@/styles/GlobalStyle'
-import { ThemeProvider } from 'styled-components'
-import { parseCookies } from 'nookies'
-import { Navbar } from '@/components/Navbar'
 import { changeTheme } from '@/store/utilsSlice'
+import { GlobalStyle } from '@/styles/GlobalStyle'
+import { Navbar } from '@/components/Navbar'
+import { useAppDispatch, useAppSelector } from '@/store'
+import themes from '@/styles/themes'
 
 type Props = {
   children: React.ReactNode
