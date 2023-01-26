@@ -8,9 +8,9 @@ ARG USER=appuser
 ENV APPUSER=$USER LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" TZ='Europe/Rome' WORKDIR=/app
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
-        gcc \
+        g++ \
         make \
-        python3.9-minimal \
+        python3 \
         && rm -rf /var/lib/apt/lists/*
 WORKDIR $WORKDIR
 RUN addgroup --system --gid 997 $APPUSER

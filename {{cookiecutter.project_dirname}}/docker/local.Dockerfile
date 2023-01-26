@@ -7,11 +7,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" WORKDIR=/app
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
-        gcc \
+        g++ \
         git \
         make \
         openssh-client \
-        python3.9-minimal \
+        python3 \
         wget \
         && rm -rf /var/lib/apt/lists/*
 WORKDIR /
