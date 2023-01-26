@@ -8,7 +8,7 @@ export default defineConfig({
       return require('./cypress/plugins/index.ts')(on, config)
     }
   },
-  screenshotsFolder: 'cypress-screenshots',
+  screenshotsFolder: 'cypress-outputs',
   video: false,
   viewportHeight: 720,
   viewportWidth: 1280

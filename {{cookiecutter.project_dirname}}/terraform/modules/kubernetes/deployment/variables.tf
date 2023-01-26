@@ -1,6 +1,6 @@
 variable "environment" {
   type        = string
-  description = "The deploy environment name, e.g. \"Production\"."
+  description = "The deploy environment name, e.g. \"production\"."
 }
 
 variable "extra_config_values" {

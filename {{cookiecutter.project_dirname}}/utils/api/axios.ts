@@ -1,6 +1,7 @@
-import type { AxiosPromise } from 'axios'
 import axios from 'axios'
 import { parseCookies } from 'nookies'
+
+import type { AxiosPromise } from 'axios'
 
 export interface ApiOptions {
   baseUrl?: string
@@ -52,10 +53,12 @@ axios.interceptors.request.use(config => {
     const lang = parseCookies().NEXT_LOCALE as 'it' | 'en'
     ;(config.headers as AxiosHeaders)['Accept-Language'] = languages[lang]
   }
-  config.headers['Content-Type'] = 'application/json; charset=utf-8'
+  ;(config.headers as AxiosHeaders)['Content-Type'] =
+    'application/json; charset=utf-8'
   if (config.method !== 'get') {
     if (parseCookies()?.csrftoken) {
-      config.headers['X-CSRFToken'] = parseCookies().csrftoken
+      ;(config.headers as AxiosHeaders)['X-CSRFToken'] =
+        parseCookies().csrftoken
     }
   }
   return config

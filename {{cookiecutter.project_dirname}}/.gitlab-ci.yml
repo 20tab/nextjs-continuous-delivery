@@ -321,7 +321,7 @@ build_production:
     - docker-compose up -d proxy
     - docker-compose run --name ${SERVICE_CONTAINER_NAME} cypress
   after_script:
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/cypress-screenshots ./screenshots
+    - docker cp ${SERVICE_CONTAINER_NAME}:/app/cypress-outputs ./screenshots
     - docker-compose down --volumes --remove-orphans
     - docker logout ${CI_REGISTRY}
   artifacts:

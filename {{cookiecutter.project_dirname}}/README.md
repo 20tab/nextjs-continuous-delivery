@@ -114,8 +114,8 @@ docker-compose up
 ```bash
   COMPOSE_FILE=docker-compose.yaml:docker-compose/volumes.yaml:docker-compose/services.yaml:docker-compose/provider.yaml
   INTERNAL_BACKEND_URL=http://provider:8000
-  NEXT_PUBLIC_PROJECT_URL=http://localhost:8443
-  REACT_ENVIRONMENT=Development
+  NEXT_PUBLIC_PROJECT_URL=https://localhost:8443
+  REACT_ENVIRONMENT=development
   SERVICE_DOCKER_FILE=docker/local.Dockerfile
 ```
 

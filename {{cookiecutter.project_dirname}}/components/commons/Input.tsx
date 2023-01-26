@@ -20,7 +20,7 @@ const InputWithErrors = ({
   return (
     <InputContainer style={style}>
       <Input
-        errors={errors?.length > 0}
+        errors={errors && errors.length > 0}
         max={max}
         min={min}
         onChange={onChange}
@@ -30,7 +30,7 @@ const InputWithErrors = ({
         type={type}
         value={value}
       />
-      {errors?.length > 0 && errors.map(err => <p key={err}>{err}</p>)}
+      {errors && errors.length > 0 && errors.map(err => <p key={err}>{err}</p>)}
     </InputContainer>
   )
 }

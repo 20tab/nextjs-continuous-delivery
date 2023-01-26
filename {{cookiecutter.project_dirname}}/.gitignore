@@ -31,6 +31,9 @@ yarn-error.log*
 .env
 *.local
 
+# Cypress
+/cypress-outputs/*
+
 # Terraform
 .terraform.lock*
 .terraform/

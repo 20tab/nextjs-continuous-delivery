@@ -6,7 +6,9 @@ import store from '@/store'
 
 import Layout from '@/components/layout/Base'
 
-function MyApp({ Component, pageProps }) {
+import type { AppProps } from 'next/app'
+
+function MyApp({ Component, pageProps }: AppProps) {
   const title = '{{ cookiecutter.project_name }}'
 
   return (

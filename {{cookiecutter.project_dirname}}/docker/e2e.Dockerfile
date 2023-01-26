@@ -8,5 +8,5 @@ USER $APPUSER
 COPY --chown=$APPUSER ./tsconfig.json ./
 RUN yarn add cypress typescript
 RUN cypress install
-RUN mkdir cypress-screenshots
+RUN mkdir cypress-outputs
 CMD [ "cypress", "run" ]

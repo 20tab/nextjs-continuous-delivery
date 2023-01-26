@@ -123,7 +123,7 @@ resource "gitlab_project_badge" "coverage" {
   count = local.pages_base_url != "" ? 1 : 0
 
   project   = gitlab_project.main.id
-  link_url  = "${local.pages_base_url}/${gitlab_project.main.path}/htmlcov"
+  link_url  = "${local.pages_base_url}/${gitlab_project.main.path}/"
   image_url = "https://gitlab.com/%%{project_path}/badges/%%{default_branch}/coverage.svg"
 }
 

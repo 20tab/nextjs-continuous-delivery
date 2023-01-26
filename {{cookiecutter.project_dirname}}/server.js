@@ -16,7 +16,7 @@ app.prepare().then(() => {
   server.use('/robots.txt', express.static(
     path.resolve(
       __dirname,
-      `./public/robots/${(process.env.REACT_ENVIRONMENT || 'development').toLowerCase()}.txt`
+      `./public/robots/${process.env.REACT_ENVIRONMENT || 'development'}.txt`
     )
   ))
 
