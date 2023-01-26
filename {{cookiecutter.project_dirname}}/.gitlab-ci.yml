@@ -187,8 +187,8 @@ publish:
     - &skip-pact-rule
       if: $PACT_ENABLED != "true"
       when: never
-    - &skip-merge-request-event
-      if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - &push-only
+      if: $CI_PIPELINE_SOURCE != "push"
       when: never
     - when: always
   before_script:
@@ -229,7 +229,7 @@ can-i-deploy_development:
   needs: ["publish"]
   rules:
     - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - *development-rules
 
 can-i-deploy_staging:
@@ -239,7 +239,7 @@ can-i-deploy_staging:
   needs: ["publish"]
   rules:
     - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - *staging-rules
 
 can-i-deploy_production:
@@ -249,7 +249,7 @@ can-i-deploy_production:
   needs: ["publish"]
   rules:
     - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - *production-rules
 
 .build:
@@ -461,7 +461,6 @@ deploy_staging:
     optional: true
   - job: build_staging
 
-
 deploy_production:
   extends:
     - .production
@@ -526,7 +525,7 @@ create-version-tag_development:
   needs: ["deploy_development"]
   rules:
     - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - *development-rules
 
 create-version-tag_staging:
@@ -534,7 +533,7 @@ create-version-tag_staging:
   needs: ["deploy_staging"]
   rules:
     - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - *staging-rules
 
 create-version-tag_production:
@@ -542,7 +541,7 @@ create-version-tag_production:
   needs: ["deploy_production"]
   rules:
     - <<: *skip-pact-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - *production-rules
 
 .sentry_deploy_success:
@@ -561,7 +560,7 @@ sentry_success_development:
   needs: ["deploy_development"]
   rules:
     - <<: *sentry-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - <<: *development-rule
       when: on_success
 
@@ -572,7 +571,7 @@ sentry_success_staging:
   needs: ["deploy_staging"]
   rules:
     - <<: *sentry-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - <<: *staging-rule
       when: on_success
 
@@ -583,7 +582,7 @@ sentry_success_production:
   needs: ["deploy_production"]
   rules:
     - <<: *sentry-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - <<: *production-rule
       when: on_success
 
@@ -600,7 +599,7 @@ sentry_failure_development:
     - .sentry_deploy_failure
   rules:
     - <<: *sentry-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - <<: *development-rule
       when: on_failure
 
@@ -610,7 +609,7 @@ sentry_failure_staging:
     - .sentry_deploy_failure
   rules:
     - <<: *sentry-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - <<: *staging-rule
       when: on_failure
 
@@ -620,6 +619,6 @@ sentry_failure_production:
     - .sentry_deploy_failure
   rules:
     - <<: *sentry-rule
-    - <<: *skip-merge-request-event
+    - <<: *push-only
     - <<: *production-rule
       when: on_failure
