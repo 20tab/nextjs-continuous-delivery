@@ -20,7 +20,7 @@ COPY public ./public
 COPY store ./store
 COPY styles ./styles
 COPY utils ./utils
-COPY tsconfig.json next.config.js sentry.client.config.js sentry.server.config.js ./
+COPY tsconfig.json next.config.js sentry.client.config.js sentry.server.config.js middleware.ts ./
 # Environment variables must be present at build time
 # https://github.com/vercel/next.js/discussions/14030
 ARG SENTRY_AUTH_TOKEN \
@@ -43,7 +43,7 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
-COPY ["next.config.js", "package.json", "sentry.client.config.js", "sentry.server.config.js", "server.js", "yarn.lock", "./"]
+COPY ["next.config.js", "package.json", "sentry.client.config.js", "sentry.server.config.js", "server.js", "yarn.lock", "middleware.ts", "./"]
 COPY ["public/", "public/"]
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
