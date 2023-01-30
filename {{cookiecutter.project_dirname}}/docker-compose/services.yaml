@@ -8,7 +8,7 @@ services:
       consumer:
         condition: service_healthy
     volumes:
-      - ./proxy:/traefik:ro
+      - ../proxy:/traefik:ro
     command:
       - "--configFile=/traefik/conf/static.yaml"
     ports:
@@ -16,7 +16,7 @@ services:
 
   cypress:
     build:
-      context: .
+      context: ../
       dockerfile: docker/e2e.Dockerfile
       args:
         USER: ${USER:-appuser}
@@ -27,5 +27,5 @@ services:
       - CYPRESS_BASE_URL=https://proxy:8443
     user: ${USER:-appuser}
     volumes:
-      - ./cypress:/app/cypress
-      - ./cypress.config.ts:/app/cypress.config.ts
+      - ../cypress:/app/cypress
+      - ../cypress.config.ts:/app/cypress.config.ts

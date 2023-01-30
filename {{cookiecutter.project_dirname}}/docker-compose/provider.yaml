@@ -8,8 +8,8 @@ services:
     command: -p 8000 -d pacts -o --insecure-tls
     working_dir: /app
     volumes:
-      - ./scripts/pact_stub_server.sh:/app/pact_stub_server.sh
-      - ./pacts:/app/pacts:ro
+      - ../scripts/pact_stub_server.sh:/app/pact_stub_server.sh
+      - ../pacts:/app/pacts:ro
     healthcheck:
       test: wget -O- -q http://localhost:8000/api/health/ || exit 1
 
