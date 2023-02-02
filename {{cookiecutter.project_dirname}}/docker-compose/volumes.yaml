@@ -4,5 +4,5 @@ services:
 
   consumer:
     volumes:
-      - ./:/app
+      - ../:/app
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket

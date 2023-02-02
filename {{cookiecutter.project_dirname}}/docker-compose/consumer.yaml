@@ -4,7 +4,7 @@ services:
 
   consumer:
     build:
-      context: .
+      context: ../
       dockerfile: ${SERVICE_DOCKER_FILE:-docker/local.Dockerfile}
     environment:
       - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-http://provider:8000}
