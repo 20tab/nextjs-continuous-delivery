@@ -71,11 +71,13 @@ variable "service_container_port" {
 variable "service_limits_cpu" {
   description = "The service limits cpu value."
   type        = string
+  default     = null
 }
 
 variable "service_limits_memory" {
   description = "The service limits memory value."
   type        = string
+  default     = null
 }
 
 variable "service_replicas" {
@@ -87,11 +89,13 @@ variable "service_replicas" {
 variable "service_requests_cpu" {
   description = "The service requests cpu value."
   type        = string
+  default     = null
 }
 
 variable "service_requests_memory" {
   description = "The service requests memory value."
   type        = string
+  default     = null
 }
 
 variable "service_slug" {
