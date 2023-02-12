@@ -21,7 +21,6 @@ variables:
 cache:
   paths:
     - node_modules/
-    - .yarn
 {% with env=cookiecutter.resources.envs[0] %}
 .development:
   rules: &development-rules
@@ -130,11 +129,12 @@ sentry_release_production:
 
 test:
   stage: Test
-  image: docker/compose:debian-1.29.2
+  image: docker:20
   services:
     - docker:20-dind
   needs: []
   variables:
+    COMPOSE_FILE: docker-compose.yaml:docker-compose/local.yaml
     COMPOSE_PROJECT_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}"
     SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_frontend"
     SERVICE_DOCKER_FILE: "docker/test.Dockerfile"
@@ -300,20 +300,15 @@ build_production:
 
 .e2e:
   stage: E2E
-  image: docker/compose:debian-1.29.2
+  image: docker:20
   services:
     - docker:20-dind
   variables:
     COMPOSE_PROJECT_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}"
     SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_e2e"
   before_script:
-    - >
-      if [ "${PACT_ENABLED}" == "true" ];
-      then
-        export COMPOSE_FILE=docker-compose/consumer-image.yaml:docker-compose/services.yaml:docker-compose/provider.yaml;
-      else
-        export COMPOSE_FILE=docker-compose/consumer-image.yaml:docker-compose/services.yaml;
-      fi
+    - if [ "${PACT_ENABLED}" == "true" ]; then COMPOSE_PROFILES=pact; else COMPOSE_PROFILES=no-pact; fi
+    - export COMPOSE_PROFILES
     - export CONSUMER_IMAGE=${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
     - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
   script:
@@ -374,15 +369,8 @@ e2e_manual:
     NEXT_PUBLIC_PROJECT_URL: 'https://proxy:8443'
     REACT_ENVIRONMENT: 'production'
     SERVICE_DOCKER_FILE: "docker/remote.Dockerfile"
+    COMPOSE_FILE: docker-compose.yaml:docker-compose/e2e.yaml:docker-compose/e2e-branch.yaml
   needs: ["test"]
-  before_script:
-    - >
-      if [ "${PACT_ENABLED}" == "true" ];
-      then
-        export COMPOSE_FILE=docker-compose/consumer.yaml:docker-compose/services.yaml:docker-compose/provider.yaml;
-      else
-        export COMPOSE_FILE=docker-compose/consumer.yaml:docker-compose/services.yaml;
-      fi
 
 .deploy:
   stage: Deploy

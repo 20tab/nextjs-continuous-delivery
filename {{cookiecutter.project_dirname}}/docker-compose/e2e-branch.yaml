@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+
+  consumer:
+    build:
+      context: ./
+      dockerfile: ${SERVICE_DOCKER_FILE:-docker/remote.Dockerfile}

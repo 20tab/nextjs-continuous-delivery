@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+
+  consumer:
+    environment:
+      - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-http://provider:8000}
+      - NEXT_PUBLIC_PROJECT_URL=${NEXT_PUBLIC_PROJECT_URL:-https://localhost:8443}
+      - REACT_ENVIRONMENT=${REACT_ENVIRONMENT:-development}
+    healthcheck:
+      test: wget -O- -q http://localhost:3000/api/health/ || exit 1
+
+  provider:
+    command: -p 8000 -d pacts -o --insecure-tls
+    entrypoint: ./pact_stub_server.sh
+    healthcheck:
+      test: wget -O- -q http://localhost:8000/api/health/ || exit 1
+    image: pactfoundation/pact-stub-server
+    profiles:
+      - pact
+    volumes:
+      - ./scripts/pact_stub_server.sh:/app/pact_stub_server.sh
+      - ./pacts:/app/pacts:ro
+    working_dir: /app
+
+  proxy:
+    depends_on:
+      consumer:
+        condition: service_healthy
+      provider:
+        condition: service_healthy
+    extends:
+      file: ./docker-compose/common.yaml
+      service: proxy
+    profiles:
+      - pact
+
+  proxy-no-pact:
+    depends_on:
+      consumer:
+        condition: service_healthy
+    extends:
+      file: ./docker-compose/common.yaml
+      service: proxy
+    profiles:
+      - no-pact

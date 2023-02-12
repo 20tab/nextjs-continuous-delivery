@@ -1,8 +1,0 @@
-version: "3.4"
-
-services:
-
-  consumer:
-    volumes:
-      - ../:/app
-      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
