@@ -1,23 +1,20 @@
 http:
   routers:
     provider:
-      rule: "PathPrefix(`/api`)"
+      rule: PathPrefix(`/api`)
       service: provider
     consumer:
-      rule: "PathPrefix(`/`)"
-      service: consumer
-    consumer-sockjs-node:
-      rule: "PathPrefix(`/sockjs-node`)"
+      rule: PathPrefix(`/`)
       service: consumer
   services:
     provider:
       loadBalancer:
         servers:
-        - url: "http://provider:8000/"
+          - url: "http://provider:8000/"
     consumer:
       loadBalancer:
         servers:
-        - url: "http://consumer:3000/"
+          - url: "http://consumer:3000/"
 
 tls:
   certificates:

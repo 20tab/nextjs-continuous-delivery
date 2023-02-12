@@ -9,7 +9,7 @@ if ! which inotifywait > /dev/null; then
 fi
 
 while true; do
-  ./pact-stub-server $@ &
+  ./pact-stub-server "${@}" &
   inotifywait \
     --event attrib \
     --event create \
@@ -17,5 +17,5 @@ while true; do
     --event modify \
     --event move \
     --recursive /app/pacts
-  [[ `jobs -pr` == "" ]] || kill `jobs -pr`
+  [[ $(jobs -pr) == "" ]] || kill "$(jobs -pr)"
 done

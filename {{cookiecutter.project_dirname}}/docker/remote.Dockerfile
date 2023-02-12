@@ -1,8 +1,6 @@
 # syntax=docker/dockerfile:1
 
 FROM node:16-alpine AS build
-LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="build"
-
 ENV PATH="$PATH:./node_modules/.bin"
 WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
@@ -21,8 +19,6 @@ COPY store ./store
 COPY styles ./styles
 COPY utils ./utils
 COPY tsconfig.json next.config.js sentry.client.config.js sentry.server.config.js middleware.ts ./
-# Environment variables must be present at build time
-# https://github.com/vercel/next.js/discussions/14030
 ARG SENTRY_AUTH_TOKEN \
   SENTRY_ORG \
   SENTRY_PROJECT_NAME \
@@ -35,21 +31,17 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
   SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME \
   SENTRY_URL=$SENTRY_URL
 RUN yarn build
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="build"
 
 FROM node:16-alpine AS remote
-LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="remote"
-
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
 COPY ["next.config.js", "package.json", "sentry.client.config.js", "sentry.server.config.js", "server.js", "yarn.lock", "middleware.ts", "./"]
 COPY ["public/", "public/"]
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
-# Environment variables must be redefined at run time
 ARG SENTRY_AUTH_TOKEN \
   SENTRY_ORG \
   SENTRY_PROJECT_NAME \
@@ -62,3 +54,4 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
   SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME \
   SENTRY_URL=$SENTRY_URL
 CMD yarn start
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="remote"

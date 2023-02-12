@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM cypress/base:16.18.1
 ARG USER=appuser
 ENV APPUSER=$USER PATH="$PATH:./node_modules/.bin"
@@ -10,3 +12,4 @@ RUN yarn add cypress typescript
 RUN cypress install
 RUN mkdir cypress-outputs
 CMD [ "cypress", "run" ]
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="e2e"

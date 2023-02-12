@@ -1,2 +1,3 @@
-#!/usr/bin/env bash
-exec "$@"
+#!/bin/sh -e
+
+exec "${@}"

@@ -1,8 +1,6 @@
 # syntax=docker/dockerfile:1
 
 FROM node:16-bullseye-slim
-LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="local"
-
 ARG DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" WORKDIR=/app
 RUN apt-get update \
@@ -24,3 +22,4 @@ WORKDIR ${WORKDIR}
 RUN chown node ${WORKDIR}
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 CMD yarn start
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="local"
