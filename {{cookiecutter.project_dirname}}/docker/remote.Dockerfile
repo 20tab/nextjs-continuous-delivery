@@ -31,7 +31,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
   SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME \
   SENTRY_URL=$SENTRY_URL
 RUN yarn build
-LABEL company="20tab" project="website" service="frontend" stage="build"
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="build"
 
 FROM node:16-alpine AS remote
 WORKDIR /app

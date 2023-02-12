@@ -12,4 +12,4 @@ RUN yarn add cypress typescript
 RUN cypress install
 RUN mkdir cypress-outputs
 CMD [ "cypress", "run" ]
-LABEL company="20tab" project="website" service="frontend" stage="e2e"
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="e2e"
