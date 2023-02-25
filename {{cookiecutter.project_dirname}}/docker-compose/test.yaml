@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+
+  consumer:
+    build:
+      args:
+        USER: ${USER:-nextjs}
+      context: ./
+      dockerfile: ${SERVICE_DOCKER_FILE:-docker/test.Dockerfile}
+    volumes:
+      - ./__tests__:/app/__tests__:ro
+      - ./components:/app/components:ro
+      - ./declarations:/app/declarations:ro
+      - ./models:/app/models:ro
+      - ./pages:/app/pages:ro
+      - ./public:/app/public:ro
+      - ./store:/app/store:ro
+      - ./styles:/app/styles:ro
+      - ./utils:/app/utils:ro
+    user: ${USER:-nextjs}

@@ -4,7 +4,12 @@ services:
 
   consumer:
     build:
+      args:
+        GROUP_ID: ${GROUP_ID:-1000}
+        USER_ID: ${USER_ID:-1000}
+        USER: ${USER:-appuser}
       context: ./
       dockerfile: ${SERVICE_DOCKER_FILE:-docker/local.Dockerfile}
     volumes:
       - ./:/app
+      - /app/node_modules
