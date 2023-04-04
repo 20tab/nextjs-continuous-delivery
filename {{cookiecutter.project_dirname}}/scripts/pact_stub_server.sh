@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
 
 if ! which wget > /dev/null; then
   apt-get update && apt-get install -y --no-install-recommends wget
