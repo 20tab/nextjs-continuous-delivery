@@ -260,7 +260,7 @@ can-i-deploy_production:
     - docker:20-dind
   before_script:
     - export DOCKER_CONFIG=${PWD}/.dockerconfig
-    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+    - docker login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY}"
   script:
     - >
       docker build
@@ -311,7 +311,7 @@ build_production:
     - if [ "${PACT_ENABLED}" == "true" ]; then COMPOSE_PROFILES=pact; else COMPOSE_PROFILES=no-pact; fi
     - export COMPOSE_PROFILES
     - export CONSUMER_IMAGE=${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
-    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+    - docker login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY}"
   script:
     - docker-compose build --quiet consumer
     - docker-compose up -d proxy
