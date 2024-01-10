@@ -15,7 +15,7 @@ class TestBootstrapCollector(TestCase):
     maxDiff = None
 
     def setUp(self):
-        """Setup the test data."""
+        """Set up the test data."""
         self.output_dir = Path("./tests/test_files")
         rmtree(self.output_dir, ignore_errors=True)
         return super().setUp()
