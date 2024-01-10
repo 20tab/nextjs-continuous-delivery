@@ -18,6 +18,12 @@ const nextjsConfig = {
   output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
+  rewrites: async () => [
+    {
+      source: '/{{ cookiecutter.service_slug }}/health',
+      destination: '/api/health'
+    },
+  ]
 }
 
 // Sentry config. For all available options, see:
