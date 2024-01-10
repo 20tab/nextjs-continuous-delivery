@@ -29,7 +29,7 @@ ignore_missing_imports = true
      "__pycache__",
      ".vscode*",
  ]
- extend-ignore = [
+ ignore = [
     "D203",
     "D212",
     "D213",
