@@ -1,5 +1,5 @@
 [tool.black]
-target-version = ["py311"]
+target-version = ["py312"]
 
 [tool.coverage.html]
 title = "Talos - Coverage"
@@ -18,7 +18,7 @@ omit = [
 source = ["."]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 ignore_missing_imports = true
 
 [tool.ruff]
@@ -47,7 +47,7 @@ ignore_missing_imports = true
     "E501",
  ]
  select = ["B", "C", "D", "E", "F", "I", "W", "B9"]
- target-version = "py311"
+ target-version = "py312"
 
 [tool.ruff.isort]
 combine-as-imports = true
