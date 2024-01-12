@@ -7,7 +7,7 @@
     "build": "next build",
     "ci:contract-test": "npx jest pact/contracts --testEnvironment=node --color --detectOpenHandles --passWithNoTests",
     "ci:unit-test": "npx jest --color --silent --detectOpenHandles --testPathIgnorePatterns=pact/contracts --coverage --coverageDirectory ./coverage/tests --ci --reporters=default --reporters=jest-junit",
-    "e2e": "CYPRESS_BASE_URL=https://localhost:8443 cypress open",
+    "e2e": "CYPRESS_BASE_URL=http://localhost:3000 cypress open",
     "lint": "next lint",
     "pact": "npx jest pact/contracts --testEnvironment=node --detectOpenHandles",
     "start": "node server.js",
