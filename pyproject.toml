@@ -1,5 +1,5 @@
 [tool.black]
-target-version = ["py311"]
+target-version = ["py312"]
 
 [tool.coverage.html]
 title = "Talos - Coverage"
@@ -21,7 +21,7 @@ source = ["."]
 enable_error_code = [
      "truthy-bool",
  ]
-python_version = "3.11"
+python_version = "3.12"
 ignore_missing_imports = true
 
 [tool.ruff]
@@ -29,7 +29,7 @@ ignore_missing_imports = true
      "__pycache__",
      ".vscode*",
  ]
- extend-ignore = [
+ ignore = [
     "D203",
     "D212",
     "D213",
@@ -49,8 +49,17 @@ ignore_missing_imports = true
     "D417",
     "E501",
  ]
- select = ["B", "C", "D", "E", "F", "I", "W", "B9"]
- target-version = "py311"
+ select = [
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "I",
+    "W",
+    "B9"
+]
+ target-version = "py312"
 
 [tool.ruff.isort]
 combine-as-imports = true

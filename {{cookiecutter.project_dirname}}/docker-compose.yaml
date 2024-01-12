@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-
   consumer:
     environment:
       - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-http://provider:8000}
