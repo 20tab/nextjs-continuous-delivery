@@ -1,5 +1,5 @@
 {
-  "name": "{{ cookiecutter.project_slug }}",
+  "name": "frontend",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,6 @@
     "ci:contract-test": "npx jest pact/contracts --testEnvironment=node --color --detectOpenHandles --passWithNoTests",
     "ci:unit-test": "npx jest --color --silent --detectOpenHandles --testPathIgnorePatterns=pact/contracts --coverage --coverageDirectory ./coverage/tests --ci --reporters=default --reporters=jest-junit",
     "e2e": "CYPRESS_BASE_URL=https://localhost:3000 cypress open",
-    "e2e": "CYPRESS_BASE_URL=https://localhost:8443 cypress open",
     "lint": "next lint",
     "pact": "npx jest pact/contracts --testEnvironment=node --detectOpenHandles",
     "start": "node server.js",
@@ -65,6 +64,6 @@
   },
   "optionalDependencies": {
     "@pact-foundation/pact": "^10.3.1",
-    "cypress": "^12.3.0"
+    "cypress": "^12.17.4"
   }
 }
