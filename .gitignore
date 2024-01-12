@@ -149,6 +149,8 @@ cython_debug/
 
 # START local
 
+frontend/
+
 # JetBrains
 .idea/
 
@@ -166,6 +168,6 @@ cython_debug/
 */requirements/*.txt
 
 # Ruff
- .ruff_cache
+.ruff_cache
 
 # END local
