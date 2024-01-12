@@ -19,40 +19,23 @@
         }
       ]
     ],
-    "terraform_backend": "gitlab",
-    "terraform_cloud_organization": null,
-    "use_redis": "false",
-    "use_vault": "false",
-    "environments_distribution": "1",
-    "resources": {
-      "stacks": [
-        [
-          {
-            "name": "main",
-            "slug": "main"
-          }
-        ]
-      ],
-      "envs": [
-        {
-          "name": "development",
-          "slug": "dev",
-          "stack_slug": "main"
-        },
-        {
-          "name": "staging",
-          "slug": "stage",
-          "stack_slug": "main"
-        },
-        {
-          "name": "production",
-          "slug": "prod",
-          "stack_slug": "main"
-        }
-      ]
-    },
-    "tfvars": {},
-    "_extensions": ["cookiecutter.extensions.SlugifyExtension"]
+    "envs": [
+      {
+        "name": "development",
+        "slug": "dev",
+        "stack_slug": "main"
+      },
+      {
+        "name": "staging",
+        "slug": "stage",
+        "stack_slug": "main"
+      },
+      {
+        "name": "production",
+        "slug": "prod",
+        "stack_slug": "main"
+      }
+    ]
   },
   "tfvars": {},
   "_extensions": ["cookiecutter.extensions.SlugifyExtension"]
