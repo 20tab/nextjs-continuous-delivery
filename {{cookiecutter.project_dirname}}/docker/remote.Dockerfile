@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:16-alpine AS build
+FROM node:18-alpine AS build
 ENV PATH="$PATH:./node_modules/.bin"
 WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./

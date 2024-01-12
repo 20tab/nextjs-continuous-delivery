@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:16-bullseye-slim
+FROM node:18-bookworm-slim
 ARG DEBIAN_FRONTEND=noninteractive GROUP_ID=1000 USER_ID=1000 USER=appuser
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" USER=$USER WORKDIR=/app
 RUN apt-get update \
