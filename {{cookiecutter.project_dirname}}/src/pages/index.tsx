@@ -1,17 +1,21 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { H1 } from '@/src/components/commons/Typography'
 
 import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
   return (
     <Container>
-      <H1.Normal>Hello World!</H1.Normal>
+      <H1>Hello World!</H1>
     </Container>
   )
 }
+
+const H1 = styled.h1`
+  font-size: 40px;
+  font-weight: 500;
+`
 
 const Container = styled.div`
   display: flex;
