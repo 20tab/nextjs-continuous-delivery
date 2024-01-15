@@ -2,9 +2,9 @@ import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import nookies from 'nookies'
 
-import { Theme } from '@/models/Utils'
-import { changeTheme } from '@/store/utilsSlice'
-import { useAppDispatch, useAppSelector } from '@/store'
+import { Theme } from '@/src/models/Utils'
+import { changeTheme } from '@/src/store/utilsSlice'
+import { useAppDispatch, useAppSelector } from '@/src/store'
 
 const ThemeSwitch = () => {
   const dispatch = useAppDispatch()

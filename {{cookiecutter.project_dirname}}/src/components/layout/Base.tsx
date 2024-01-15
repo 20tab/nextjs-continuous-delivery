@@ -2,11 +2,11 @@ import { parseCookies } from 'nookies'
 import { ThemeProvider } from 'styled-components'
 import React, { useEffect } from 'react'
 
-import { changeTheme } from '@/store/utilsSlice'
-import { GlobalStyle } from '@/styles/GlobalStyle'
-import { Navbar } from '@/components/Navbar'
-import { useAppDispatch, useAppSelector } from '@/store'
-import themes from '@/styles/themes'
+import { changeTheme } from '@/src/store/utilsSlice'
+import { GlobalStyle } from '@/src/styles/GlobalStyle'
+import { Navbar } from '@/src/components/Navbar'
+import { useAppDispatch, useAppSelector } from '@/src/store'
+import themes from '@/src/styles/themes'
 
 type Props = {
   children: React.ReactNode

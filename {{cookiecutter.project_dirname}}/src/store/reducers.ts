@@ -1,4 +1,4 @@
-import utils from '@/store/utilsSlice'
+import utils from '@/src/store/utilsSlice'
 
 const reducers = {
   utils

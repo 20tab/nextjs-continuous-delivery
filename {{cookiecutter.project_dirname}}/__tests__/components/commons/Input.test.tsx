@@ -2,7 +2,7 @@ import { expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import React from 'react'
 
-import { Input, InputWithErrors } from '@/components/commons/Input'
+import { Input, InputWithErrors } from '@/src/components/commons/Input'
 import { renderWithWrappers } from '@/__tests__/functions'
 
 describe('Input components', () => {

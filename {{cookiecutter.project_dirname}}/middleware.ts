@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import type { NextRequest } from 'next/server'
 import type { RequestCookies } from 'next/dist/server/web/spec-extension/cookies'
-import { Theme } from '@/models/Utils'
+import { Theme } from '@/src/models/Utils'
 
 const isLanguageSet = (cookies: RequestCookies) => {
   return cookies.get('NEXT_LOCALE')

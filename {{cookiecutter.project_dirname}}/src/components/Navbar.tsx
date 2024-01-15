@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ThemeSwitch } from '@/components/ThemeSwitch'
+import { ThemeSwitch } from '@/src/components/ThemeSwitch'
 import Image from 'next/image'
-import { useAppSelector } from '@/store'
+import { useAppSelector } from '@/src/store'
 
 const Navbar = () => {
   const theme = useAppSelector(state => state.utils.theme)

@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { H1 } from '@/components/commons/Typography'
+import { H1 } from '@/src/components/commons/Typography'
 
 import type { NextPage } from 'next'
 

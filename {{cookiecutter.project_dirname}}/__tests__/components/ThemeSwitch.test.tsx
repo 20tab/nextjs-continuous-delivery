@@ -3,7 +3,7 @@ import { screen, fireEvent } from '@testing-library/react'
 import React from 'react'
 
 import { renderWithWrappers } from '@/__tests__/functions'
-import { ThemeSwitch } from '@/components/ThemeSwitch'
+import { ThemeSwitch } from '@/src/components/ThemeSwitch'
 
 const setup = () => renderWithWrappers(<ThemeSwitch />)
 

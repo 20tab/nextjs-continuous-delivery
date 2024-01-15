@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react'
 import React from 'react'
 
 import { renderWithWrappers } from '@/__tests__/functions'
-import { H1, H2, H3, H4, Text } from '@/components/commons/Typography'
+import { H1, H2, H3, H4, Text } from '@/src/components/commons/Typography'
 
 describe('Titles', () => {
   describe('H1', () => {

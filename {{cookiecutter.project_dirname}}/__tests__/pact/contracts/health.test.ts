@@ -4,7 +4,7 @@ import { pactWith } from 'jest-pact/dist/v3'
 import { HTTPMethod } from '@/__tests__/pact/utils'
 import pactConfig from '@/__tests__/pact/pact.config'
 
-import { axios, withApiOptions } from '@/utils/api/axios'
+import { axios, withApiOptions } from '@/src/utils/api/axios'
 
 const healthCheck = withApiOptions<{ status: string }>(({ baseUrl }) => {
   return axios.get(`${baseUrl}/api/health/`)

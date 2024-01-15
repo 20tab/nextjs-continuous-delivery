@@ -2,9 +2,9 @@ import { Provider } from 'react-redux'
 import Head from 'next/head'
 import React from 'react'
 
-import store from '@/store'
+import store from '@/src/store'
 
-import Layout from '@/components/layout/Base'
+import Layout from '@/src/components/layout/Base'
 
 import type { AppProps } from 'next/app'
 

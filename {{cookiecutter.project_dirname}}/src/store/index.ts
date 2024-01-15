@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
-import reducers from '@/store/reducers'
+import reducers from '@/src/store/reducers'
 
 import type { Action } from 'redux'
 import type { ThunkAction } from '@reduxjs/toolkit'

@@ -1,4 +1,4 @@
-import { theme as lightTheme } from '@/styles/themes/light'
+import { theme as lightTheme } from '@/src/styles/themes/light'
 
 import type { DefaultTheme } from 'styled-components'
 

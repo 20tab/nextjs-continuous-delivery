@@ -3,8 +3,8 @@ import { render } from '@testing-library/react'
 import { ThemeProvider } from 'styled-components'
 import React from 'react'
 
-import themes from '@/styles/themes'
-import store from '@/store'
+import themes from '@/src/styles/themes'
+import store from '@/src/store'
 
 import type { ReactElement } from 'react'
 
