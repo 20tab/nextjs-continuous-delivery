@@ -1,5 +1,5 @@
 {
-  "name": "{{ cookiecutter.project_slug }}",
+  "name": "frontend",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -63,7 +63,7 @@
     "webpack": "^5.88.2"
   },
   "optionalDependencies": {
-    "@pact-foundation/pact": "^10.3.1",
+    "@pact-foundation/pact": "^11.0.2",
     "cypress": "^12.17.4"
   }
 }
