@@ -1,10 +1,8 @@
 # syntax=docker/dockerfile:1
 
-FROM cypress/base:18.16.1
+FROM cypress/base:18.6.0
 ARG USER=appuser
-ENV APPUSER=$USER \
-    CYPRESS_CACHE_FOLDER="/home/$USER/.cache/Cypress" \
-    PATH="$PATH:./node_modules/.bin"
+ENV APPUSER=$USER PATH="$PATH:./node_modules/.bin"
 WORKDIR /app
 RUN useradd --skel /dev/null --create-home $APPUSER
 RUN chown $APPUSER:$APPUSER /app

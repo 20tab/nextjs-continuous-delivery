@@ -22,18 +22,16 @@ pactWith(pactConfig, interaction => {
         })
         .willRespondWith({
           contentType: 'application/json; charset=utf-8',
-          status: 200,
-          body: {
-            status: 'ok'
-          }
+          status: 204,
+          body: ''
         })
     })
     execute(interactionName, async mockServer => {
       const { data, status } = await healthCheck({
         baseUrl: mockServer.url
       })
-      expect(status).toBe(200)
-      expect(data).toEqual({ status: 'ok' })
+      expect(status).toBe(204)
+      expect(data).toEqual('')
     })
   })
 })
