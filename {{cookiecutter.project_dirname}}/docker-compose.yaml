@@ -7,7 +7,7 @@ services:
       - NEXT_PUBLIC_PROJECT_URL=${NEXT_PUBLIC_PROJECT_URL:-https://localhost:8443}
       - REACT_ENVIRONMENT=${REACT_ENVIRONMENT:-development}
     healthcheck:
-      test: wget -O- -q http://localhost:3000/api/health/ || exit 1
+      test: wget -O- -q http://consumer:3000/api/health/ || exit 1
 
   provider:
     command: -p 8000 -d pacts -o --insecure-tls

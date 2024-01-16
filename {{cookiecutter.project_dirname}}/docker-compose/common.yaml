@@ -5,7 +5,7 @@ services:
   proxy:
     command:
       - "--configFile=/traefik/conf/static.yaml"
-    image: traefik:v2.6
+    image: traefik:v2.10
     networks:
       default:
         aliases:
