@@ -3,12 +3,12 @@
 .PHONY: check
 check:  ## Check code formatting and import sorting
 	python3 -m black --check .
-	ruff .
+	python3 -m ruff check .
 
 .PHONY: fix
 fix:  ## Fix code formatting, linting and sorting imports
 	python3 -m black .
-	ruff --fix .
+	python3 -m ruff --fix .
 
 .PHONY: local
 local: pip_update  ## Install local requirements and dependencies
@@ -41,12 +41,12 @@ ifeq (simpletest,$(firstword $(MAKECMDGOALS)))
   $(eval $(simpletestargs):;@true)
 endif
 
-.PHONY: simpletest # Run debug tests
-simpletest:
+.PHONY: simpletest
+simpletest:  ## Run debug tests
 	python3 -m unittest $(simpletestargs)
 
-.PHONY: test # Run full test and coverage
-test:
+.PHONY: test
+test:  ## Run full test and coverage
 	python3 -m coverage run -m unittest
 	python3 -m coverage html
 	python3 -m coverage report
