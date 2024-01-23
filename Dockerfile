@@ -9,7 +9,6 @@ RUN apt-get update \
         curl \
         git \
         gnupg \
-        libpq-dev \
         software-properties-common \
     && curl https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg \
     && gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint \
