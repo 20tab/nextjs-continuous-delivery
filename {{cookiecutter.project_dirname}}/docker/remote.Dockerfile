@@ -33,7 +33,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
 RUN yarn build
 LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="build"
 
-FROM node:16-alpine AS remote
+FROM node:18-alpine AS remote
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
