@@ -1,16 +1,12 @@
 import axios from 'axios'
 import { parseCookies } from 'nookies'
 
+import type { ApiOptions } from '@/models/Api'
 import type { AxiosPromise } from 'axios'
 
-export interface ApiOptions {
-  baseUrl?: string
-  csrfCookie?: boolean
-  csrfToken?: string
-  locale?: string
-  serverSide?: boolean
-  sessionId?: string
-}
+// with 'X-Api-Token' instead of 'Authorization' you can use endpoints
+// that need authentication with traefik's basic auth
+const AuthorizationKey = 'Authorization'
 
 export type ApiConfig = {
   baseUrl: string
@@ -21,28 +17,29 @@ type AxiosHeaders = {
   'Accept-Language'?: string
   'Content-Type'?: string
   'X-CSRFToken'?: string
-  Authorization?: string
+  [AuthorizationKey]?: string
   Cookie?: string
 }
 
 const composeHeaders = (options?: ApiOptions) => {
   const headers: AxiosHeaders = {}
+
+  headers['Content-Type'] = 'application/json; charset=utf-8'
+
   if (options?.csrfToken) {
     headers['X-CSRFToken'] = options.csrfToken
     headers['Cookie'] = `csrftoken=${options.csrfToken}`
   }
 
-  if (options?.sessionId) {
-    const prevCookies = headers['Cookie'] ? `${headers['Cookie']}; ` : ''
-    headers['Cookie'] = prevCookies + `sessionid=${options.sessionId}`
+  if (options?.token) {
+    headers[AuthorizationKey] = `Token ${options.token}`
+  }
+
+  if (options?.locale) {
+    headers['Accept-Language'] = options?.locale
   }
 
   return headers
-}
-
-const languages = {
-  en: 'en-US',
-  it: 'it-IT'
 }
 
 // Request interceptor
@@ -51,7 +48,7 @@ axios.interceptors.request.use(config => {
     'application/json; charset=utf-8'
   if (parseCookies()?.NEXT_LOCALE) {
     const lang = parseCookies().NEXT_LOCALE as 'it' | 'en'
-    ;(config.headers as AxiosHeaders)['Accept-Language'] = languages[lang]
+    ;(config.headers as AxiosHeaders)['Accept-Language'] = lang
   }
   ;(config.headers as AxiosHeaders)['Content-Type'] =
     'application/json; charset=utf-8'
@@ -81,8 +78,8 @@ const withApiOptions = <Response, Args extends unknown[] = []>(
       options && options.baseUrl
         ? options.baseUrl
         : serverSide
-        ? process?.env?.INTERNAL_BACKEND_URL || ''
-        : process?.env?.NEXT_PUBLIC_PROJECT_URL || ''
+          ? process?.env?.INTERNAL_BACKEND_URL || ''
+          : process?.env?.NEXT_PUBLIC_PROJECT_URL || ''
     const config = {
       baseUrl: baseUrl,
       headers

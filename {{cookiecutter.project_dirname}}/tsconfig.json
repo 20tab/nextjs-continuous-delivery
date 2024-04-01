@@ -7,25 +7,15 @@
     "incremental": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": ["dom","dom.iterable","esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmit": true,
-    "paths": {"@/*":["*"]},
+    "paths": {"@/*": ["./*"]},
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": true,
-    "target": "es5",
+    "strict": true
   },
-  "include": [
-    "**/*.test.tsx",
-    "**/*.ts",
-    "**/*.tsx",
-    "next-env.d.ts",
-  ],
-  "exclude": [
-    "*.js",
-    "cypress/**",
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["*.js","cypress/**","node_modules"]
 }

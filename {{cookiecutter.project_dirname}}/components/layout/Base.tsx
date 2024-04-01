@@ -1,32 +1,28 @@
-import { parseCookies } from 'nookies'
+import NextJSProgress from 'nextjs-progressbar'
+import React from 'react'
 import { ThemeProvider } from 'styled-components'
-import React, { useEffect } from 'react'
 
-import { changeTheme } from '@/store/utilsSlice'
-import { GlobalStyle } from '@/styles/GlobalStyle'
 import { Navbar } from '@/components/Navbar'
-import { useAppDispatch, useAppSelector } from '@/store'
-import themes from '@/styles/themes'
+
+import { GlobalStyle } from '@/styles/GlobalStyle'
+import theme from '@/styles/theme'
 
 type Props = {
   children: React.ReactNode
 }
 
 const Layout = ({ children }: Props) => {
-  const dispatch = useAppDispatch()
-  const { theme } = useAppSelector(state => state.utils)
-
-  useEffect(() => {
-    const cookie = parseCookies()
-    if (cookie['THEME'] !== theme) {
-      dispatch(changeTheme(cookie['THEME']))
-    }
-  }, [dispatch, theme])
-
   return (
-    <ThemeProvider theme={themes[theme]}>
+    <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Navbar />
+      <NextJSProgress
+        color={theme.colors.secondary[100]}
+        startPosition={0.3}
+        stopDelayMs={200}
+        height={3}
+        showOnShallow={true}
+      />
       {children}
     </ThemeProvider>
   )

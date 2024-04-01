@@ -12,4 +12,3 @@ services:
       dockerfile: ${SERVICE_DOCKER_FILE:-docker/local.Dockerfile}
     volumes:
       - ./:/app
-      - /app/node_modules

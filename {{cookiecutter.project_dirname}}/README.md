@@ -150,6 +150,7 @@ To enable the Pact broker integration, the following variables should be set in 
 
 To enable the Sentry integration, the following variables should be set in the GitLab respository:
 ```git
+  NEXT_PUBLIC_SENTRY_TRACE_SAMPLE_RATE: 0.1
   SENTRY_AUTH_TOKEN (protected and masked) from Sentry
   SENTRY_DSN (protected and masked) from Sentry
   SENTRY_ORG (protected) e.g.: 20tab

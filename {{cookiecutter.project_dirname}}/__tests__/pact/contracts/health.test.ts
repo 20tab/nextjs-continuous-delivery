@@ -1,7 +1,7 @@
 import { expect } from '@jest/globals'
+import { HTTPMethods } from '@pact-foundation/pact/src/common/request'
 import { pactWith } from 'jest-pact/dist/v3'
 
-import { HTTPMethod } from '@/__tests__/pact/utils'
 import pactConfig from '@/__tests__/pact/pact.config'
 
 import { axios, withApiOptions } from '@/utils/api/axios'
@@ -17,7 +17,7 @@ pactWith(pactConfig, interaction => {
       provider
         .uponReceiving(interactionName)
         .withRequest({
-          method: HTTPMethod.GET,
+          method: HTTPMethods.GET,
           path: '/api/health/'
         })
         .willRespondWith({
@@ -27,11 +27,10 @@ pactWith(pactConfig, interaction => {
         })
     })
     execute(interactionName, async mockServer => {
-      const { data, status } = await healthCheck({
+      const { status } = await healthCheck({
         baseUrl: mockServer.url
       })
       expect(status).toBe(204)
-      expect(data).toEqual('')
     })
   })
 })

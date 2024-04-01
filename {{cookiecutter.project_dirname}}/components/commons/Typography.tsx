@@ -1,18 +1,17 @@
 import styled from 'styled-components'
 
 type BaseTextProps = {
+  $italic?: boolean
+  $uppercase?: boolean
   color?: string
-  italic?: boolean
-  margin?: string
-  uppercase?: boolean
   weight?: 'bold' | 'normal'
 }
 
 const GenericTitle = styled.h1<BaseTextProps>`
   color: ${({ color }) => color};
-  margin: ${({ margin }) => margin || 0};
-  text-transform: ${({ uppercase }) => (uppercase ? 'uppercase' : 'none')};
-  ${({ italic }) => italic && 'font-style: italic;'};
+  margin: 0;
+  text-transform: ${({ $uppercase }) => ($uppercase ? 'uppercase' : 'none')};
+  ${({ $italic }) => $italic && 'font-style: italic;'};
 `
 
 export const H1 = {
@@ -53,9 +52,9 @@ export const H4 = {
 
 const GenericText = styled.p<BaseTextProps>`
   color: ${({ color, theme }) => color || theme.colors.ui8};
-  margin: ${({ margin }) => margin || 0};
-  text-transform: ${({ uppercase }) => (uppercase ? 'uppercase' : 'none')};
-  ${({ italic }) => italic && 'font-style: italic;'};
+  margin: 0;
+  text-transform: ${({ $uppercase }) => ($uppercase ? 'uppercase' : 'none')};
+  ${({ $italic }) => $italic && 'font-style: italic;'};
 `
 
 export const Text = {

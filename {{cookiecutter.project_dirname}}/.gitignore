@@ -41,7 +41,7 @@ yarn-error.log*
 terraform.tfvars
 
 # vercel
-.vercel
+.vercel/
 
 # VisualStudioCode
 .vscode/
@@ -49,3 +49,6 @@ terraform.tfvars
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sentry Config File
+.sentryclirc

@@ -2,8 +2,9 @@ import { expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import React from 'react'
 
-import { renderWithWrappers } from '@/__tests__/functions'
 import { H1, H2, H3, H4, Text } from '@/components/commons/Typography'
+
+import { renderWithWrappers } from '@/__tests__/functions'
 
 describe('Titles', () => {
   describe('H1', () => {
@@ -13,7 +14,7 @@ describe('Titles', () => {
     })
     it('Normal H1 renders correctly with style props', () => {
       renderWithWrappers(
-        <H1.Normal uppercase italic color='red'>
+        <H1.Normal $uppercase $italic color='red'>
           MainTitle
         </H1.Normal>
       )
@@ -32,7 +33,7 @@ describe('Titles', () => {
     })
     it('Big H1 renders correctly with style props', () => {
       renderWithWrappers(
-        <H1.Big uppercase italic color='red'>
+        <H1.Big $uppercase $italic color='red'>
           MainTitle
         </H1.Big>
       )
@@ -51,7 +52,7 @@ describe('Titles', () => {
     })
     it('Medium H1 renders correctly with style props', () => {
       renderWithWrappers(
-        <H1.Medium uppercase italic color='red'>
+        <H1.Medium $uppercase $italic color='red'>
           MainTitle
         </H1.Medium>
       )
@@ -72,7 +73,7 @@ describe('Titles', () => {
     })
     it('Normal H2 renders correctly with style props', () => {
       renderWithWrappers(
-        <H2.Normal uppercase italic color='red'>
+        <H2.Normal $uppercase $italic color='red'>
           MainTitle
         </H2.Normal>
       )
@@ -93,7 +94,7 @@ describe('Titles', () => {
     })
     it('H3 renders correctly with style props', () => {
       renderWithWrappers(
-        <H3.Normal uppercase italic color='red'>
+        <H3.Normal $uppercase $italic color='red'>
           MainTitle
         </H3.Normal>
       )
@@ -114,7 +115,7 @@ describe('Titles', () => {
     })
     it('H4 renders correctly with style props', () => {
       renderWithWrappers(
-        <H4.Normal uppercase italic color='red'>
+        <H4.Normal $uppercase $italic color='red'>
           MainTitle
         </H4.Normal>
       )
@@ -138,7 +139,7 @@ describe('Text', () => {
     })
     it('Normal Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.Normal uppercase italic color='red'>
+        <Text.Normal $uppercase $italic color='red'>
           MainParagraph
         </Text.Normal>
       )
@@ -159,7 +160,7 @@ describe('Text', () => {
     })
     it('NormalBold Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.NormalBold uppercase italic color='red'>
+        <Text.NormalBold $uppercase $italic color='red'>
           MainParagraph
         </Text.NormalBold>
       )
@@ -180,7 +181,7 @@ describe('Text', () => {
     })
     it('Small Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.Small uppercase italic color='red'>
+        <Text.Small $uppercase $italic color='red'>
           MainParagraph
         </Text.Small>
       )
@@ -199,7 +200,7 @@ describe('Text', () => {
     })
     it('SmallBold Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.SmallBold uppercase italic color='red'>
+        <Text.SmallBold $uppercase $italic color='red'>
           MainParagraph
         </Text.SmallBold>
       )
@@ -220,7 +221,7 @@ describe('Text', () => {
     })
     it('Medium Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.Medium uppercase italic color='red'>
+        <Text.Medium $uppercase $italic color='red'>
           MainParagraph
         </Text.Medium>
       )
@@ -239,7 +240,7 @@ describe('Text', () => {
     })
     it('MediumBold Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.MediumBold uppercase italic color='red'>
+        <Text.MediumBold $uppercase $italic color='red'>
           MainParagraph
         </Text.MediumBold>
       )
@@ -260,7 +261,7 @@ describe('Text', () => {
     })
     it('Big Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.Big uppercase italic color='red'>
+        <Text.Big $uppercase $italic color='red'>
           MainParagraph
         </Text.Big>
       )
@@ -279,7 +280,7 @@ describe('Text', () => {
     })
     it('BigBold Text renders correctly with style props', () => {
       renderWithWrappers(
-        <Text.BigBold uppercase italic color='red'>
+        <Text.BigBold $uppercase $italic color='red'>
           MainParagraph
         </Text.BigBold>
       )

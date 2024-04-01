@@ -1,12 +1,8 @@
 export interface ApiOptions {
-  serverSide: boolean
-}
-
-export interface LoginRequest {
-  username: string
-  password: string
-}
-
-export interface LoginResponse {
-  email: string
+  baseUrl?: string
+  csrfCookie?: boolean
+  csrfToken?: string
+  locale?: string
+  serverSide?: boolean
+  token?: string
 }
