@@ -1,6 +1,4 @@
-import type { DefaultTheme } from 'styled-components'
-
-const theme: DefaultTheme = {
+const theme = {
   colors: {
     ui1: '#F1F9FF',
     ui2: '#EDF8FF',
@@ -20,7 +18,8 @@ const theme: DefaultTheme = {
       200: '#4D96DC',
       300: '#098BC5',
       400: '#00529E',
-      500: '#002E5C'
+      500: '#002E5C',
+      600: '#4d517a'
     },
     secondary: {
       0: '#34A853',
@@ -113,4 +112,4 @@ const theme: DefaultTheme = {
   }
 }
 
-export { theme }
+export default theme

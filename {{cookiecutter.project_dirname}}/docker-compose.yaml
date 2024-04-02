@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   consumer:
+    container_name: ${SERVICE_CONTAINER_NAME:-{{ cookiecutter.project_slug }}-consumer}
     environment:
       - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-http://provider:8000}
       - NEXT_PUBLIC_PROJECT_URL=${NEXT_PUBLIC_PROJECT_URL:-https://localhost:8443}
@@ -10,6 +11,7 @@ services:
       test: wget -O- -q http://consumer:3000/api/health/ || exit 1
 
   provider:
+    container_name: ${SERVICE_PROVIDER_NAME:-{{ cookiecutter.project_slug }}-provider}
     command: -p 8000 -d pacts -o --insecure-tls
     entrypoint: ./pact_stub_server.sh
     healthcheck:
@@ -23,6 +25,7 @@ services:
     working_dir: /app
 
   proxy:
+    container_name: ${SERVICE_PROXY_NAME:-{{ cookiecutter.project_slug }}-proxy}
     depends_on:
       consumer:
         condition: service_healthy

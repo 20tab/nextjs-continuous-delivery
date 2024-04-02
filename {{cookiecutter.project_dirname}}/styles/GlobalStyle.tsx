@@ -1,10 +1,9 @@
-import { createGlobalStyle } from 'styled-components'
-import { normalize } from 'styled-normalize'
-
 import {
   Open_Sans as OpenSans,
   Hepta_Slab as HeptaSlab
 } from '@next/font/google'
+import { createGlobalStyle } from 'styled-components'
+import { normalize } from 'styled-normalize'
 
 const baseFont = OpenSans({
   subsets: ['latin'],

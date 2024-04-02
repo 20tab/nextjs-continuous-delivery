@@ -1,8 +1,5 @@
-import { Provider } from 'react-redux'
 import Head from 'next/head'
 import React from 'react'
-
-import store from '@/store'
 
 import Layout from '@/components/layout/Base'
 
@@ -17,11 +14,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>{title}</title>
         <meta name='viewport' content='initial-scale=1.0, width=device-width' />
       </Head>
-      <Provider store={store}>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </Provider>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </>
   )
 }

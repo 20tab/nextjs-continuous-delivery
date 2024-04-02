@@ -1,6 +1,6 @@
-const express = require('express')
+const { createServer } = require('http')
+const { parse } = require('url')
 const next = require('next')
-const path = require('path')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
@@ -10,22 +10,25 @@ const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
-  const server = express()
-
-  // Robots.txt
-  server.use('/robots.txt', express.static(
-    path.resolve(
-      __dirname,
-      `./public/robots/${process.env.REACT_ENVIRONMENT || 'development'}.txt`
-    )
-  ))
-
-  server.all('*', (req, res) => {
-    return handle(req, res)
+  createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true)
+      await handle(req, res, parsedUrl)
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err)
+      res.statusCode = 500
+      res.end('internal server error')
+    }
   })
-
-  server.listen(port, (err) => {
-    if (err) throw err
-    console.info(`> Ready on http://${hostname}:${port}`)
-  })
+    .once('error', (err) => {
+      console.error(err)
+      process.exit(1)
+    })
+    .listen(port, () => {
+      console.info(
+        `> Server listening at http://${hostname}:${port} as ${
+          dev ? 'development' : process.env.NODE_ENV
+        }`
+      )
+    })
 })

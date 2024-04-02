@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:18-bookworm-slim
+FROM node:20-bullseye-slim
 ARG DEBIAN_FRONTEND=noninteractive GROUP_ID=1000 USER_ID=1000 USER=appuser
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" USER=$USER WORKDIR=/app
 RUN apt-get update \
@@ -15,7 +15,7 @@ RUN apt-get update \
 WORKDIR /
 COPY --chown=node ./package.json ./
 COPY --chown=node ./yarn.lock ./
-RUN yarn install
+RUN yarn install --ignore-optional
 ENV PATH="/node_modules/.bin:${PATH}"
 RUN userdel -r node
 RUN addgroup --system --gid $GROUP_ID $USER
