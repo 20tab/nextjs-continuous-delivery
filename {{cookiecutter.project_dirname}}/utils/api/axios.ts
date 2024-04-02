@@ -4,8 +4,7 @@ import { parseCookies } from 'nookies'
 import type { ApiOptions } from '@/models/Api'
 import type { AxiosPromise } from 'axios'
 
-// with 'X-Api-Token' instead of 'Authorization' you can use endpoints
-// that need authentication with traefik's basic auth
+// Custom header 'X-Api-Token' used to prevent conflicts with Traefik's basic auth.
 const AuthorizationKey = 'Authorization'
 
 export type ApiConfig = {
