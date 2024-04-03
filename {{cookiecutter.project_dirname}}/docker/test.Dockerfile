@@ -28,7 +28,7 @@ COPY --chown=$APPUSER \
     .prettierrc.json \
     jest.config.js \
     middleware.ts \
-    next.config.js \
+    next.config.mjs \
     package.json \
     tsconfig.json \
     yarn.lock \
