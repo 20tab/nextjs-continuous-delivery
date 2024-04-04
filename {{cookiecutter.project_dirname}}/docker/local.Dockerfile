@@ -15,7 +15,7 @@ RUN apt-get update \
 WORKDIR /
 COPY --chown=node ./package.json ./
 COPY --chown=node ./yarn.lock ./
-RUN yarn install --ignore-optional
+RUN yarn install
 ENV PATH="/node_modules/.bin:${PATH}"
 RUN userdel -r node
 RUN addgroup --system --gid $GROUP_ID $USER

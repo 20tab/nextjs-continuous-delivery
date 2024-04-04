@@ -3,4 +3,5 @@
 set -e
 
 yarn install
+yarn upgrade --latest
 exec "${@}"

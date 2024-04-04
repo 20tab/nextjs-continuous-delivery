@@ -5,13 +5,13 @@
   "scripts": {
     "audit:fix": "npm_config_yes=true npx yarn-audit-fix",
     "build": "next build",
-    "ci:contract-test": "npx jest pact/contracts --testEnvironment=node --color --detectOpenHandles --passWithNoTests",
-    "ci:unit-test": "npx jest --color --silent --detectOpenHandles --testPathIgnorePatterns=pact/contracts --coverage --coverageDirectory ./coverage/tests --ci --reporters=default --reporters=jest-junit",
-    "e2e": "CYPRESS_BASE_URL=http://localhost:3000 cypress open",
+    "ci:contract-test": "npx --yes jest pact/contracts --testEnvironment=node --color --detectOpenHandles --passWithNoTests",
+    "ci:unit-test": "npx --yes jest --color --silent --detectOpenHandles --testPathIgnorePatterns=pact/contracts --coverage --coverageDirectory ./coverage/tests --ci --reporters=default --reporters=jest-junit",
+    "e2e": "CYPRESS_BASE_URL=http://localhost:3000 npx --yes cypress open",
     "lint": "next lint",
-    "pact": "npx jest pact/contracts --testEnvironment=node --detectOpenHandles",
+    "pact": "npx --yes jest pact/contracts --testEnvironment=node --detectOpenHandles",
     "start": "node server.js",
-    "test": "npx jest --testPathIgnorePatterns=pact/contracts --detectOpenHandles"
+    "test": "npx --yes jest --testPathIgnorePatterns=pact/contracts --detectOpenHandles"
   },
   "dependencies": {
     "@next/font": "^14.1.4",
@@ -56,8 +56,5 @@
     "jest-pact": "^0.11.0",
     "prettier": "^3.2.5",
     "typescript": "^5"
-  },
-  "optionalDependencies": {
-    "cypress": "^13.7.0"
   }
 }
