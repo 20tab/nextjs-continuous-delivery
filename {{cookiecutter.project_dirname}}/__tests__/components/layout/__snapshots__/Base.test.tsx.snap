@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Navbar renders correctly 1`] = `
+exports[`Base layout renders correctly 1`] = `
 .c0 {
   width: 100%;
   background-color: #F4F7F8;
@@ -47,7 +47,7 @@ exports[`Navbar renders correctly 1`] = `
     </a>
   </nav>
   <style>
-    
+
     #nprogress {
       pointer-events: none;
     }
@@ -114,7 +114,7 @@ exports[`Navbar renders correctly 1`] = `
         transform: rotate(360deg);
       }
     }
-  
+
   </style>
   <p>
     Test base layout

@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Base'
 
 import { renderWithWrappers } from '@/__tests__/functions'
 
-test('Navbar renders correctly', () => {
+test('Base layout renders correctly', () => {
   const container = renderWithWrappers(
     <Layout>
       <p>Test base layout</p>
