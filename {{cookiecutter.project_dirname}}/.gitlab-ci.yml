@@ -68,14 +68,16 @@ cache:
   stage: .pre
   image: docker:20
   services:
-    - docker:20-dind
+    - docker:20-dind{% if cookiecutter.use_vault == "true" %}
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: ${VAULT_ADDR}{% endif %}
   script:
     - >
       docker run --rm
       -v ${PWD}:${PWD}
       -w ${PWD}
       -e CI_ENVIRONMENT_NAME{% if cookiecutter.use_vault == "true" %}
-      -e CI_JOB_JWT_V2
       -e ENV_NAME=${CI_ENVIRONMENT_NAME}{% endif %}
       -e PROJECT_DIR=${CI_PROJECT_DIR}
       -e PROJECT_SLUG
@@ -88,6 +90,7 @@ cache:
       -e SENTRY_URL{% if cookiecutter.use_vault == "true" %}
       -e SERVICE_SLUG={{ cookiecutter.service_slug }}
       -e VAULT_ADDR
+      -e VAULT_ID_TOKEN
       -e VAULT_ROLE{% endif %}
       -e VERSION_REF
       --entrypoint=""
@@ -163,19 +166,22 @@ test:
   image:
     name: docker:20
   services:
-    - docker:20-dind
+    - docker:20-dind{% if cookiecutter.use_vault == "true" %}
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: ${VAULT_ADDR}{% endif %}
   script:
     - >
       docker run --rm
       -v ${PWD}:${PWD}
       -w ${PWD}{% if cookiecutter.use_vault == "true" %}
-      -e CI_JOB_JWT_V2
       -e ENV_SLUG{% else %}
       -e PACT_BROKER_BASE_URL
       -e PACT_BROKER_PASSWORD
       -e PACT_BROKER_USERNAME{% endif %}
       -e PROJECT_SLUG{% if cookiecutter.use_vault == "true" %}
-      -e VAULT_ADDR{% endif %}
+      -e VAULT_ADDR
+      -e VAULT_ID_TOKEN{% endif %}
       --entrypoint=""
       pactfoundation/pact-cli:latest-node14 ./scripts/ci_pact.sh ${PACT_CMD}
 
@@ -378,7 +384,10 @@ e2e_manual:
   image:
     name: docker:20
   services:
-    - docker:20-dind
+    - docker:20-dind{% if cookiecutter.use_vault == "true" %}
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: ${VAULT_ADDR}{% endif %}
   variables:
     TF_ROOT: ${CI_PROJECT_DIR}/terraform/{{ cookiecutter.deployment_type }}
   before_script:
@@ -391,16 +400,14 @@ e2e_manual:
       -w ${PWD}{% if cookiecutter.terraform_backend == "gitlab" %}
       -e CI_API_V4_URL
       -e CI_COMMIT_SHA
-      -e CI_JOB_ID{% if cookiecutter.use_vault == "true" %}
-      -e CI_JOB_JWT_V2{% endif %}
+      -e CI_JOB_ID
       -e CI_JOB_STAGE
       -e CI_JOB_TOKEN
       -e CI_PROJECT_ID
       -e CI_PROJECT_NAME
       -e CI_PROJECT_NAMESPACE
       -e CI_PROJECT_PATH
-      -e CI_PROJECT_URL{% elif cookiecutter.use_vault == "true" %}
-      -e CI_JOB_JWT_V2{% endif %}
+      -e CI_PROJECT_URL
       -e ENV_SLUG
       -e PROJECT_DIR=${CI_PROJECT_DIR}
       -e PROJECT_SLUG
@@ -422,6 +429,7 @@ e2e_manual:
       -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_{{ cookiecutter.service_slug }}_environment_${ENV_SLUG}"{% endif %}{% if cookiecutter.terraform_backend == "terraform-cloud" and not cookiecutter.use_vault %}
       -e TFC_TOKEN{% endif %}{% if cookiecutter.use_vault == "true" %}
       -e VAULT_ADDR
+      -e VAULT_ID_TOKEN
       -e VAULT_ROLE
       -e VAULT_SECRETS="digitalocean k8s {{ cookiecutter.service_slug }}/extra {{ cookiecutter.service_slug }}/sentry"
       -e VAULT_SECRETS_PREFIX="envs/${CI_ENVIRONMENT_NAME}"

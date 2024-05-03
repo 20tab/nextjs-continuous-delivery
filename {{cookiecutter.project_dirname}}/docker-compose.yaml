@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   consumer:
     container_name: ${SERVICE_CONTAINER_NAME:-{{ cookiecutter.project_slug }}-consumer}
