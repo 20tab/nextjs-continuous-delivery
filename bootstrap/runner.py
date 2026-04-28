@@ -187,15 +187,17 @@ class Runner:
                 env_slug=env["slug"],
             )
 
-    def register_vault_environment_secret(self, env_name, secret_name, secret_data):
-        """Register a Vault environment secret locally."""
-        self.vault_secrets[f"envs/{env_name}/{secret_name}"] = secret_data
+    def register_vault_service_secret(self, env_name, secret_name, secret_data):
+        """Register a service-scoped Vault secret at envs/{env}/{service_slug}/{secret_name}."""
+        self.vault_secrets[
+            f"envs/{env_name}/{self.service_slug}/{secret_name}"
+        ] = secret_data
 
     def collect_vault_environment_secrets(self, env_name):
         """Collect the Vault secrets for the given environment."""
-        # Sentry env vars are used by the GitLab CI/CD
-        self.sentry_dsn and self.register_vault_environment_secret(
-            env_name, f"{self.service_slug}/sentry", {"sentry_dsn": self.sentry_dsn}
+        # Sentry DSN is read by the GitLab CI/CD via ci_sentry.sh
+        self.sentry_dsn and self.register_vault_service_secret(
+            env_name, "sentry", {"sentry_dsn": self.sentry_dsn}
         )
 
     def collect_vault_secrets(self):
