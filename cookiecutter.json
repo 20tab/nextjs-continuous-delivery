@@ -9,31 +9,25 @@
   "terraform_cloud_organization": null,
   "use_redis": "false",
   "use_vault": "false",
-  "environment_distribution": "1",
   "resources": {
-    "stacks": [
-      [
-        {
-          "name": "main",
-          "slug": "main"
-        }
-      ]
-    ],
     "envs": [
       {
         "name": "development",
         "slug": "dev",
-        "cluster_slug": "main"
+        "cluster_slug": "main",
+        "host": ""
       },
       {
         "name": "staging",
         "slug": "stage",
-        "cluster_slug": "main"
+        "cluster_slug": "main",
+        "host": ""
       },
       {
         "name": "production",
         "slug": "prod",
-        "cluster_slug": "main"
+        "cluster_slug": "main",
+        "host": ""
       }
     ]
   },

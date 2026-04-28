@@ -88,11 +88,13 @@ class Runner:
         self.collect_gitlab_variables()
 
     def _env(self, name, slug, url, basic_auth_enabled):
+        host = (url or "").removeprefix("https://").removeprefix("http://").rstrip("/")
         return {
             "basic_auth_enabled": basic_auth_enabled,
             "name": name,
             "slug": slug,
             "cluster_slug": self.env_to_cluster[name],
+            "host": host,
             "url": url,
         }
 
@@ -211,7 +213,7 @@ class Runner:
                 "project_dirname": self.project_dirname,
                 "project_name": self.project_name,
                 "project_slug": self.project_slug,
-                "resources": {"envs": self.envs, "stacks": []},
+                "resources": {"envs": self.envs},
                 "service_slug": self.service_slug,
                 "terraform_backend": self.terraform_backend,
                 "terraform_cloud_organization": self.terraform_cloud_organization,
