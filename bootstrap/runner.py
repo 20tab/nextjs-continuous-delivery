@@ -210,7 +210,6 @@ class Runner:
         cookiecutter(
             os.path.dirname(os.path.dirname(__file__)),
             extra_context={
-                "deployment_type": "digitalocean-k8s",
                 "internal_service_port": self.internal_service_port,
                 "project_dirname": self.project_dirname,
                 "project_name": self.project_name,
