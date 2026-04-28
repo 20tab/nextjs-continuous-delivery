@@ -1,10 +1,17 @@
+{% set env_dev = cookiecutter.resources.envs|selectattr("slug", "equalto", "dev")|first %}{% set env_stage = cookiecutter.resources.envs|selectattr("slug", "equalto", "stage")|first %}{% set env_prod = cookiecutter.resources.envs|selectattr("slug", "equalto", "prod")|first %}include:
+  - component: ${CI_SERVER_FQDN}/components/opentofu/apply@{{ cookiecutter.opentofu_component_version }}
+    inputs:
+      as: .apply
+      version: {{ cookiecutter.opentofu_component_version }}
+      opentofu_version: {{ cookiecutter.opentofu_version }}
+      no_plan: true
+
 stages:
   - Test
   - Pact-publish
   - Pact-check
   - Build
   - Report
-  - E2E
   - Deploy
   - Pact-tag
   - Sentry
@@ -15,13 +22,23 @@ variables:
   PACT_CONSUMER_NAME: {{ cookiecutter.project_slug }}-{{ cookiecutter.service_slug }}
   PROJECT_SLUG: {{ cookiecutter.project_slug }}
   SENTRY_PROJECT_NAME: {{ cookiecutter.project_slug }}-{{ cookiecutter.service_slug }}
+  SERVICE_SLUG: {{ cookiecutter.service_slug }}
+  VAULT_ROLE: service-gitlab-job
   VERSION_BEFORE_REF: ${CI_COMMIT_BEFORE_SHA}
-  VERSION_REF: ${CI_COMMIT_SHA}
 
 cache:
   paths:
     - node_modules/
-{% with env=cookiecutter.resources.envs[0] %}
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - when: always
+
+# [Environments]
+# -----------------------------------------------------------------------------
+
 .development:
   rules: &development-rules
     - &pipeline-push-rule
@@ -30,79 +47,60 @@ cache:
     - &development-rule
       if: $CI_COMMIT_BRANCH == "develop"
       variables:
-        ENV_SLUG: {{ env.slug }}
-        STACK_SLUG: {{ env.stack_slug }}
-        VAULT_ROLE: {{ cookiecutter.service_slug }}-{{ env.slug }}
+        CLUSTER_SLUG: {{ env_dev.cluster_slug }}
   environment:
-    name: {{ env.name }}{% if env.url %}
-    url: {{ env.url }}{% endif %}
-{% endwith %}{% with env=cookiecutter.resources.envs[1] %}
+    name: development
+    url: {{ env_dev.url }}
+
 .staging:
   rules: &staging-rules
     - <<: *pipeline-push-rule
     - &staging-rule
       if: $CI_COMMIT_BRANCH == "main"
       variables:
-        ENV_SLUG: {{ env.slug }}
-        STACK_SLUG: {{ env.stack_slug }}
-        VAULT_ROLE: {{ cookiecutter.service_slug }}-{{ env.slug }}
+        CLUSTER_SLUG: {{ env_stage.cluster_slug }}
   environment:
-    name: {{ env.name }}{% if env.url %}
-    url: {{ env.url }}{% endif %}
-{% endwith %}{% with env=cookiecutter.resources.envs[2] %}
+    name: staging
+    url: {{ env_stage.url }}
+
 .production:
   rules: &production-rules
     - <<: *pipeline-push-rule
     - &production-rule
       if: $CI_COMMIT_TAG
       variables:
-        ENV_SLUG: {{ env.slug }}
-        STACK_SLUG: {{ env.stack_slug }}
-        VAULT_ROLE: {{ cookiecutter.service_slug }}-{{ env.slug }}
+        CLUSTER_SLUG: {{ env_prod.cluster_slug }}
   environment:
-    name: {{ env.name }}{% if env.url %}
-    url: {{ env.url }}{% endif %}
-{% endwith %}
+    name: production
+    url: {{ env_prod.url }}
+
+# [Pre]
+# -----------------------------------------------------------------------------
 
 .sentry:
   stage: .pre
-  image: docker:20
-  services:
-    - docker:20-dind{% if cookiecutter.use_vault == "true" %}
+  image:
+    name: getsentry/sentry-cli:latest
+    entrypoint: []
   id_tokens:
     VAULT_ID_TOKEN:
-      aud: ${VAULT_ADDR}{% endif %}
-  script:
-    - >
-      docker run --rm
-      -v ${PWD}:${PWD}
-      -w ${PWD}
-      -e CI_ENVIRONMENT_NAME{% if cookiecutter.use_vault == "true" %}
-      -e ENV_NAME=${CI_ENVIRONMENT_NAME}{% endif %}
-      -e PROJECT_DIR=${CI_PROJECT_DIR}
-      -e PROJECT_SLUG
-      -e RELEASE_END
-      -e RELEASE_START{% if cookiecutter.use_vault == "false" %}
-      -e SENTRY_AUTH_TOKEN
-      -e SENTRY_DSN{% endif %}
-      -e SENTRY_ORG
-      -e SENTRY_PROJECT_NAME
-      -e SENTRY_URL{% if cookiecutter.use_vault == "true" %}
-      -e SERVICE_SLUG={{ cookiecutter.service_slug }}
-      -e VAULT_ADDR
-      -e VAULT_ID_TOKEN
-      -e VAULT_ROLE{% endif %}
-      -e VERSION_REF
-      --entrypoint=""
-      getsentry/sentry-cli:latest ./scripts/ci_sentry.sh ${SENTRY_CMD}
+      aud: ${VAULT_ADDR}
+  variables:
+    ENV_NAME: ${CI_ENVIRONMENT_SLUG}
+    PROJECT_DIR: ${CI_PROJECT_DIR}
+  before_script:
+    - source ./scripts/ci_sentry.sh
 
 .sentry_release:
   extends:
     - .sentry
-  variables:
-    SENTRY_CMD: release
-  before_script:
+  script:
     - RELEASE_START=$(date +%s)
+    - >
+      sentry-cli releases new "${CI_COMMIT_SHA}"
+      --log-level=debug --project "${SENTRY_PROJECT_NAME}"
+    - sentry-cli releases set-commits "${CI_COMMIT_SHA}" --auto --ignore-missing
+    - sentry-cli releases finalize "${CI_COMMIT_SHA}"
 
 sentry_release_development:
   extends:
@@ -110,7 +108,7 @@ sentry_release_development:
     - .sentry_release
   rules:
     - &sentry-rule
-      if: $SENTRY_ENABLED != "true"
+      if: $SENTRY_ENABLED != "true" || $SKIP_DEPLOY == "true"
       when: never
     - *development-rules
 
@@ -130,62 +128,48 @@ sentry_release_production:
     - <<: *sentry-rule
     - *production-rules
 
+# [Test]
+# -----------------------------------------------------------------------------
+
 test:
   stage: Test
-  image: docker:20
-  services:
-    - docker:20-dind
+  image: node:{{ cookiecutter.node_version }}-bullseye-slim
   needs: []
   variables:
-    COMPOSE_FILE: docker-compose.yaml:docker-compose/test.yaml
-    COMPOSE_PROJECT_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}"
-    SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_frontend"
-    SERVICE_DOCKER_FILE: "docker/test.Dockerfile"
-    SERVICE_IMAGE_NAME: "gitlabci_{{ cookiecutter.project_slug }}_{{ cookiecutter.service_slug }}"
-    SERVICE_IMAGE_TAG: "${CI_JOB_NAME}-${CI_JOB_ID}"
-  before_script:
-    - mkdir pacts
+    NEXT_TELEMETRY_DISABLED: 1
+    PACT_DO_NOT_TRACK: 1
+    TZ: "Europe/Rome"
   script:
-    - docker-compose build --quiet consumer
-    - docker-compose run --name ${SERVICE_CONTAINER_NAME} consumer
-  after_script:
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/coverage .
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/pacts .
-    - docker-compose down --volumes --remove-orphans
+    - corepack enable && corepack prepare yarn@stable --activate && yarn set version stable
+    - yarn install
+    - yarn ci:contract-test && yarn ci:unit-test
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:
-      - coverage
-      - pacts
+      - .artifacts/
     reports:
       junit:
-      - junit.xml
+        - .artifacts/junit.xml
     expire_in: 1 day
+  rules:
+    - if: $SKIP_TEST == "true"
+      when: never
+    - when: always
+
+# [Pact Publish]
+# -----------------------------------------------------------------------------
 
 .pact:
   image:
-    name: docker:20
-  services:
-    - docker:20-dind{% if cookiecutter.use_vault == "true" %}
+    name: pactfoundation/pact-cli:latest
+    entrypoint: []
   id_tokens:
     VAULT_ID_TOKEN:
-      aud: ${VAULT_ADDR}{% endif %}
-  script:
-    - >
-      docker run --rm
-      -v ${PWD}:${PWD}
-      -w ${PWD}{% if cookiecutter.use_vault == "true" %}
-      -e ENV_SLUG{% else %}
-      -e PACT_BROKER_BASE_URL
-      -e PACT_BROKER_PASSWORD
-      -e PACT_BROKER_USERNAME{% endif %}
-      -e PROJECT_SLUG{% if cookiecutter.use_vault == "true" %}
-      -e VAULT_ADDR
-      -e VAULT_ID_TOKEN{% endif %}
-      --entrypoint=""
-      pactfoundation/pact-cli:latest-node14 ./scripts/ci_pact.sh ${PACT_CMD}
+      aud: ${VAULT_ADDR}
+  before_script:
+    - source ./scripts/ci_pact.sh
 
-publish:
+pact_publish:
   extends:
     - .pact
   stage: Pact-publish
@@ -198,42 +182,51 @@ publish:
       if: $CI_PIPELINE_SOURCE != "push"
       when: never
     - when: always
-  before_script:
+  script:
     - if [ "${CI_COMMIT_BRANCH}" ]; then PACT_CONSUMER_TAG="branch:${CI_COMMIT_BRANCH}"; else PACT_CONSUMER_TAG="tag:${CI_COMMIT_TAG}"; fi
     - >
-      export PACT_CMD="publish ./pacts
-      --consumer-app-version=${VERSION_REF}
-      --tag=${PACT_CONSUMER_TAG}"
+      pact-broker publish .artifacts/pacts
+      --consumer-app-version="${CI_COMMIT_SHA}"
+      --tag="${PACT_CONSUMER_TAG}"
+
+# [Report]
+# -----------------------------------------------------------------------------
 
 pages:
   stage: Report
   image: busybox
   needs: ["test"]
   rules:
+    - if: $SKIP_TEST == "true"
+      when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
-    - mv coverage/tests/lcov-report/* public
+    - mkdir -p public
+    - mv .artifacts/coverage/lcov-report/* public
   artifacts:
     paths:
       - public
+
+# [Can I Deploy]
+# -----------------------------------------------------------------------------
 
 .can-i-deploy:
   extends:
     - .pact
   stage: Pact-check
   allow_failure: false
-  before_script:
+  script:
     - >
-      export PACT_CMD="can-i-deploy
+      pact-broker can-i-deploy
       --pacticipant ${PACT_CONSUMER_NAME}
-      --version ${VERSION_REF}
-      --to env:${ENV_SLUG}"
+      --version "${CI_COMMIT_SHA}"
+      --to "${CI_ENVIRONMENT_SLUG}"
 
 can-i-deploy_development:
   extends:
     - .development
     - .can-i-deploy
-  needs: ["publish"]
+  needs: ["pact_publish"]
   rules:
     - <<: *skip-pact-rule
     - <<: *push-only
@@ -243,7 +236,7 @@ can-i-deploy_staging:
   extends:
     - .staging
     - .can-i-deploy
-  needs: ["publish"]
+  needs: ["pact_publish"]
   rules:
     - <<: *skip-pact-rule
     - <<: *push-only
@@ -253,30 +246,44 @@ can-i-deploy_production:
   extends:
     - .production
     - .can-i-deploy
-  needs: ["publish"]
+  needs: ["pact_publish"]
   rules:
     - <<: *skip-pact-rule
     - <<: *push-only
     - *production-rules
 
+# [Build]
+# -----------------------------------------------------------------------------
+
 .build:
   stage: Build
-  image: docker:20
-  services:
-    - docker:20-dind
+  image: quay.io/buildah/stable
+  variables:
+    BUILDAH_FORMAT: docker
+    BUILDAH_ISOLATION: chroot
+    NEXT_PUBLIC_PROJECT_URL: $CI_ENVIRONMENT_URL
+    REGISTRY_IMAGE: "${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_SLUG}:${CI_COMMIT_SHA}"
+    SENTRY_ENVIRONMENT: "${CI_ENVIRONMENT_NAME}"
   before_script:
-    - export DOCKER_CONFIG=${PWD}/.dockerconfig
-    - docker login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY}"
+    - echo "${CI_REGISTRY_PASSWORD}" | buildah login "${CI_REGISTRY}" --username "${CI_REGISTRY_USER}" --password-stdin
   script:
-    - >
-      docker build
-      --tag=${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
-      --file=docker/remote.Dockerfile
-      --target=remote
-      --pull .
-    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
+    - |
+      buildah bud \
+        --build-arg NEXT_PUBLIC_PROJECT_URL \
+        --build-arg SENTRY_DSN \
+        --build-arg SENTRY_ENVIRONMENT \
+        --build-arg SENTRY_ORG \
+        --build-arg SENTRY_PROJECT_NAME \
+        --build-arg SENTRY_TRACES_SAMPLE_RATE \
+        --build-arg SENTRY_URL \
+        --file docker/remote.Dockerfile \
+        --pull \
+        --secret id=SENTRY_AUTH_TOKEN,env=SENTRY_AUTH_TOKEN \
+        --tag "${REGISTRY_IMAGE}" \
+        --target remote .
+    - buildah push "${REGISTRY_IMAGE}"
   after_script:
-    - docker logout ${CI_REGISTRY}
+    - buildah logout "${CI_REGISTRY}"
 
 build_development:
   extends:
@@ -286,6 +293,7 @@ build_development:
     - job: can-i-deploy_development
       optional: true
     - job: test
+      optional: true
 
 build_staging:
   extends:
@@ -295,6 +303,7 @@ build_staging:
     - job: can-i-deploy_staging
       optional: true
     - job: test
+      optional: true
 
 build_production:
   extends:
@@ -304,180 +313,72 @@ build_production:
     - job: can-i-deploy_production
       optional: true
     - job: test
+      optional: true
 
-.e2e:
-  stage: E2E
-  image: docker:20
-  services:
-    - docker:20-dind
-  variables:
-    COMPOSE_PROJECT_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}"
-    SERVICE_CONTAINER_NAME: "${CI_PROJECT_PATH_SLUG}-${CI_JOB_NAME}-${CI_JOB_ID}_e2e"
-  before_script:
-    - if [ "${PACT_ENABLED}" == "true" ]; then COMPOSE_PROFILES=pact; else COMPOSE_PROFILES=no-pact; fi
-    - export COMPOSE_PROFILES
-    - export CONSUMER_IMAGE=${CI_REGISTRY}/${CI_PROJECT_PATH}:${VERSION_REF}
-    - docker login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY}"
-  script:
-    - docker-compose build --quiet consumer
-    - docker-compose up -d proxy
-    - docker-compose run --name ${SERVICE_CONTAINER_NAME} cypress
-  after_script:
-    - docker cp ${SERVICE_CONTAINER_NAME}:/app/cypress-outputs ./screenshots
-    - docker-compose down --volumes --remove-orphans
-    - docker logout ${CI_REGISTRY}
-  artifacts:
-    paths:
-      - screenshots
-    expire_in: 1 day
-
-e2e_development:
-  extends:
-    - .development
-    - .e2e
-  needs: ["test", "build_development"]
-  rules:
-    - &skip-e2e-rule
-      if: $SKIP_E2E == "true"
-      when: never
-    - <<: *push-only
-    - *development-rules
-
-e2e_staging:
-  extends:
-    - .staging
-    - .e2e
-  needs: ["test", "build_staging"]
-  rules:
-    - <<: *skip-e2e-rule
-    - <<: *push-only
-    - *staging-rules
-
-e2e_production:
-  extends:
-    - .production
-    - .e2e
-  needs: ["test", "build_production"]
-  rules:
-    - <<: *skip-e2e-rule
-    - <<: *push-only
-    - *production-rules
-
-e2e_manual:
-  rules:
-    - <<: *skip-e2e-rule
-    - <<: *push-only
-    - if: $CI_COMMIT_REF_PROTECTED == "true"
-      when: never
-    - when: manual
-  extends:
-    - .e2e
-  variables:
-    NEXT_PUBLIC_PROJECT_URL: 'https://proxy:8443'
-    REACT_ENVIRONMENT: 'production'
-    SERVICE_DOCKER_FILE: "docker/remote.Dockerfile"
-    COMPOSE_FILE: docker-compose.yaml:docker-compose/e2e.yaml:docker-compose/e2e-branch.yaml
-  needs: ["test"]
+# [Deploy]
+# -----------------------------------------------------------------------------
 
 .deploy:
   stage: Deploy
-  image:
-    name: docker:20
-  services:
-    - docker:20-dind{% if cookiecutter.use_vault == "true" %}
+  extends:
+    - .apply
   id_tokens:
     VAULT_ID_TOKEN:
-      aud: ${VAULT_ADDR}{% endif %}
+      aud: ${VAULT_ADDR}
+  image: {{ cookiecutter.minos_service_image }}
   variables:
-    TF_ROOT: ${CI_PROJECT_DIR}/terraform/{{ cookiecutter.deployment_type }}
+    GITLAB_TOFU_INIT_NO_RECONFIGURE: true
+    GITLAB_TOFU_ROOT_DIR: ${CI_PROJECT_DIR}/tofu
+    PROJECT_DIR: ${CI_PROJECT_DIR}
+    TF_CLOUD_HOSTNAME: app.terraform.io
+    TF_CLOUD_ORGANIZATION: {{ cookiecutter.terraform_cloud_organization }}
+    TF_VAR_registry_password: ${CI_DEPLOY_PASSWORD}
+    TF_VAR_registry_server: ${CI_REGISTRY}
+    TF_VAR_registry_username: ${CI_DEPLOY_USER}
+    TF_WORKSPACE: "${PROJECT_SLUG}_${SERVICE_SLUG}_${CI_ENVIRONMENT_SLUG}"
+    TOFU_BACKEND: terraform-cloud
+    TOFU_VAR_FILES: "common.tfvars ${CI_ENVIRONMENT_SLUG}/this.tfvars"
+    VAULT_SECRETS_PREFIX: "envs/${CI_ENVIRONMENT_SLUG}"
+    VAULT_SECRETS: "digitalocean"
+    VAULT_SERVICE_SECRETS: "shared-secrets.tftpl"
   before_script:
-    - export TF_VAR_service_container_image=${CI_REGISTRY_IMAGE}:${VERSION_REF}
-  script:
-    - >
-      docker run --rm
-      -u `id -u`
-      -v ${PWD}:${PWD}
-      -w ${PWD}{% if cookiecutter.terraform_backend == "gitlab" %}
-      -e CI_API_V4_URL
-      -e CI_COMMIT_SHA
-      -e CI_JOB_ID
-      -e CI_JOB_STAGE
-      -e CI_JOB_TOKEN
-      -e CI_PROJECT_ID
-      -e CI_PROJECT_NAME
-      -e CI_PROJECT_NAMESPACE
-      -e CI_PROJECT_PATH
-      -e CI_PROJECT_URL{% endif %}
-      -e ENV_SLUG
-      -e PROJECT_DIR=${CI_PROJECT_DIR}
-      -e PROJECT_SLUG
-      -e STACK_SLUG
-      -e TERRAFORM_BACKEND={{ cookiecutter.terraform_backend }}
-      -e TERRAFORM_EXTRA_VAR_FILE=${ENV_SLUG}.tfvars
-      -e TERRAFORM_VARS_DIR=${CI_PROJECT_DIR}/terraform/vars
-      -e TF_ROOT{% if cookiecutter.terraform_backend == "gitlab" %}
-      -e TF_STATE_NAME="env_${ENV_SLUG}"{% endif %}{% if cookiecutter.use_vault == "false" %}{% if cookiecutter.deployment_type == "digitalocean-k8s" %}
-      -e TF_VAR_digitalocean_token="${DIGITALOCEAN_TOKEN}"{% endif %}
-      -e TF_VAR_internal_backend_url="${INTERNAL_BACKEND_URL}"
-      -e TF_VAR_internal_service_port="${FRONTEND_SERVICE_PORT}"{% if cookiecutter.deployment_type == "other-k8s" %}
-      -e TF_VAR_kubernetes_cluster_ca_certificate="${KUBERNETES_CLUSTER_CA_CERTIFICATE}"
-      -e TF_VAR_kubernetes_host="${KUBERNETES_HOST}"
-      -e TF_VAR_kubernetes_token="${KUBERNETES_TOKEN}"{% endif %}
-      -e TF_VAR_project_url="${CI_ENVIRONMENT_URL}"
-      -e TF_VAR_sentry_dsn="${SENTRY_DSN}"{% endif %}
-      -e TF_VAR_service_container_image{% if cookiecutter.terraform_backend != "gitlab" %}
-      -e TF_WORKSPACE="{{ cookiecutter.project_slug }}_{{ cookiecutter.service_slug }}_environment_${ENV_SLUG}"{% endif %}{% if cookiecutter.terraform_backend == "terraform-cloud" and not cookiecutter.use_vault %}
-      -e TFC_TOKEN{% endif %}{% if cookiecutter.use_vault == "true" %}
-      -e VAULT_ADDR
-      -e VAULT_ID_TOKEN
-      -e VAULT_ROLE
-      -e VAULT_SECRETS="digitalocean k8s {{ cookiecutter.service_slug }}/extra {{ cookiecutter.service_slug }}/sentry"
-      -e VAULT_SECRETS_PREFIX="envs/${CI_ENVIRONMENT_NAME}"
-      -e VAULT_VERSION{% endif %}
-      registry.gitlab.com/gitlab-org/terraform-images/stable:latest ./scripts/deploy.sh
-  artifacts:
-    name: plan
-    reports:
-      terraform: ${TF_ROOT}/plan.json
+    - export TF_VAR_image=${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_SLUG}:${CI_COMMIT_SHA}
+    - export TF_CLI_ARGS="${TOFU_VAR_FILE_ARGS}"
 
 deploy_development:
   extends:
-    - .development
     - .deploy
+    - .development
   needs:
-  - job: e2e_development
-    optional: true
-  - job: build_development
+    - job: build_development
 
 deploy_staging:
   extends:
-    - .staging
     - .deploy
+    - .staging
   needs:
-  - job: e2e_staging
-    optional: true
-  - job: build_staging
+    - job: build_staging
 
 deploy_production:
   extends:
-    - .production
     - .deploy
+    - .production
   needs:
-  - job: e2e_production
-    optional: true
-  - job: build_production
+    - job: build_production
 
 .rollback:
   extends:
     - .deploy
   before_script:
-    - export TF_VAR_service_container_image=${CI_REGISTRY_IMAGE}:${VERSION_BEFORE_REF}
+    - export TF_VAR_image=${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_SLUG}:${VERSION_BEFORE_REF}
+    - export TF_CLI_ARGS="${TOFU_VAR_FILE_ARGS}"
 
 rollback_development:
   extends:
     - .development
     - .rollback
-  needs: ["deploy_development"]
+  needs:
+    - job: deploy_development
   rules:
     - <<: *pipeline-push-rule
     - <<: *development-rule
@@ -488,7 +389,8 @@ rollback_staging:
   extends:
     - .staging
     - .rollback
-  needs: ["deploy_staging"]
+  needs:
+    - job: deploy_staging
   rules:
     - <<: *pipeline-push-rule
     - <<: *staging-rule
@@ -499,26 +401,32 @@ rollback_production:
   extends:
     - .production
     - .rollback
-  needs: ["deploy_production"]
+  needs:
+    - job: deploy_production
   rules:
     - <<: *pipeline-push-rule
     - <<: *production-rule
       when: manual
       allow_failure: true
 
+# [Pact Tag]
+# -----------------------------------------------------------------------------
+
 .create-version-tag:
   extends:
     - .pact
   stage: Pact-tag
-  before_script:
+  script:
     - >
-      export PACT_CMD="create-version-tag
-      --pacticipant ${PACT_CONSUMER_NAME}
-      --version ${VERSION_REF}
-      --tag env:${ENV_SLUG}"
+      pact-broker create-version-tag
+      --pacticipant "${PACT_CONSUMER_NAME}"
+      --version "${CI_COMMIT_SHA}"
+      --tag "${CI_ENVIRONMENT_SLUG}"
 
 create-version-tag_development:
-  extends: .create-version-tag
+  extends:
+    - .development
+    - .create-version-tag
   needs: ["deploy_development"]
   rules:
     - <<: *skip-pact-rule
@@ -526,7 +434,9 @@ create-version-tag_development:
     - *development-rules
 
 create-version-tag_staging:
-  extends: .create-version-tag
+  extends:
+    - .staging
+    - .create-version-tag
   needs: ["deploy_staging"]
   rules:
     - <<: *skip-pact-rule
@@ -534,27 +444,35 @@ create-version-tag_staging:
     - *staging-rules
 
 create-version-tag_production:
-  extends: .create-version-tag
+  extends:
+    - .create-version-tag
+    - .production
   needs: ["deploy_production"]
   rules:
     - <<: *skip-pact-rule
     - <<: *push-only
     - *production-rules
 
+# [Sentry]
+# -----------------------------------------------------------------------------
+
 .sentry_deploy_success:
   extends:
     - .sentry
-  variables:
-    SENTRY_CMD: success
   stage: Sentry
-  before_script:
+  script:
     - RELEASE_END=$(date +%s)
+    - >
+      sentry-cli releases deploys "${CI_COMMIT_SHA}"
+      new --env "${ENV_NAME}" --time $((RELEASE_END-RELEASE_START))
 
 sentry_success_development:
   extends:
     - .development
     - .sentry_deploy_success
-  needs: ["deploy_development"]
+  needs:
+    - job: deploy_development
+      optional: true
   rules:
     - <<: *sentry-rule
     - <<: *push-only
@@ -565,7 +483,9 @@ sentry_success_staging:
   extends:
     - .staging
     - .sentry_deploy_success
-  needs: ["deploy_staging"]
+  needs:
+    - job: deploy_staging
+      optional: true
   rules:
     - <<: *sentry-rule
     - <<: *push-only
@@ -576,7 +496,9 @@ sentry_success_production:
   extends:
     - .production
     - .sentry_deploy_success
-  needs: ["deploy_production"]
+  needs:
+    - job: deploy_production
+      optional: true
   rules:
     - <<: *sentry-rule
     - <<: *push-only
@@ -586,36 +508,45 @@ sentry_success_production:
 .sentry_deploy_failure:
   extends:
     - .sentry
-  variables:
-    SENTRY_CMD: failure
   stage: Sentry
+  script:
+    - sentry-cli send-event --message "Deploy to ${ENV_NAME} failed."
 
 sentry_failure_development:
   extends:
     - .development
     - .sentry_deploy_failure
+  needs:
+    - job: deploy_development
+      optional: true
+  when: on_failure
   rules:
     - <<: *sentry-rule
     - <<: *push-only
-    - <<: *development-rule
-      when: on_failure
+    - *development-rules
 
 sentry_failure_staging:
   extends:
     - .staging
     - .sentry_deploy_failure
+  needs:
+    - job: deploy_staging
+      optional: true
+  when: on_failure
   rules:
     - <<: *sentry-rule
     - <<: *push-only
-    - <<: *staging-rule
-      when: on_failure
+    - *staging-rules
 
 sentry_failure_production:
   extends:
     - .production
     - .sentry_deploy_failure
+  needs:
+    - job: deploy_production
+      optional: true
+  when: on_failure
   rules:
     - <<: *sentry-rule
     - <<: *push-only
-    - <<: *production-rule
-      when: on_failure
+    - *production-rules

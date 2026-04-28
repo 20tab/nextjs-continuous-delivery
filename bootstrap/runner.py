@@ -16,17 +16,14 @@ from pydantic import validate_arguments
 from bootstrap.constants import (
     DEV_ENV_NAME,
     DEV_ENV_SLUG,
-    DEV_ENV_STACK_CHOICES,
-    DEV_STACK_SLUG,
-    MAIN_STACK_SLUG,
+    MINOS_SERVICE_IMAGE,
+    NODE_VERSION_DEFAULT,
+    OPENTOFU_COMPONENT_VERSION,
+    OPENTOFU_VERSION,
     PROD_ENV_NAME,
     PROD_ENV_SLUG,
-    PROD_ENV_STACK_CHOICES,
-    STACKS_CHOICES,
     STAGE_ENV_NAME,
     STAGE_ENV_SLUG,
-    STAGE_ENV_STACK_CHOICES,
-    STAGE_STACK_SLUG,
     TERRAFORM_BACKEND_TFC,
 )
 from bootstrap.exceptions import BootstrapError
@@ -54,8 +51,7 @@ class Runner:
     service_slug: str
     internal_backend_url: str | None
     internal_service_port: int
-    deployment_type: str
-    environments_distribution: str
+    env_to_cluster: dict[str, str]
     project_url_dev: str = ""
     project_url_stage: str = ""
     project_url_prod: str = ""
@@ -74,12 +70,15 @@ class Runner:
     gitlab_url: str | None = None
     gitlab_namespace_path: str | None = None
     gitlab_token: str | None = None
+    node_version: str = NODE_VERSION_DEFAULT
+    minos_service_image: str = MINOS_SERVICE_IMAGE
+    opentofu_component_version: str = OPENTOFU_COMPONENT_VERSION
+    opentofu_version: str = OPENTOFU_VERSION
     uid: int | None = None
     gid: int | None = None
     terraform_dir: Path | None = None
     logs_dir: Path | None = None
     run_id: str = field(init=False)
-    stacks: list = field(init=False, default_factory=list)
     envs: list = field(init=False, default_factory=list)
     gitlab_variables: dict = field(init=False, default_factory=dict)
     tfvars: dict = field(init=False, default_factory=dict)
@@ -92,45 +91,27 @@ class Runner:
         self.run_id = f"{time():.0f}"
         self.terraform_dir = self.terraform_dir or Path(f".terraform/{self.run_id}")
         self.logs_dir = self.logs_dir or Path(f".logs/{self.run_id}")
-        self.set_stacks()
         self.set_envs()
         self.collect_tfvars()
         self.collect_gitlab_variables()
 
-    def set_stacks(self):
-        """Set the stacks."""
-        self.stacks = STACKS_CHOICES[self.environments_distribution]
+    def _env(self, name, slug, url, basic_auth_enabled):
+        host = (url or "").removeprefix("https://").removeprefix("http://").rstrip("/")
+        return {
+            "basic_auth_enabled": basic_auth_enabled,
+            "name": name,
+            "slug": slug,
+            "cluster_slug": self.env_to_cluster[name],
+            "host": host,
+            "url": url,
+        }
 
     def set_envs(self):
         """Set the envs."""
         self.envs = [
-            {
-                "basic_auth_enabled": True,
-                "name": DEV_ENV_NAME,
-                "slug": DEV_ENV_SLUG,
-                "stack_slug": DEV_ENV_STACK_CHOICES.get(
-                    self.environments_distribution, DEV_STACK_SLUG
-                ),
-                "url": self.project_url_dev,
-            },
-            {
-                "basic_auth_enabled": True,
-                "name": STAGE_ENV_NAME,
-                "slug": STAGE_ENV_SLUG,
-                "stack_slug": STAGE_ENV_STACK_CHOICES.get(
-                    self.environments_distribution, STAGE_STACK_SLUG
-                ),
-                "url": self.project_url_stage,
-            },
-            {
-                "basic_auth_enabled": False,
-                "name": PROD_ENV_NAME,
-                "slug": PROD_ENV_SLUG,
-                "stack_slug": PROD_ENV_STACK_CHOICES.get(
-                    self.environments_distribution, MAIN_STACK_SLUG
-                ),
-                "url": self.project_url_prod,
-            },
+            self._env(DEV_ENV_NAME, DEV_ENV_SLUG, self.project_url_dev, True),
+            self._env(STAGE_ENV_NAME, STAGE_ENV_SLUG, self.project_url_stage, True),
+            self._env(PROD_ENV_NAME, PROD_ENV_SLUG, self.project_url_prod, False),
         ]
 
     def register_gitlab_variable(
@@ -210,19 +191,21 @@ class Runner:
             self.register_environment_tfvars(
                 ("environment", env["name"]),
                 ("project_url", env["url"]),
-                ("stack_slug", env["stack_slug"]),
+                ("cluster_slug", env["cluster_slug"]),
                 env_slug=env["slug"],
             )
 
-    def register_vault_environment_secret(self, env_name, secret_name, secret_data):
-        """Register a Vault environment secret locally."""
-        self.vault_secrets[f"envs/{env_name}/{secret_name}"] = secret_data
+    def register_vault_service_secret(self, env_name, secret_name, secret_data):
+        """Register a service-scoped Vault secret at envs/{env}/{service_slug}/{secret_name}."""
+        self.vault_secrets[
+            f"envs/{env_name}/{self.service_slug}/{secret_name}"
+        ] = secret_data
 
     def collect_vault_environment_secrets(self, env_name):
         """Collect the Vault secrets for the given environment."""
-        # Sentry env vars are used by the GitLab CI/CD
-        self.sentry_dsn and self.register_vault_environment_secret(
-            env_name, f"{self.service_slug}/sentry", {"sentry_dsn": self.sentry_dsn}
+        # Sentry DSN is read by the GitLab CI/CD via ci_sentry.sh
+        self.sentry_dsn and self.register_vault_service_secret(
+            env_name, "sentry", {"sentry_dsn": self.sentry_dsn}
         )
 
     def collect_vault_secrets(self):
@@ -235,18 +218,21 @@ class Runner:
         cookiecutter(
             os.path.dirname(os.path.dirname(__file__)),
             extra_context={
-                "deployment_type": self.deployment_type,
                 "internal_service_port": self.internal_service_port,
                 "project_dirname": self.project_dirname,
                 "project_name": self.project_name,
                 "project_slug": self.project_slug,
-                "resources": {"envs": self.envs, "stacks": self.stacks},
+                "resources": {"envs": self.envs},
                 "service_slug": self.service_slug,
                 "terraform_backend": self.terraform_backend,
                 "terraform_cloud_organization": self.terraform_cloud_organization,
                 "tfvars": self.tfvars,
                 "use_redis": self.use_redis and "true" or "false",
                 "use_vault": self.vault_url and "true" or "false",
+                "node_version": self.node_version,
+                "minos_service_image": self.minos_service_image,
+                "opentofu_component_version": self.opentofu_component_version,
+                "opentofu_version": self.opentofu_version,
             },
             output_dir=self.output_dir,
             no_input=True,

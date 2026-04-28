@@ -71,17 +71,14 @@ Project name: My Project Name
 Project slug [my-project-name]:
 Service slug [frontend]:
 Project dirname (frontend, myprojectname) [frontend]: myprojectname
-Deploy type (digitalocean-k8s, other-k8s) [digitalocean-k8s]:
 Terraform backend (gitlab, terraform-cloud) [terraform-cloud]:
 Terraform host name [app.terraform.io]:
 Terraform Cloud User token:
 Terraform Organization: my-organization-name
 Do you want to create Terraform Cloud Organization 'my-organization-name'? [y/N]:
-Choose the environments distribution:
-  1 - All environments share the same stack (Default)
-  2 - Dev and Stage environments share the same stack, Prod has its own
-  3 - Each environment has its own stack
- (1, 2, 3) [1]:
+Cluster slug hosting the 'development' environment [dev]:
+Cluster slug hosting the 'staging' environment [dev]:
+Cluster slug hosting the 'production' environment [main]:
 Development environment complete URL [https://dev.my-project-name.com/]:
 Staging environment complete URL [https://stage.my-project-name.com/]:
 Production environment complete URL [https://www.my-project-name.com/]:
@@ -97,6 +94,8 @@ Initializing the frontend service:
 ...creating the GitLab repository and associated resources
 ...creating the Terraform Cloud resources
 ```
+
+The generated service deploys via the [Minos service module](https://gitlab.com/20tab-open/minos) using the `registry.gitlab.com/20tab-open/minos/service:latest` image and the OpenTofu GitLab Components (`opentofu/apply@3.11.0`). Each environment (`development`, `staging`, `production`) is mapped to a Kubernetes cluster slug via the prompts above.
 
 ## 🗒️ Arguments
 
@@ -142,13 +141,6 @@ The following arguments can be appended to the Docker and shell commands
 
 ### 📐 Architecture
 
-#### Deploy type
-
-| Description             | Argument                             |
-| ----------------------- | ------------------------------------ |
-| DigitalOcean Kubernetes | `--deployment-type=digitalocean-k8s` |
-| Other Kubernetes        | `--deployment-type=other-k8s`        |
-
 #### Terraform backend
 
 | Name            | Argument                              |
@@ -170,14 +162,9 @@ The following arguments can be appended to the Docker and shell commands
 Disabled args
 `--terraform-cloud-organization-create-skip`
 
-#### Environment distribution
+#### Env-to-cluster mapping
 
-Choose the environments distribution:
-Value | Description | Argument
-------------- | ------------- | -------------
-1 | All environments share the same stack (Default) | `--environment-distribution=1`
-2 | Dev and Stage environments share the same stack, Prod has its own | `--environment-distribution=2`
-3 | Each environment has its own stack | `--environment-distribution=3`
+Each of the three environments (`development`, `staging`, `production`) is mapped to a Kubernetes cluster slug. Defaults: `dev` for development and staging, `main` for production. The mapping can be set non-interactively via repeated `--env-to-cluster` flags or supplied programmatically as a `dict[str, str]`.
 
 #### Project Domain
 

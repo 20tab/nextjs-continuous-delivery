@@ -1,56 +1,85 @@
 # syntax=docker/dockerfile:1
 
-FROM node:20-alpine AS build
-ENV PATH="$PATH:./node_modules/.bin"
-WORKDIR /app
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
-COPY components ./components
-COPY declarations ./declarations
-COPY models ./models
-COPY pages ./pages
-COPY public ./public
-COPY styles ./styles
-COPY utils ./utils
-COPY tsconfig.json next.config.mjs sentry.client.config.ts sentry.server.config.ts sentry.edge.config.ts ./
-ARG SENTRY_AUTH_TOKEN \
-  SENTRY_ORG \
-  SENTRY_PROJECT_NAME \
-  SENTRY_URL
-ENV NEXT_TELEMETRY_DISABLED=1 \
-  NODE_ENV="production" \
-  PORT=3000 \
-  SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
-  SENTRY_ORG=$SENTRY_ORG \
-  SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME \
-  SENTRY_URL=$SENTRY_URL
-RUN yarn build
-LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="build"
+ARG NODE_VERSION={{ cookiecutter.node_version }}-alpine
 
-FROM node:20-alpine AS remote
+
+FROM node:${NODE_VERSION} AS dependencies
+
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="{{ cookiecutter.service_slug }}" stage="dependencies"
+
 WORKDIR /app
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+
+COPY package.json yarn.lock ./
+
+RUN corepack enable && corepack prepare yarn@stable --activate && yarn set version stable
+
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --immutable
+
+
+FROM node:${NODE_VERSION} AS builder
+
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="{{ cookiecutter.service_slug }}" stage="builder"
+
+ARG NEXT_PUBLIC_PROJECT_URL \
+    SENTRY_DSN \
+    SENTRY_ENVIRONMENT \
+    SENTRY_ORG \
+    SENTRY_PROJECT_NAME \
+    SENTRY_TRACES_SAMPLE_RATE \
+    SENTRY_URL
+
+ENV NEXT_PUBLIC_PROJECT_URL=$NEXT_PUBLIC_PROJECT_URL \
+    NEXT_PUBLIC_ENVIRONMENT=$SENTRY_ENVIRONMENT \
+    NEXT_PUBLIC_SENTRY_DSN=$SENTRY_DSN \
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
+    NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=$SENTRY_TRACES_SAMPLE_RATE \
+    NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production \
+    PATH="$PATH:./node_modules/.bin" \
+    SENTRY_ORG=$SENTRY_ORG \
+    SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME \
+    SENTRY_URL=$SENTRY_URL \
+    TZ="Europe/Rome"
+
+WORKDIR /app
+
+COPY --from=dependencies /app/node_modules ./node_modules
+
+COPY . .
+
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true) \
+    yarn build
+
+
+FROM node:${NODE_VERSION} AS remote
+
+LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="{{ cookiecutter.service_slug }}" stage="remote"
+
+ARG SENTRY_ENVIRONMENT
+
+ENV HOSTNAME="0.0.0.0" \
+    NEXT_PUBLIC_ENVIRONMENT=$SENTRY_ENVIRONMENT \
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT \
+    NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production \
+    PORT={{ cookiecutter.internal_service_port }} \
+    TZ="Europe/Rome"
+
+WORKDIR /app
+
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+RUN mkdir .next && chown nextjs:nodejs .next
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
 USER nextjs
-COPY ["next.config.mjs", "package.json", "server.js", "sentry.client.config.ts", "sentry.server.config.ts", "sentry.edge.config.ts", "yarn.lock", "./"]
-COPY ["public/", "public/"]
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
-ARG SENTRY_AUTH_TOKEN \
-  SENTRY_ORG \
-  SENTRY_PROJECT_NAME \
-  SENTRY_URL
-ENV NEXT_TELEMETRY_DISABLED=1 \
-  NODE_ENV="production" \
-  PORT=3000 \
-SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
-  SENTRY_ORG=$SENTRY_ORG \
-  SENTRY_PROJECT_NAME=$SENTRY_PROJECT_NAME \
-  SENTRY_URL=$SENTRY_URL
-CMD yarn start
-LABEL company="20tab" project="{{ cookiecutter.project_slug }}" service="frontend" stage="remote"
+
+EXPOSE {{ cookiecutter.internal_service_port }}
+
+CMD ["node", "server.js"]

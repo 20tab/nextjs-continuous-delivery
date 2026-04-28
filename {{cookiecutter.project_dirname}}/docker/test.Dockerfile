@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:20-bullseye-slim
+FROM node:{{ cookiecutter.node_version }}-bullseye-slim
 ARG DEBIAN_FRONTEND=noninteractive GROUP_ID=1001 USER=appuser
 ENV APPUSER=$USER \
     CYPRESS_CACHE_FOLDER="/tmp/.cache/Cypress" \
