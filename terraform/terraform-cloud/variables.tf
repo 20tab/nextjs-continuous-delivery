@@ -10,8 +10,14 @@ variable "create_organization" {
   default     = false
 }
 
+variable "create_project" {
+  description = "Tell if the Terraform Cloud project should be created (false when Talos parent has already created it)."
+  type        = bool
+  default     = true
+}
+
 variable "environments" {
-  description = "The list of environment slugs."
+  description = "The list of environment names (used as workspace suffix)."
   type        = list(string)
   default     = []
 }
@@ -40,12 +46,6 @@ variable "project_slug" {
 variable "service_slug" {
   description = "The service slug."
   type        = string
-}
-
-variable "stacks" {
-  description = "The list of stack slugs."
-  type        = list(string)
-  default     = []
 }
 
 variable "terraform_cloud_token" {
