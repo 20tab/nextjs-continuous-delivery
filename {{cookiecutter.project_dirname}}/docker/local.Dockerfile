@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:20-bullseye-slim
+FROM node:{{ cookiecutter.node_version }}-bullseye-slim
 ARG DEBIAN_FRONTEND=noninteractive GROUP_ID=1000 USER_ID=1000 USER=appuser
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 NEXT_TELEMETRY_DISABLED=1 NODE_ENV="development" USER=$USER WORKDIR=/app
 RUN apt-get update \

@@ -16,6 +16,10 @@ from pydantic import validate_arguments
 from bootstrap.constants import (
     DEV_ENV_NAME,
     DEV_ENV_SLUG,
+    MINOS_SERVICE_IMAGE,
+    NODE_VERSION_DEFAULT,
+    OPENTOFU_COMPONENT_VERSION,
+    OPENTOFU_VERSION,
     PROD_ENV_NAME,
     PROD_ENV_SLUG,
     STAGE_ENV_NAME,
@@ -66,6 +70,10 @@ class Runner:
     gitlab_url: str | None = None
     gitlab_namespace_path: str | None = None
     gitlab_token: str | None = None
+    node_version: str = NODE_VERSION_DEFAULT
+    minos_service_image: str = MINOS_SERVICE_IMAGE
+    opentofu_component_version: str = OPENTOFU_COMPONENT_VERSION
+    opentofu_version: str = OPENTOFU_VERSION
     uid: int | None = None
     gid: int | None = None
     terraform_dir: Path | None = None
@@ -221,6 +229,10 @@ class Runner:
                 "tfvars": self.tfvars,
                 "use_redis": self.use_redis and "true" or "false",
                 "use_vault": self.vault_url and "true" or "false",
+                "node_version": self.node_version,
+                "minos_service_image": self.minos_service_image,
+                "opentofu_component_version": self.opentofu_component_version,
+                "opentofu_version": self.opentofu_version,
             },
             output_dir=self.output_dir,
             no_input=True,
