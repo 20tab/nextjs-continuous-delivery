@@ -12,6 +12,10 @@ from bootstrap.constants import (
     ENV_NAMES,
     ENV_TO_CLUSTER_DEFAULT,
     GITLAB_URL_DEFAULT,
+    MINOS_SERVICE_IMAGE,
+    NODE_VERSION_DEFAULT,
+    OPENTOFU_COMPONENT_VERSION,
+    OPENTOFU_VERSION,
     TERRAFORM_BACKEND_CHOICES,
     TERRAFORM_BACKEND_TFC,
 )
@@ -57,6 +61,10 @@ class Collector:
     gitlab_url: str | None = None
     gitlab_token: str | None = None
     gitlab_namespace_path: str | None = None
+    node_version: str | None = None
+    minos_service_image: str | None = None
+    opentofu_component_version: str | None = None
+    opentofu_version: str | None = None
     uid: int | None = None
     gid: int | None = None
     terraform_dir: Path | None = None
@@ -80,6 +88,7 @@ class Collector:
         self.set_project_urls()
         self.set_sentry()
         self.set_gitlab()
+        self.set_versions()
 
     def set_project_slug(self):
         """Set the project slug option."""
@@ -256,6 +265,21 @@ class Collector:
                 )
             )
 
+    def set_versions(self):
+        """Set the toolchain versions."""
+        self.node_version = self.node_version or click.prompt(
+            "Node version", default=NODE_VERSION_DEFAULT
+        )
+        self.minos_service_image = self.minos_service_image or click.prompt(
+            "Minos service image", default=MINOS_SERVICE_IMAGE
+        )
+        self.opentofu_component_version = self.opentofu_component_version or click.prompt(
+            "OpenTofu CI component version", default=OPENTOFU_COMPONENT_VERSION
+        )
+        self.opentofu_version = self.opentofu_version or click.prompt(
+            "OpenTofu version", default=OPENTOFU_VERSION
+        )
+
     def get_runner(self):
         """Get the bootstrap runner instance."""
         return Runner(
@@ -288,6 +312,10 @@ class Collector:
             gitlab_url=self.gitlab_url,
             gitlab_token=self.gitlab_token,
             gitlab_namespace_path=self.gitlab_namespace_path,
+            node_version=self.node_version,
+            minos_service_image=self.minos_service_image,
+            opentofu_component_version=self.opentofu_component_version,
+            opentofu_version=self.opentofu_version,
             terraform_dir=self.terraform_dir,
             logs_dir=self.logs_dir,
         )

@@ -451,6 +451,10 @@ class TestBootstrapCollector(TestCase):
             service_slug="django",
             terraform_backend="terraform-cloud",
             use_redis=False,
+            node_version="24.14.0",
+            minos_service_image="registry.gitlab.com/20tab-open/minos/service:latest",
+            opentofu_component_version="3.11.0",
+            opentofu_version="1.10.6",
         )
         collector._service_dir = Path(".")
         runner = collector.get_runner()
@@ -543,6 +547,7 @@ class TestBootstrapCollector(TestCase):
         collector.set_project_urls = mock.MagicMock()
         collector.set_sentry = mock.MagicMock()
         collector.set_gitlab = mock.MagicMock()
+        collector.set_versions = mock.MagicMock()
         collector.collect()
         collector.set_project_slug.assert_called_once()
         collector.set_project_dirname.assert_called_once()
@@ -554,3 +559,4 @@ class TestBootstrapCollector(TestCase):
         collector.set_project_urls.assert_called_once()
         collector.set_sentry.assert_called_once()
         collector.set_gitlab.assert_called_once()
+        collector.set_versions.assert_called_once()
