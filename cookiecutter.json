@@ -8,7 +8,6 @@
   "terraform_cloud_organization": null,
   "use_redis": "false",
   "use_vault": "false",
-  "node_version": "24.14.0",
   "minos_service_image": "registry.gitlab.com/20tab-open/minos/service:latest",
   "opentofu_component_version": "3.11.0",
   "opentofu_version": "1.10.6",
