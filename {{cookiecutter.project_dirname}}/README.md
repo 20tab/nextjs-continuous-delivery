@@ -1,168 +1,135 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# {{ cookiecutter.project_name }}
 
-# Getting started
+Next.js service generated from the [20tab nextjs template](https://github.com/20tab/nextjs-continuous-delivery).
+Deployed on Kubernetes via [MINOS Service](https://gitlab.com/20tab-open/minos/service).
 
-This service is generated from [20tab standard project](https://github.com/20tab/20tab-standard-project) template or
-[20tab nextjs template](https://github.com/20tab/nextjs-continuous-delivery)
+## Stack
 
-## The Kubernetes resource limits
+- **Next.js** (Pages Router) + **React 19** + **TypeScript 6**
+- **Tailwind CSS v4** (PostCSS)
+- **ESLint** flat config + **Prettier**
+- **Jest** for unit tests, **jest-pact** for contract tests
+- **Sentry** via Next.js instrumentation hooks
+- Package manager: **Yarn** (Corepack-managed, version pinned in `.yarnrc.yml`)
 
-The Kubernetes deployment service limits should be adapted to the expected load of the other services and to the size of the available nodes.
+## Getting started
 
-## Git
-
-To get the existing project, change directory, clone the project repository and enter the newly created **{{ cookiecutter.project_slug }}** directory.
-
-## Run local service
-
-First, run the development server:
+Enable Yarn through Corepack and install dependencies:
 
 ```bash
-npm run dev
+corepack enable
+yarn install
 ```
-or
+
+Run the development server:
+
 ```bash
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-# Linting
+## Available scripts
 
-To check all file linting, execute:
+| Script                  | Description                                      |
+| ----------------------- | ------------------------------------------------ |
+| `yarn dev`              | Start the Next.js dev server                     |
+| `yarn build`            | Production build                                 |
+| `yarn start`            | Run the production build                         |
+| `yarn lint`             | Run ESLint                                       |
+| `yarn format`           | Format files with Prettier                       |
+| `yarn fix`              | Lint with `--fix`, then format                   |
+| `yarn test`             | Run unit tests (Jest, excluding contracts)       |
+| `yarn pact`             | Run Pact contract tests                          |
+| `yarn ci:unit-test`     | CI unit-test run with coverage and JUnit reports |
+| `yarn ci:contract-test` | CI Pact contract-test run                        |
 
-```bash
-npm run lint
-```
-or
-```bash
-yarn lint
-```
-
-# Update package
-
-To update packages, execute:
-
-```bash
-yarn upgrade --latest
-```
-
-To check audit, execute:
+## Updating dependencies
 
 ```bash
-npm run audit:fix
-```
-or
-```bash
-yarn audit:fix
+yarn upgrade-interactive
 ```
 
-# Testing
+## Docker
 
-## Unit test
+Two Dockerfiles are provided in [docker/](docker/):
 
-To run the unit test suite, execute:
+- [docker/local.Dockerfile](docker/local.Dockerfile) — local/dev image
+- [docker/remote.Dockerfile](docker/remote.Dockerfile) — multi-stage image used by the CI build
 
-```bash
-npm run test
+## Deployment — MINOS Service
+
+This service deploys to Kubernetes through MINOS Service. Per-environment configuration lives under [minos/](minos/):
+
 ```
-or
-```bash
-yarn test
-```
-
-## Contract tests
-
-To run the pact test suite, execute:
-
-```bash
-npm run pact
-```
-or
-```bash
-yarn pact
-```
-
-# Pact stub server
-Pact contracts are easily turned into locally running API stubs.
-
-## Using full docker-compose implementation
-
-```bash
-npm run pact && \
-docker-compose up
-```
-or
-```bash
-yarn pact && \
-docker-compose up
+minos/
+├── common.tfvars              # shared across environments
+├── development/
+│   ├── this.tfvars            # cluster_slug, namespace, routing, certificates
+│   └── shared-config.yaml     # non-sensitive env vars
+├── staging/
+│   ├── this.tfvars
+│   └── shared-config.yaml
+└── production/
+    ├── this.tfvars
+    └── shared-config.yaml
 ```
 
-## Using custom docker-compose implementation
+Sensitive values are pulled from Vault at pipeline time; non-sensitive values come from `shared-config.yaml`.
 
-:warning: **env variable** in custom mode you must be sure to have env, set in the system or in `.env` file.
+## GitLab pipeline — CI/CD
 
-```bash
-  COMPOSE_FILE=docker-compose.yaml:docker-compose/local.yaml
-  COMPOSE_PROFILES=pact
-  CYPRESS_BASE_URL=https://proxy:8443
-  INTERNAL_BACKEND_URL=http://provider:8000
-  NEXT_PUBLIC_PROJECT_URL=https://localhost:8443
-  REACT_ENVIRONMENT=development
-  SERVICE_DOCKER_FILE=docker/local.Dockerfile
+> **Branch protection:** `develop`, `main`, and tags must be protected.
+
+Pipeline mapping:
+
+| Branch / ref | Environment |
+| ------------ | ----------- |
+| `develop`    | development |
+| `main`       | staging     |
+| Git tag      | production  |
+
+Each environment runs: **Test → (Pact publish) → (Can-I-Deploy) → Build → Deploy → (Pact tag) → (Sentry release)**.
+
+### Pipeline toggles
+
+| Variable              | Effect                                          |
+| --------------------- | ----------------------------------------------- |
+| `SKIP_TEST=true`      | Skip the test stage                             |
+| `SKIP_DEPLOY=true`    | Skip deploy and related Sentry/Pact steps       |
+| `PACT_ENABLED=true`   | Enable Pact broker publish + can-i-deploy + tag |
+| `SENTRY_ENABLED=true` | Enable Sentry release tracking                  |
+
+### Pact broker integration
+
+Set in the GitLab repository (the broker URL/credentials must be **protected** and **masked**):
+
+```
+PACT_ENABLED=true
+PACT_BROKER_BASE_URL
+PACT_BROKER_USERNAME
+PACT_BROKER_PASSWORD
 ```
 
-After env check you can run the following commands:
-
-```bash
-npm run pact && \
-docker-compose up provider && \
-npm run dev
-```
-or
-```bash
-yarn pact && \
-docker-compose up provider && \
-yarn dev
-```
-
-# GitLab pipeline - CI/CD
-
-:warning: **develop, main and tags**: should be protected!
-
-## E2E Integration
-The E2E integration, can be skip using following variable that should be set in the GitLab respository:
-```git
-  SKIP_E2E = true
-```
-
-## Pact broker Integration
-To enable the Pact broker integration, the following variables should be set in the GitLab respository:
-```git
-  PACT_ENABLED = true
-  PACT_BROKER_BASE_URL (protected and masked)
-  PACT_BROKER_PASSWORD (protected)
-  PACT_BROKER_USERNAME (protected)
-```
-
-## Monitoring
 ### Sentry integration
 
-To enable the Sentry integration, the following variables should be set in the GitLab respository:
-```git
-  NEXT_PUBLIC_SENTRY_TRACE_SAMPLE_RATE: 0.1
-  SENTRY_AUTH_TOKEN (protected and masked) from Sentry
-  SENTRY_DSN (protected and masked) from Sentry
-  SENTRY_ORG (protected) e.g.: 20tab
-  SENTRY_URL (protected) e.g.: https://sentry.io/
+```
+SENTRY_ENABLED=true
+SENTRY_DSN                  # protected, masked
+SENTRY_AUTH_TOKEN           # protected, masked
+SENTRY_ORG                  # protected, e.g. 20tab
+SENTRY_URL                  # protected, e.g. https://sentry.io/
+SENTRY_TRACES_SAMPLE_RATE   # e.g. 0.1
 ```
 
-# Learn More
+## Kubernetes resource limits
 
-To learn more about Next.js, take a look at the following resources:
+Deployment resource requests/limits are defined per environment in `minos/<env>/this.tfvars`. Tune them to match the expected load and the size of the available cluster nodes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Next.js functions](https://nextjs.org/docs/basic-features/data-fetching) - learn about Next.js functions.
+## Learn more
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Jest](https://jestjs.io/) · [jest-pact](https://github.com/pact-foundation/jest-pact)
+- [Sentry for Next.js](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
+- [MINOS Service](https://gitlab.com/20tab-open/minos/service)

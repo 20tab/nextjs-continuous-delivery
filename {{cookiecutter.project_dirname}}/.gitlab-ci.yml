@@ -133,7 +133,7 @@ sentry_release_production:
 
 test:
   stage: Test
-  image: node:{{ cookiecutter.node_version }}-bullseye-slim
+  image: node:{{ cookiecutter.node_version }}-alpine
   needs: []
   variables:
     NEXT_TELEMETRY_DISABLED: 1

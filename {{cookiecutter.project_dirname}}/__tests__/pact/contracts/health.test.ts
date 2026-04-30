@@ -1,10 +1,10 @@
-import { expect } from '@jest/globals'
+import { beforeEach, expect } from '@jest/globals'
 import { HTTPMethods } from '@pact-foundation/pact/src/common/request'
 import { pactWith } from 'jest-pact/dist/v3'
 
-import pactConfig from '@/__tests__/pact/pact.config'
-
 import { axios, withApiOptions } from '@/utils/api/axios'
+
+import pactConfig from '@/__tests__/pact/pact.config'
 
 const healthCheck = withApiOptions<{ status: string }>(({ baseUrl }) => {
   return axios.get(`${baseUrl}/api/health/`)

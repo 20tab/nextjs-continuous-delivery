@@ -3,10 +3,14 @@
 # dependencies
 /node_modules
 /.pnp
-.pnp.js
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
-__tests__/logs
 /coverage
 /pacts
 junit.xml
@@ -20,6 +24,7 @@ junit.xml
 
 # misc
 .DS_Store
+*.pem
 
 # debug
 npm-debug.log*
@@ -30,9 +35,6 @@ yarn-error.log*
 # local env files
 .env
 *.local
-
-# Cypress
-/cypress-outputs/*
 
 # Terraform
 .terraform.lock*

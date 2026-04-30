@@ -1,0 +1,5 @@
+*.yaml
+*.yml
+*.d.ts
+.next
+compiled-lang

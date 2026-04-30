@@ -1,4 +1,5 @@
-import axios from 'axios'
+import { captureException } from '@sentry/nextjs'
+import axios, { isAxiosError } from 'axios'
 import { parseCookies } from 'nookies'
 
 import type { ApiOptions } from '@/models/Api'
@@ -60,10 +61,33 @@ axios.interceptors.request.use(config => {
   return config
 })
 
+const TRANSIENT_ERROR_CODES = new Set([
+  'ECONNRESET',
+  'ECONNABORTED',
+  'ETIMEDOUT',
+  'EPIPE',
+  'ERR_SOCKET_CONNECTION_TIMEOUT'
+])
+
+const isTransientNetworkError = (error: unknown): boolean => {
+  if (!isAxiosError(error)) return false
+  const code = error.code ?? ''
+  if (TRANSIENT_ERROR_CODES.has(code)) return true
+  if (error.message === 'socket hang up') return true
+  return false
+}
+
 // Response interceptor
 axios.interceptors.response.use(
   res => res,
-  err => Promise.reject(err)
+  (err: unknown) => {
+    const isNotFound = isAxiosError(err) && err.response?.status === 404
+    const isUnauthorized = isAxiosError(err) && err.response?.status === 401
+    if (!isNotFound && !isUnauthorized && !isTransientNetworkError(err)) {
+      captureException(err)
+    }
+    throw err instanceof Error ? err : new Error(String(err))
+  }
 )
 
 // Attach options (ApiOptions) to and api function

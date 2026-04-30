@@ -1,4 +1,4 @@
-export interface ApiOptions {
+interface ApiOptions {
   baseUrl?: string
   csrfCookie?: boolean
   csrfToken?: string
@@ -6,3 +6,5 @@ export interface ApiOptions {
   serverSide?: boolean
   token?: string
 }
+
+export type { ApiOptions }
