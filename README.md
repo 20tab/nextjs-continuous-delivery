@@ -82,7 +82,7 @@ Cluster slug hosting the 'production' environment [main]:
 Development environment complete URL [https://dev.my-project-name.com/]:
 Staging environment complete URL [https://stage.my-project-name.com/]:
 Production environment complete URL [https://www.my-project-name.com/]:
-Do you want to configure Redis? [y/N]:
+Do you want to configure Valkey? [y/N]:
 Do you want to use GitLab? [Y/n]:
 GitLab group slug [my-project-name]:
 Make sure the GitLab "my-project-name" group exists before proceeding. Continue? [y/N]: y
@@ -174,14 +174,14 @@ If you don't want DigitalOcean DNS configuration the following args are required
 `--project-url-stage=https://stage.project-domain.com`<br/>
 `--project-url-prod=https://www.project-domain.com`
 
-#### Redis
+#### Valkey
 
-For enabling redis integration the following arguments are needed:
+For enabling valkey integration the following arguments are needed:
 
-`--use-redis`
+`--use-valkey`
 
 Disabled args
-`--no-redis`
+`--no-valkey`
 
 ### 🦊 GitLab
 

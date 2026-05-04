@@ -6,7 +6,7 @@
   "internal_service_port": "3000",
   "terraform_backend": "gitlab",
   "terraform_cloud_organization": null,
-  "use_redis": "false",
+  "use_valkey": "false",
   "use_vault": "false",
   "node_version": "24.14.0",
   "minos_service_image": "registry.gitlab.com/20tab-open/minos/service:latest",

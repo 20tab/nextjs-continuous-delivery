@@ -67,7 +67,7 @@ class Runner:
     sentry_dsn: str | None = None
     sentry_org: str | None = None
     sentry_url: str | None = None
-    use_redis: bool = False
+    use_valkey: bool = False
     gitlab_url: str | None = None
     gitlab_namespace_path: str | None = None
     gitlab_token: str | None = None
@@ -228,7 +228,7 @@ class Runner:
                 "terraform_backend": self.terraform_backend,
                 "terraform_cloud_organization": self.terraform_cloud_organization,
                 "tfvars": self.tfvars,
-                "use_redis": self.use_redis and "true" or "false",
+                "use_valkey": self.use_valkey and "true" or "false",
                 "use_vault": self.vault_url and "true" or "false",
                 "node_version": self.node_version,
                 "minos_service_image": self.minos_service_image,

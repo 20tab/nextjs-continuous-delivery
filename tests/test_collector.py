@@ -61,23 +61,23 @@ class TestBootstrapCollector(TestCase):
             collector.set_project_dirname()
         self.assertEqual(collector.project_dirname, "service-slug")
 
-    def test_use_redis_from_input(self):
-        """Test setting the `use_redis` flag from user input."""
+    def test_use_valkey_from_input(self):
+        """Test setting the `use_valkey` flag from user input."""
         collector = Collector(
             project_name="project_name",
         )
-        self.assertIsNone(collector.use_redis)
+        self.assertIsNone(collector.use_valkey)
         with mock_input("y"):
-            collector.set_use_redis()
-        self.assertTrue(collector.use_redis)
+            collector.set_use_valkey()
+        self.assertTrue(collector.use_valkey)
 
-    def test_use_redis_from_options(self):
-        """Test setting the `use_redis` flag from user input."""
-        collector = Collector(project_name="project_name", use_redis=False)
-        self.assertFalse(collector.use_redis)
+    def test_use_valkey_from_options(self):
+        """Test setting the `use_valkey` flag from user input."""
+        collector = Collector(project_name="project_name", use_valkey=False)
+        self.assertFalse(collector.use_valkey)
         with mock.patch("bootstrap.collector.click.confirm") as mocked_confirm:
-            collector.set_use_redis()
-        self.assertFalse(collector.use_redis)
+            collector.set_use_valkey()
+        self.assertFalse(collector.use_valkey)
         mocked_confirm.assert_not_called()
 
     def test_terraform_backend_from_default(self):
@@ -450,7 +450,7 @@ class TestBootstrapCollector(TestCase):
             project_url_stage="https://stage.test.com",
             service_slug="django",
             terraform_backend="terraform-cloud",
-            use_redis=False,
+            use_valkey=False,
             node_version="24.14.0",
             minos_service_image="registry.gitlab.com/20tab-open/minos/service:latest",
             opentofu_component_version="3.11.0",
@@ -471,7 +471,7 @@ class TestBootstrapCollector(TestCase):
         self.assertEqual(runner.project_url_stage, "https://stage.test.com")
         self.assertEqual(runner.service_slug, "django")
         self.assertEqual(runner.terraform_backend, "terraform-cloud")
-        self.assertEqual(runner.use_redis, False)
+        self.assertEqual(runner.use_valkey, False)
 
     def test_service_slug_default(self):
         """Test setting the service slug from default."""
@@ -540,7 +540,7 @@ class TestBootstrapCollector(TestCase):
         collector.set_project_urls = mock.MagicMock()
         collector.set_project_dirname = mock.MagicMock()
         collector.set_service_dir = mock.MagicMock()
-        collector.set_use_redis = mock.MagicMock()
+        collector.set_use_valkey = mock.MagicMock()
         collector.set_terraform = mock.MagicMock()
         collector.set_vault = mock.MagicMock()
         collector.set_env_to_cluster = mock.MagicMock()
@@ -552,7 +552,7 @@ class TestBootstrapCollector(TestCase):
         collector.set_project_slug.assert_called_once()
         collector.set_project_dirname.assert_called_once()
         collector.set_service_dir.assert_called_once()
-        collector.set_use_redis.assert_called_once()
+        collector.set_use_valkey.assert_called_once()
         collector.set_terraform.assert_called_once()
         collector.set_vault.assert_called_once()
         collector.set_env_to_cluster.assert_called_once()
