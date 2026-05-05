@@ -49,7 +49,7 @@ from bootstrap.helpers import slugify_option
 @click.option("--sentry-dsn")
 @click.option("--sentry-org")
 @click.option("--sentry-url")
-@click.option("--use-redis/--no-redis", is_flag=True, default=None)
+@click.option("--use-valkey/--no-valkey", is_flag=True, default=None)
 @click.option("--gitlab-url")
 @click.option("--gitlab-token", envvar=GITLAB_TOKEN_ENV_VAR)
 @click.option("--gitlab-namespace-path")
